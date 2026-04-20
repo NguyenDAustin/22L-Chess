@@ -27,3 +27,12 @@ End of game. White quits.
 -------------------------------------------
 1      White  Quit                 White quits
 End of game. White quits.
+
+ Chess Game Log : Mon Apr 20 11:39:51 2026
+ 
+#  Color  Action               Move
+-------------------------------------------
+1  White  Move                 {E2, E4}
+2  Black  CPU Move             {F7, F6}
+3      White  Quit                 White quits
+End of game. White quits.
