@@ -35,7 +35,7 @@ int undoPop(list *pop){
 
 int undo(list *l, Piece board[10][10]){
 	if (!l) return 0;
-	board[l->from_row][l->from_col] = l->piece;
-	board[l->to_row][l->to_col] = 0;
+	board[l->move.startRow][l->move.startCol] = l->movPiece;
+	board[l->move.endRow][l->endCol] = l->capturedPiece;
 	return 1;
 }

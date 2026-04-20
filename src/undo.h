@@ -5,6 +5,16 @@
 #ifndef UNDO_H
 #define UNDO_H
 
+#include "pieces.h"
+#include "move.h"
+
+typedef struct {
+	int moveNUm;
+	Move move;
+	Piece movPiece;
+	Piece capturedPiece;
+} list;
+
 
 void undoSet(void);
 
