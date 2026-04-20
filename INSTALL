@@ -1,0 +1,62 @@
+Anteater Chess - Installation Instructions
+===========================================
+
+Requirements
+------------
+  * Linux environment (tested on UCI EECS servers)
+  * GCC with C99 support
+  * GNU Make
+  * GTK 4 development libraries and pkg-config
+  * Cairo and GDK-Pixbuf (typically installed with GTK 4)
+
+
+Installing from the source package
+----------------------------------
+
+1. Extract the source archive:
+
+       $ gtar -xvzf Chess_Alpha_src.tar.gz
+
+2. Change into the extracted directory:
+
+       $ cd Chess_Alpha_src
+
+3. Build the program:
+
+       $ make
+
+   After a successful build, the executable is placed in bin/.
+
+4. (Optional) Run the test suite:
+
+       $ make test
+
+5. Run the program:
+
+       $ ./bin/chess
+
+
+Installing from the binary package
+----------------------------------
+
+1. Extract the binary archive:
+
+       $ gtar -xvzf Chess_Alpha.tar.gz
+
+2. Change into the extracted directory:
+
+       $ cd Chess_Alpha
+
+3. Run the program:
+
+       $ ./bin/chess
+
+
+Cleaning the build
+------------------
+
+       $ make clean
+
+
+For gameplay instructions, refer to doc/Chess_UserManual.pdf.
+For more technical information, refer to doc/Chess_SoftwareSpec.pdf.

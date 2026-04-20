@@ -5,7 +5,7 @@
 
 #include <gtk/gtk.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
-#include "colors_gui.h"
+#include "color_gui.h"
 #include "enum.h"
 #include "board.h"
 

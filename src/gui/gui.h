@@ -2,7 +2,7 @@
 #define GUI_H 
 
 #include "render.h"
-#include "piece.h"
+#include "pieces.h"
 
 //global variables 
 extern const char FILES[10]; 

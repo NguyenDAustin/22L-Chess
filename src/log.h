@@ -15,5 +15,4 @@ void addCapture (const char *filename, int moveNum, const char *color, const cha
 
 void addCastle (const char *filename, int moveNum, const char *color, int );
 
-
-
+#endif

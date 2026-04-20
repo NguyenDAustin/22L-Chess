@@ -13,3 +13,5 @@ int undoPush(const list *record);
 int undoPop(list *pop);
 
 int undo(list *l, Piece board[10][10]);
+
+#endif
