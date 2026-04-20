@@ -58,3 +58,34 @@ End of game. White quits.
 6  Black  CPU Move             {D7, D5}
 7      White  Quit                 White quits
 End of game. White quits.
+
+ Chess Game Log : Mon Apr 20 11:53:16 2026
+ 
+#  Color  Action               Move
+-------------------------------------------
+1  White  Move                 {E2, E4}
+2  Black  CPU Move             {E7, E6}
+3  White  Move                 {F2, F4}
+4  Black  CPU Move             {D8, E7}
+5  White  Move                 {I1, H3}
+6  Black  CPU Move             {C7, C6}
+7  White  Move                 {H3, I5}
+8  Black  CPU Move             {B7, B6}
+9  White  Move                 {J2, J4}
+10 Black  CPU Move             {I8, H6}
+11 White  Move                 {J1, J3}
+12 Black  CPU Move             {A7, A5}
+13 White  Move                 {J3, I3}
+14 Black  CPU Move             {C8, B7}
+15     White  Quit                 White quits
+End of game. White quits.
+
+ Chess Game Log : Mon Apr 20 12:11:01 2026
+ 
+#  Color  Action               Move
+-------------------------------------------
+1  White  CPU Move             {G2, G3}
+2  Black  Move                 {E7, E6}
+3  White  CPU Move             {H2, H3}
+4      Black  Quit                 Black quits
+End of game. Black quits.
