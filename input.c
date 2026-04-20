@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 typedef enum {
     INPUT_NONE = 0,
     INPUT_MOVE,
@@ -18,9 +17,6 @@ typedef enum {
 static InputKind g_lastKind = INPUT_NONE;
 static Pos g_lastStart = { 'A', 1 };
 static Pos g_lastEnd   = { 'A', 1 };
-
-static const char pieceNotation[7] = { 'K', 'Q', 'A', 'B', 'N', 'R', 'T' };
-
 
 static void clearState(void) {
     g_lastKind = INPUT_NONE;
@@ -115,7 +111,6 @@ static bool parseCoordinateInput(const char *input) {
         return false;
     }
 
-    
     size_t i, j = 0;
     for (i = 0; input[i] != '\0' && j + 1 < sizeof(work); i++) {
         char c = input[i];
@@ -134,7 +129,6 @@ static bool parseCoordinateInput(const char *input) {
 
     return parseMoveTokens(a, b);
 }
-
 
 static Move buildNormalizedMove(void) {
     Move m;
@@ -187,7 +181,6 @@ static Move buildNormalizedMove(void) {
     return m;
 }
 
-
 bool isValid(const char *input) {
     char trimmed[128];
     char upper[128];
@@ -205,7 +198,6 @@ bool isValid(const char *input) {
         return false;
     }
 
-    /* Special commands from the project task description. */
     if (strcmp(upper, "O-O") == 0) {
         g_lastKind = INPUT_CASTLE_KINGSIDE;
         return true;
@@ -226,7 +218,6 @@ bool isValid(const char *input) {
         return true;
     }
 
-    /* Coordinate input required by the project documents. */
     if (parseCoordinateInput(upper)) {
         return true;
     }
@@ -248,7 +239,6 @@ Move parseInput(const char *input) {
 
     return buildNormalizedMove();
 }
-
 
 bool inputHasMove(void) {
     return g_lastKind == INPUT_MOVE;

@@ -2,17 +2,7 @@
 #define INPUT_H
 
 #include <stdbool.h>
-
-
-typedef enum {
-    KING = 0,
-    QUEEN = 1,
-    ANTEATER = 2,
-    BISHOP = 3,
-    KNIGHT = 4,
-    ROOK = 5,
-    ANT = 6
-} Rank;
+#include "pieces.h"
 
 typedef struct {
     char file;   /* 'A' through 'J' */
@@ -23,10 +13,8 @@ typedef struct {
     char move[4];
 } Move;
 
-
 Move parseInput(const char *input);
 bool isValid(const char *input);
-
 
 bool inputHasMove(void);
 bool inputIsCastleKingSide(void);
