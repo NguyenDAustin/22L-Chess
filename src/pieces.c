@@ -7,16 +7,16 @@ void posCtor(Pos *mPos, int row, int col) {
     mPos->col = col;
 }
 
-bool isValid(int p, int limit) { //Queency
+bool isInRange(int p, int limit) { //Queency
     return (p >= 0 && p < limit);
 }
 
 bool isRowValid(int row) { //Queency
-    return isValid(row, BOARD_HEIGHT);
+    return isInRange(row, BOARD_HEIGHT);
 }
 
 bool isColValid(int col) { //Queency
-    return isValid(col, BOARD_WIDTH);
+    return isInRange(col, BOARD_WIDTH);
 }
 
 bool isPosValid(Pos pos) { //Queency

@@ -15,15 +15,15 @@ typedef enum {
 } InputKind;
 
 static InputKind g_lastKind = INPUT_NONE;
-static Pos g_lastStart = { 'A', 1 };
-static Pos g_lastEnd   = { 'A', 1 };
+static Pos g_lastStart = { 0, 0 };
+static Pos g_lastEnd   = { 0, 0 };
 
 static void clearState(void) {
     g_lastKind = INPUT_NONE;
-    g_lastStart.file = 'A';
-    g_lastStart.rank = 1;
-    g_lastEnd.file = 'A';
-    g_lastEnd.rank = 1;
+    g_lastStart.row = 0;
+    g_lastStart.col = 0;
+    g_lastEnd.row = 0;
+    g_lastEnd.col = 0;
 }
 
 static void trimWhitespace(const char *src, char *dst, size_t dstSize) {
@@ -80,8 +80,8 @@ static bool parseSquare(const char *s, Pos *p) {
         return false;
     }
 
-    p->file = s[0];
-    p->rank = s[1] - '0';
+    p->col = s[0] - 'A';
+    p->row = s[1] - '1';
     return true;
 }
 
@@ -130,57 +130,6 @@ static bool parseCoordinateInput(const char *input) {
     return parseMoveTokens(a, b);
 }
 
-static Move buildNormalizedMove(void) {
-    Move m;
-    m.move[0] = '\0';
-    m.move[1] = '\0';
-    m.move[2] = '\0';
-    m.move[3] = '\0';
-
-    switch (g_lastKind) {
-        case INPUT_MOVE:
-            m.move[0] = 'T';
-            m.move[1] = g_lastEnd.file;
-            m.move[2] = (char)('0' + g_lastEnd.rank);
-            m.move[3] = '\0';
-            break;
-
-        case INPUT_CASTLE_KINGSIDE:
-            m.move[0] = 'C';
-            m.move[1] = 'K';
-            m.move[2] = '\0';
-            m.move[3] = '\0';
-            break;
-
-        case INPUT_CASTLE_QUEENSIDE:
-            m.move[0] = 'C';
-            m.move[1] = 'Q';
-            m.move[2] = '\0';
-            m.move[3] = '\0';
-            break;
-
-        case INPUT_UNDO:
-            m.move[0] = 'U';
-            m.move[1] = '\0';
-            m.move[2] = '\0';
-            m.move[3] = '\0';
-            break;
-
-        case INPUT_QUIT:
-            m.move[0] = 'Q';
-            m.move[1] = '\0';
-            m.move[2] = '\0';
-            m.move[3] = '\0';
-            break;
-
-        case INPUT_NONE:
-        default:
-            break;
-    }
-
-    return m;
-}
-
 bool isValid(const char *input) {
     char trimmed[128];
     char upper[128];
@@ -224,20 +173,6 @@ bool isValid(const char *input) {
 
     clearState();
     return false;
-}
-
-Move parseInput(const char *input) {
-    Move m;
-    m.move[0] = '\0';
-    m.move[1] = '\0';
-    m.move[2] = '\0';
-    m.move[3] = '\0';
-
-    if (!isValid(input)) {
-        return m;
-    }
-
-    return buildNormalizedMove();
 }
 
 bool inputHasMove(void) {

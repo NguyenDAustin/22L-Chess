@@ -7,48 +7,51 @@
 #include <stddef.h>
 
 typedef enum  //sets up color
-{   
+{
     White = 0,
-    Black = 1
+    Black = 1,
+    WHITE = 0,
+    BLACK = 1
 } Color;
 
 typedef enum  //sets up the ranks
 {
     EMPTY = -1,
-    KING = 0, 
+    KING = 0,
     QUEEN = 1,
     ANTEATER = 2,
     BISHOP = 3,
     KNIGHT = 4,
     ROOK = 5,
-    PAWN = 6
+    PAWN = 6,
+    ANT = 6
 } Rank;
 
 typedef enum{ //for the board (by Queency)
     WHITE_KING = 0,
     BLACK_KING = 1,
-    WHITE_QUEEN = 2, 
-    BLACK_QUEEN = 3, 
-    WHITE_ANTEATER = 4, 
-    BLACK_ANTEATER = 5, 
-    WHITE_BISHOP = 6, 
-    BLACK_BISHOP = 7, 
-    WHITE_KNIGHT = 8, 
-    BLACK_KNIGHT = 9, 
-    WHITE_ROOK = 10, 
-    BLACK_ROOK = 11, 
-    WHITE_ANT = 12, 
+    WHITE_QUEEN = 2,
+    BLACK_QUEEN = 3,
+    WHITE_ANTEATER = 4,
+    BLACK_ANTEATER = 5,
+    WHITE_BISHOP = 6,
+    BLACK_BISHOP = 7,
+    WHITE_KNIGHT = 8,
+    BLACK_KNIGHT = 9,
+    WHITE_ROOK = 10,
+    BLACK_ROOK = 11,
+    WHITE_ANT = 12,
     BLACK_ANT = 13
-} Piece_Type; 
+} Piece_Type;
 
 
 enum { //for the board (by Queency)
-    BOARD_HEIGHT = 8, 
+    BOARD_HEIGHT = 8,
     BOARD_WIDTH = 10,
     SQUARE_SIZE = 100,
-    WINDOW_HEIGHT = 1500, 
+    WINDOW_HEIGHT = 1500,
     WINDOW_WIDTH = 1500
-}; 
+};
 
 typedef cairo_surface_t Piece_Icon;
 
@@ -57,14 +60,7 @@ typedef struct {
     int col;
 } Pos;
 
-typedef struct Piece Piece;
-
-
-typedef struct PieceVTable{
-    int (*canMove)(Piece board[8][10], Piece *piece, int sr, int sc, int er, int ec); //sr: starting row, sc: starting column, er: end row, ec: end column
-    int (*canCapture)(Piece board[8][10], Piece *piece, int sr, int sc, int er, int ec);
-} PieceVTable;
-
+typedef struct PieceVTable PieceVTable;
 
 typedef struct Piece //sets up how the pieces move
 {
@@ -73,11 +69,17 @@ typedef struct Piece //sets up how the pieces move
     Rank type;
     PieceVTable *vtable;
     int value;
+    Pos pos;
 } Piece;
+
+struct PieceVTable{
+    int (*canMove)(Piece board[8][10], Piece *piece, int sr, int sc, int er, int ec);
+    int (*canCapture)(Piece board[8][10], Piece *piece, int sr, int sc, int er, int ec);
+};
 
 //Position Function (by Queency)
 void posCtor(Pos *mPos, int row, int col);
-bool isValid(int p, int limit);
+bool isInRange(int p, int limit);
 bool isRowValid(int row);
 bool isColValid(int col);
 bool isPosValid(Pos pos);

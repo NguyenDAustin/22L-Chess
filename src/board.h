@@ -30,7 +30,7 @@ Piece_Icon* getWhiteImagePiece(Piece_Icon** images, Rank rank);
 Piece_Icon* getBlackImagePiece(Piece_Icon** images, Rank rank); 
 
 
-Piece* createPiece(Piece_Icon* img, Color color, Rank rank, Pos pos); 
+Piece* createPiecePtr(Piece_Icon* img, Color color, Rank rank, Pos pos);
 
 
 void createPieces( Board* mBoard, Piece_Icon** images, Color color);

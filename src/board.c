@@ -1,4 +1,4 @@
-#include ".vscode\board.h"
+#include "board.h"
 
 const int NUMBER_OF_FLAGS = 10;
 const int BLACK_ANT_ROW = 6; 
@@ -37,12 +37,12 @@ Piece_Icon* getImagePiece(Piece_Icon** images, Color color, Rank rank){
     return (color == BLACK) ? getBlackImagePiece(images, rank) : getWhiteImagePiece(images, rank);
 }
 
-Piece* createPiece(Piece_Icon* img, Color color, Rank rank, Pos pos){ 
-    Piece* temp = malloc(sizeof(Piece)); 
-    //check if malloc NULL 
-    
-    pieceCtor(temp, img, color,rank, pos, NULL); 
-    return temp; 
+Piece* createPiecePtr(Piece_Icon* img, Color color, Rank rank, Pos pos){
+    Piece* temp = malloc(sizeof(Piece));
+    //check if malloc NULL
+
+    pieceCtor(temp, img, color,rank, pos, NULL);
+    return temp;
 }
 
 void createPieces( Board* mBoard, Piece_Icon** images, Color color){ 
@@ -57,7 +57,7 @@ void createPieces( Board* mBoard, Piece_Icon** images, Color color){
         posCtor(&pos, row, col); 
         rank = order[col]; 
         image = getImagePiece(images, color, rank); 
-        piece = createPiece(image, color, rank, pos); 
+        piece = createPiecePtr(image, color, rank, pos);
         addPiece(mBoard, piece, pos); 
 
     }
@@ -79,7 +79,7 @@ void createAnts(Board* mBoard, Piece_Icon** images, Color color){
     Pos pos; 
     for(int col = 0; col < BOARD_WIDTH; col++){  //initialize black ants
         posCtor(&pos, row, col); 
-        piece = (color == BLACK) ? createPiece(image, BLACK, ANT, pos) : createPiece(image, WHITE, ANT, pos); 
+        piece = (color == BLACK) ? createPiecePtr(image, BLACK, ANT, pos) : createPiecePtr(image, WHITE, ANT, pos);
         addPiece(mBoard, piece, pos); 
     }
 }

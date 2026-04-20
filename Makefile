@@ -31,9 +31,9 @@ INCLUDES = -I$(SRC_DIR) -I$(GUI_DIR)
 
 all: $(EXE)
 
-$(EXE): $(SRC_DIR)/main.c $(MODULES) $(GUI_SRCS) | $(BIN_DIR)
+$(EXE): $(SRC_DIR)/main.c $(MODULES) | $(BIN_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ \
-	    $(SRC_DIR)/main.c $(MODULES) $(GUI_SRCS) $(LIBS)
+	    $(SRC_DIR)/main.c $(MODULES) $(LIBS)
 
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
