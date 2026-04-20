@@ -1,6 +1,6 @@
 CC      = gcc
-CFLAGS  = -Wall -g -std=gnu99 $(shell pkg-config --cflags gtk4)
-LIBS    = $(shell pkg-config --libs gtk4) -lm
+CFLAGS  = -Wall -g -std=gnu99 $(shell pkg-config --cflags gtk+-3.0)
+LIBS    = $(shell pkg-config --libs gtk+-3.0) -lm
 
 SRC_DIR = src
 GUI_DIR = src/gui
