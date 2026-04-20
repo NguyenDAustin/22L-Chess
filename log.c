@@ -47,4 +47,4 @@ void addCastle (const char *filename, int moveNum, const char *color, int ){
 }
 
 
-
+//test
