@@ -1,8 +1,8 @@
 /*(easy mode)*/
 #include <stdio.h>
 #include <stdlib.h>     
-#include <time.h>       
-
+#include <time.h>  
+     
 #include "ai.h"
 #include "pieces.h"
 #include "board.h"
