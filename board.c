@@ -1,104 +1,210 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include ".vscode\board.h"
 
-// #include "chess.h"
-#include "board.h"
+const int NUMBER_OF_FLAGS = 10;
+const int BLACK_ANT_ROW = 6; 
+const int WHITE_ANT_ROW = 1; 
+const int MIN_ROW = 0; 
+const int MAX_ROW = 7; 
+const int MIN_COL = 0; 
+const int MAX_COL  = 9; 
 
-// row 0 - 7: rank 1 - 8
-// col 0 - 9: file a - j
-Piece *board[NUM_ROWS][NUM_COLS];
-
-#define PTS_KING 0
-#define PTS_QUEEN 9
-#define PTS_ANTEATER 100 // change it later
-#define PTS_BISHOP 3
-#define PTS_KNIGHT 3
-#define PTS_ROOK 5
-#define PTS_ANT 1
-
-static void placePiece(int row, int col, Color color, Rank rank, int pointVal)
-{
-    Piece *p = malloc(sizeof(Piece));
-    if (p == NULL)
-    {
-        fprintf(stderr, "board.c: malloc failed\n");
-        return;
+Piece_Icon* getBlackImagePiece(Piece_Icon** images, Rank rank){ 
+    switch (rank){
+        case ROOK: return images[BLACK_ROOK]; 
+        case KNIGHT: return images[BLACK_KNIGHT]; 
+        case BISHOP: return images[BLACK_BISHOP]; 
+        case ANTEATER: return images[BLACK_ANTEATER]; 
+        case QUEEN: return images[BLACK_QUEEN]; 
+        case KING: return images[BLACK_KING]; 
+        case ANT: return images[BLACK_ANT]; 
     }
+} 
 
-    p->color = color;
-    p->rank = rank;
-    p->pointVal = pointVal;
-
-    board[row][col] = p;
+Piece_Icon* getWhiteImagePiece(Piece_Icon** images, Rank rank){ 
+    switch (rank){
+        case ROOK: return images[WHITE_ROOK]; 
+        case KNIGHT: return images[WHITE_KNIGHT]; 
+        case BISHOP: return images[WHITE_BISHOP]; 
+        case ANTEATER: return images[WHITE_ANTEATER]; 
+        case QUEEN: return images[WHITE_QUEEN]; 
+        case KING: return images[WHITE_KING]; 
+        case ANT: return images[WHITE_ANT]; 
+    }
 }
 
-void initBoard()
-{
-    for (int i = 0; i < NUM_ROWS; i++)
-    {
-        for (int j = 0; j < NUM_COLS; j++)
-        {
-            board[i][j] = NULL;
+
+Piece_Icon* getImagePiece(Piece_Icon** images, Color color, Rank rank){ 
+    return (color == BLACK) ? getBlackImagePiece(images, rank) : getWhiteImagePiece(images, rank);
+}
+
+Piece* createPiece(Piece_Icon* img, Color color, Rank rank, Pos pos){ 
+    Piece* temp = malloc(sizeof(Piece)); 
+    //check if malloc NULL 
+    
+    pieceCtor(temp, img, color,rank, pos, NULL); 
+    return temp; 
+}
+
+void createPieces( Board* mBoard, Piece_Icon** images, Color color){ 
+    int order[BOARD_WIDTH] =  {ROOK, KNIGHT, BISHOP, ANTEATER, QUEEN, KING, ANTEATER, BISHOP, KNIGHT, ROOK}; 
+    int row = (color == BLACK) ? MIN_ROW : MAX_ROW;  
+    int rank; 
+    Pos pos; 
+    Piece* piece; 
+    Piece_Icon* image; 
+
+    for(int col = 0; col < BOARD_WIDTH; col++){ 
+        posCtor(&pos, row, col); 
+        rank = order[col]; 
+        image = getImagePiece(images, color, rank); 
+        piece = createPiece(image, color, rank, pos); 
+        addPiece(mBoard, piece, pos); 
+
+    }
+}
+
+void createWhitePieces(Board* mBoard, Piece_Icon** images){ 
+    createPieces(mBoard, images, WHITE); 
+}
+
+void createBlackPieces(Board* mBoard, Piece_Icon** images){ 
+    createPieces(mBoard, images, BLACK); 
+}
+
+
+void createAnts(Board* mBoard, Piece_Icon** images, Color color){
+    int row = (color == BLACK) ?  BLACK_ANT_ROW : WHITE_ANT_ROW; 
+    Piece_Icon* image = (color == BLACK) ? getBlackImagePiece(images, ANT) : getWhiteImagePiece(images, ANT); 
+    Piece* piece; 
+    Pos pos; 
+    for(int col = 0; col < BOARD_WIDTH; col++){  //initialize black ants
+        posCtor(&pos, row, col); 
+        piece = (color == BLACK) ? createPiece(image, BLACK, ANT, pos) : createPiece(image, WHITE, ANT, pos); 
+        addPiece(mBoard, piece, pos); 
+    }
+}
+
+void createBlackAnts(Board* mBoard, Piece_Icon** images){ 
+    createAnts(mBoard, images, BLACK); 
+}
+
+void createWhiteAnts(Board* mBoard, Piece_Icon** images){ 
+    createAnts(mBoard, images, WHITE);
+}
+
+
+//BOARD FUNCTIONS
+void defaultInitializeBoard(Board* mBoard){ 
+    for(int row = 0; row < BOARD_HEIGHT; row++){ 
+        for(int col = 0; col < BOARD_WIDTH; col++){ 
+            mBoard->board[row][col] = NULL; 
         }
     }
-
-    placePiece(0, 0, WHITE, ROOK, PTS_ROOK);
-    placePiece(0, 1, WHITE, KNIGHT, PTS_KNIGHT);
-    placePiece(0, 2, WHITE, BISHOP, PTS_BISHOP);
-    placePiece(0, 3, WHITE, ANTEATER, PTS_ANTEATER);
-    placePiece(0, 4, WHITE, QUEEN, PTS_QUEEN);
-    placePiece(0, 5, WHITE, KING, PTS_KING);
-    placePiece(0, 6, WHITE, ANTEATER, PTS_ANTEATER);
-    placePiece(0, 7, WHITE, BISHOP, PTS_BISHOP);
-    placePiece(0, 8, WHITE, KNIGHT, PTS_KNIGHT);
-    placePiece(0, 9, WHITE, ROOK, PTS_ROOK);
-
-    // white ants
-    for (int c = 0; c < NUM_COLS; c++)
-        placePiece(1, c, WHITE, ANT, PTS_ANT);
-
-    // black ants
-    for (int c = 0; c < NUM_COLS; c++)
-        placePiece(6, c, BLACK, ANT, PTS_ANT);
-
-    placePiece(7, 0, BLACK, ROOK, PTS_ROOK);
-    placePiece(7, 1, BLACK, KNIGHT, PTS_KNIGHT);
-    placePiece(7, 2, BLACK, BISHOP, PTS_BISHOP);
-    placePiece(7, 3, BLACK, ANTEATER, PTS_ANTEATER);
-    placePiece(7, 4, BLACK, QUEEN, PTS_QUEEN);
-    placePiece(7, 5, BLACK, KING, PTS_KING);
-    placePiece(7, 6, BLACK, ANTEATER, PTS_ANTEATER);
-    placePiece(7, 7, BLACK, BISHOP, PTS_BISHOP);
-    placePiece(7, 8, BLACK, KNIGHT, PTS_KNIGHT);
-    placePiece(7, 9, BLACK, ROOK, PTS_ROOK);
 }
 
-void displayBoard()
-{
-    // wait
+void initializeBoard(Board* mBoard, Piece_Icon** images){ //temporarily we will just alloc for pawns
+    createBlackAnts(mBoard, images); 
+    createWhiteAnts(mBoard, images);
+    createBlackPieces(mBoard, images); 
+    createWhitePieces(mBoard, images); 
 }
 
-Piece *getPiece(int row, int col)
-{
-    if (!isInBounds(row, col))
-    {
-        fprintf(stderr, "board.c: getPiece(%d, %d) out of bounds\n", row, col);
-        return NULL;
-    }
-    return board[row][col];
+
+
+//BOARD FUNCTIONS 
+
+bool hasPiece(const Board* board, int row, int col){ 
+    return board->board[row][col]; 
 }
 
-void setPiece(int row, int col, Piece *piece)
-{
-    if (!isInBounds(row, col))
-    {
-        fprintf(stderr, "board.c: setPiece(%d, %d) out of bounds\n", row, col);
+bool isRowEdge(int row){ 
+    return (row == MIN_ROW || row >= MAX_ROW); 
+}
+
+bool isColEdge(int col){ 
+    return (col <= MIN_COL || col >= MAX_COL); 
+}
+
+bool isBoardEdge(int row, int col){ 
+    return (isRowEdge(row) || isColEdge(col)); 
+}
+
+Piece* getSquare(const Board* board, int row, int col){ 
+    return board->board[row][col]; 
+}
+
+void setSquare(Board* board, Piece* piece, int row, int col){ 
+    board->board[row][col] = piece; 
+}
+
+void deletePiece(Board* board, Pos pos){ 
+    board->board[pos.row][pos.col] = NULL; 
+}
+
+void addPiece(Board* board, Piece* piece, Pos pos){ 
+    setSquare(board, piece, pos.row, pos.col); 
+    piece->pos = pos; 
+}
+
+
+void movePiece(Board* board, Pos oldPos, Pos newPos){ 
+
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool aPieceWasClicked(const Board_State* boardState){ 
+  return boardState->clickedPiece; 
+}
+
+bool newPieceWasClicked(const Board_State* boardState, Piece* clickedPiece){ 
+    return (clickedPiece != boardState->clickedPiece && clickedPiece != NULL); 
+}
+
+bool hasUpdate(const Board_State* boardState){ 
+    return boardState->hasUpdate; 
+}
+
+void setUpdate(Board_State* boardState, bool update){ 
+    boardState->hasUpdate = update; 
+}
+
+Piece* getClickedPiece(const Board_State* boardState){ 
+    return boardState->clickedPiece; 
+}
+
+void setClickedPiece(Board_State* boardState, Piece* piece){ 
+    boardState->clickedPiece = piece; 
+}
+
+void resetClickedPiece(Board_State* boardState){ 
+    setClickedPiece(boardState, NULL); 
+}
+
+void sendInput(Board* board, Board_State* boardState, Pos clickPos){ 
+
+    if(!isPosValid(clickPos)){
+        printf("invalid pos! -> row: %d col: %d\n", clickPos.row, clickPos.col);
         return;
-    }
-    board[row][col] = piece;
-}
+    } //making sure input is valid
+      
+    int row = clickPos.row, col = clickPos.col; 
 
-int isInBounds(int row, int col)
-{
-    return row >= 0 && row < NUM_ROWS && col >= 0 && col < NUM_COLS;
+    Piece* clicked = getSquare(board, row, col); 
+
+    if(hasPiece(board, row, col)) { //if the square we clicked has a piece 
+        printf("new piece was clicked!\n"); 
+        setClickedPiece(boardState, clicked); 
+        setUpdate(boardState, false); //for now is false since we haven't implemented move highlighting
+    }
+    else if(aPieceWasClicked(boardState)){  //square was clicked // but we clicked a piece before //set update flag 
+        printf("a piece is moving\n"); 
+        Piece* clickedPiece = getClickedPiece(boardState); 
+        Pos oldPos = getPos(clickedPiece); 
+        addPiece(board, clickedPiece, clickPos); 
+        deletePiece(board, oldPos);  
+        resetClickedPiece(boardState); 
+        setUpdate(boardState,true); 
+    }
 }

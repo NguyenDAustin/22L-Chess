@@ -1,6 +1,58 @@
 #include "pieces.h"
 #include <stdlib.h>
 
+void posCtor(Pos *mPos, int row, int col) {
+    if (!mPos) return;
+    mPos->row = row;
+    mPos->col = col;
+}
+
+bool isValid(int p, int limit) { //Queency
+    return (p >= 0 && p < limit);
+}
+
+bool isRowValid(int row) { //Queency
+    return isValid(row, BOARD_HEIGHT);
+}
+
+bool isColValid(int col) { //Queency
+    return isValid(col, BOARD_WIDTH);
+}
+
+bool isPosValid(Pos pos) { //Queency
+    return isRowValid(pos.row) && isColValid(pos.col);
+}
+
+
+
+void pieceCtor(Piece *mPiece, Piece_Icon *img, Color color, Rank type, Pos pos, PieceVTable *vtable) { //Queency
+    if (!mPiece) return;
+    mPiece->img = img;
+    mPiece->color = color;
+    mPiece->type = type;
+    mPiece->pos = pos;
+    mPiece->vtable = vtable;
+}
+
+Piece_Icon *getImage(const Piece *piece) { return piece ? piece->img : NULL; } //Queency
+void setImage(Piece *piece, Piece_Icon *img) { if (piece) piece->img = img; } //Queency
+
+Color getColor(const Piece *piece) { return piece ? piece->color : White; } //Queency
+void setColor(Piece *piece, Color color) { if (piece) piece->color = color; } //Queency
+
+Rank getType(const Piece *piece) { return piece ? piece->type : EMPTY; }//Queency
+void setType(Piece *piece, Rank type) { if (piece) piece->type = type; } //Queency
+
+Pos getPos(const Piece *piece) {//Queency
+    Pos bad = {-1, -1};
+    return piece ? piece->pos : bad;
+}
+
+void setPos(Piece *piece, Pos pos) { if (piece) piece->pos = pos; }//Queency
+
+
+
+
 int isEmpty(Piece board[8][10], int r, int c) { // checks if square is empty
     return board[r][c].type == EMPTY;
 }
@@ -358,7 +410,7 @@ static PieceVTable pawnTable = {pawnCanMove, pawnCanCapture};
 static PieceVTable anteaterTable = {anteaterCanMove, anteaterCanCapture};
 
 
-Piece createPiece(Color color, PieceType type){  //constructor
+Piece createPiece(Color color, Rank type){  //constructor
     Piece p;
     p.color = color;
     p.type = type; 

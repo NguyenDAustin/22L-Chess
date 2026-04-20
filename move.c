@@ -25,9 +25,14 @@ void executeMove(Piece board[8][10], Move *move){
     if (moving.vtable->canMove(board, &moving, move->startRow, move->startCol, move->endRow, move->endCol)) { //check move
 
         board[move->endRow][move->endCol] = moving;
+        board[move->endRow][move->endCol].pos.row = move->endRow;
+        board[move->endRow][move->endCol].pos.col = move->endCol;
 
+        board[move->startRow][move->startCol].img = NULL;
         board[move->startRow][move->startCol].type = EMPTY;
         board[move->startRow][move->startCol].vtable = NULL;
+        board[move->startRow][move->startCol].pos.row = move->startRow;
+        board[move->startRow][move->startCol].pos.col = move->startCol;
 
         move->capture = 0;
     }
@@ -46,18 +51,28 @@ void executeCapture(Piece board[8][10], Move *move) {
     move->capture = 1;
 
     board[move->endRow][move->endCol] = board[move->startRow][move->startCol];
+    board[move->endRow][move->endCol].pos.row = move->endRow;
+    board[move->endRow][move->endCol].pos.col = move->endCol;
 
+    board[move->startRow][move->startCol].img = NULL;
     board[move->startRow][move->startCol].type = EMPTY;
     board[move->startRow][move->startCol].vtable = NULL;
+    board[move->startRow][move->startCol].pos.row = move->startRow;
+    board[move->startRow][move->startCol].pos.col = move->startCol;
 }
 
 void executePawnCapture(Piece board[8][10], Move *move) {
     move->capture = 1;
 
     board[move->endRow][move->endCol] = board[move->startRow][move->startCol];
+    board[move->endRow][move->endCol].pos.row = move->endRow;
+    board[move->endRow][move->endCol].pos.col = move->endCol;
 
+    board[move->startRow][move->startCol].img = NULL;
     board[move->startRow][move->startCol].type = EMPTY;
     board[move->startRow][move->startCol].vtable = NULL;
+    board[move->startRow][move->startCol].pos.row = move->startRow;
+    board[move->startRow][move->startCol].pos.col = move->startCol;
 }
 
 void executeAnteaterCapture(Piece board[8][10], Move *move) {
@@ -86,13 +101,21 @@ void executeAnteaterCapture(Piece board[8][10], Move *move) {
         c += colStep;
     }
 
-    board[move->endRow][move->endCol].type = EMPTY; //removes last pawn
+    board[move->endRow][move->endCol].img = NULL;
+    board[move->endRow][move->endCol].type = EMPTY;
     board[move->endRow][move->endCol].vtable = NULL;
+    board[move->endRow][move->endCol].pos.row = move->endRow;
+    board[move->endRow][move->endCol].pos.col = move->endCol;
 
-    board[move->endRow][move->endCol] = moving; //move anteater
+    board[move->endRow][move->endCol] = moving;
+    board[move->endRow][move->endCol].pos.row = move->endRow;
+    board[move->endRow][move->endCol].pos.col = move->endCol;
 
-    board[move->startRow][move->startCol].type = EMPTY; //makes the start square empty
+    board[move->startRow][move->startCol].img = NULL;
+    board[move->startRow][move->startCol].type = EMPTY;
     board[move->startRow][move->startCol].vtable = NULL;
+    board[move->startRow][move->startCol].pos.row = move->startRow;
+    board[move->startRow][move->startCol].pos.col = move->startCol;
 
     move->capture = 1;
 }

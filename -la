@@ -1,0 +1,66 @@
+[33mcommit d80673375ddc0fdfb9199a552db06fded440b1ef[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m
+Author: Naveen Khan <naveeni@bondi.eecs.uci.edu>
+Date:   Sun Apr 19 15:04:27 2026 -0700
+
+    added ai files (ai.c and ai.h)
+
+[33mcommit 1c4508b6e24b76c37e53db0c3374f7daefc611b2[m
+Author: Gurvin Dhanjal <gsdhanja@uci.edu>
+Date:   Sun Apr 19 13:53:55 2026 -0700
+
+    Testing commit
+
+[33mcommit 1f5bbe8e71548e571cadbd658f97b4051bcf763b[m
+Author: Gurvin Dhanjal <gsdhanja@uci.edu>
+Date:   Sun Apr 19 13:45:59 2026 -0700
+
+    Input not done yet
+
+[33mcommit b4d94d5c66d3770b4a6dc7ead9a9e6a13c18f4ef[m
+Author: Aman Macwan <amacwan@uci.edu>
+Date:   Sat Apr 18 11:27:52 2026 -0700
+
+    board is not done yet
+
+[33mcommit c5ed6017801d2f03888dd134ea7d85ff667abbde[m
+Author: Aman Macwan <amacwan@uci.edu>
+Date:   Fri Apr 17 10:48:48 2026 -0700
+
+    board.h
+
+[33mcommit 0ba8c082f74f6bcfbe21abeef818bafd4df52c65[m
+Author: Aman Macwan <amacwan@uci.edu>
+Date:   Thu Apr 16 16:26:10 2026 -0700
+
+    make board.c
+
+[33mcommit 1f9126c8827440491124b3b804137bdff18277a8[m
+Author: Naveen Islam <naveeni@uci.edu>
+Date:   Mon Apr 13 19:46:59 2026 -0700
+
+    added test main.c file
+
+[33mcommit eedf683c45e02a9e57ed5f33130b718b045a28cd[m
+Merge: b66a810 5522509
+Author: Queency Tan <qatan@uci.edu>
+Date:   Sun Apr 12 23:52:26 2026 -0700
+
+    Merge branch 'master' of /users/ugrad2/2018/winter/team21/repos/chess
+
+[33mcommit b66a810a52506a1d673bf1b12ed1b6e037b27a38[m
+Author: Queency Tan <qatan@uci.edu>
+Date:   Sun Apr 12 23:49:40 2026 -0700
+
+    software spec
+
+[33mcommit 55225092d0e695200be73501da21b42f61ffcc3d[m
+Author: Mia Ness <nessm@uci.edu>
+Date:   Tue Apr 7 18:27:09 2026 -0700
+
+    Add an initial Makefile
+
+[33mcommit 036aecb5cd5ecfc425571e9b753dc7a9accfe7da[m
+Author: Austin Nguyen <austidn4@uci.edu>
+Date:   Tue Apr 7 15:03:12 2026 -0700
+
+    Add user manual
