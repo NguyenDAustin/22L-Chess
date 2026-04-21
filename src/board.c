@@ -66,10 +66,6 @@ Piece_Icon *getImagePiece(Piece_Icon **images, Color color, Rank rank)
 Piece *createPiecePtr(Piece_Icon *img, Color color, Rank rank, Pos pos)
 {
     Piece *temp = malloc(sizeof(Piece));
-    if(temp == NULL){  
-        printf("ERROR: MALLOC FOR PIECE HAS FAILED!"); 
-        return NULL; 
-    }
     // check if malloc NULL
 
     pieceCtor(temp, img, color, rank, pos, NULL);
@@ -142,7 +138,7 @@ void defaultInitializeBoard(Board *mBoard)
 }
 
 void initializeBoard(Board *mBoard, Piece_Icon **images)
-{ 
+{ // temporarily we will just alloc for pawns
     createBlackAnts(mBoard, images);
     createWhiteAnts(mBoard, images);
     createBlackPieces(mBoard, images);
@@ -262,4 +258,10 @@ void sendInput(Board *board, Board_State *boardState, Pos clickPos)
         resetClickedPiece(boardState);
         setUpdate(boardState, true);
     }
+}
+
+void promotion(Board *board, Pos pos, Rank newRank)
+{
+    Piece *piece = getSquare(board, pos.row, pos.col);
+    piece->type = newRank;
 }
