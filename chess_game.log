@@ -1,0 +1,16 @@
+
+ Chess Game Log : Tue Apr 21 14:19:48 2026
+ 
+#  Color  Action               Move
+-------------------------------------------
+1      White  Quit                 White quits
+End of game. White quits.
+
+ Chess Game Log : Tue Apr 21 14:19:52 2026
+ 
+#  Color  Action               Move
+-------------------------------------------
+1  White  Move                 {E2, E4}
+2  Black  CPU Move             {C7, C5}
+3      White  Quit                 White quits
+End of game. White quits.

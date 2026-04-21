@@ -5,7 +5,6 @@
 #include <stdbool.h>
 
 #include "pieces.h"
-#include "board.h"
 #include "move.h"
 #include "input.h"
 #include "ai.h"
@@ -37,6 +36,7 @@ int main(void)
     Color currentTurn;
     int moveNumber = 1;
     int running = 1;
+    Move lastMove = {0};
 
     if (DEBUG_MODE)
         debugInitBoard(board);
@@ -115,7 +115,7 @@ int main(void)
                 Pos end = inputGetEndPos();
                 Move move = makeMoveFromInput(start, end);
 
-                if (!isLegalMove(board, &move, currentTurn))
+                if (!legalMove(board, &move, currentTurn, lastMove))
                 {
                     printf("Illegal move for that piece. Try again.\n");
                     continue;
@@ -127,9 +127,9 @@ int main(void)
                 rec.movPiece = board[move.startRow][move.startCol];
                 rec.capturedPiece = board[move.endRow][move.endCol];
 
-                executeMove(board, &move);
+                executeMove(board, &move, lastMove);
 
-                if (isInCheck(board, currentTurn))
+                if (kingCheck(board, currentTurn))
                 {
                     /* Reverted: leaves own king in check — undo. */
                     board[move.startRow][move.startCol] = rec.movPiece;
@@ -139,6 +139,7 @@ int main(void)
                 }
 
                 undoPush(&rec);
+                lastMove = move;
 
                 char from[4], to[4];
                 squareName(move.startRow, move.startCol, from);
@@ -186,8 +187,9 @@ int main(void)
             rec.movPiece = board[cpuMove.startRow][cpuMove.startCol];
             rec.capturedPiece = board[cpuMove.endRow][cpuMove.endCol];
 
-            executeMove(board, &cpuMove);
+            executeMove(board, &cpuMove, lastMove);
             undoPush(&rec);
+            lastMove = cpuMove;
 
             char from[4], to[4];
             squareName(cpuMove.startRow, cpuMove.startCol, from);
@@ -218,7 +220,7 @@ int main(void)
             }
             else
             {
-                if (isInCheck(board, nextPlayer))
+                if (kingCheck(board, nextPlayer))
                 {
                     printf("%s is in check.\n", colorName(nextPlayer));
                     logCheck(LOG_FILENAME, moveNumber, colorName(nextPlayer));
@@ -395,10 +397,12 @@ static void displayBoard(Piece board[8][10])
 
 static int isInCheckmate(Piece board[8][10], Color player)
 {
-    return isInCheck(board, player) && !hasAnyLegalMove(board, player);
+    Move noLast = {0};
+    return kingCheck(board, player) && !possibleMove(board, player, noLast);
 }
 
 static int isInStalemate(Piece board[8][10], Color player)
 {
-    return !isInCheck(board, player) && !hasAnyLegalMove(board, player);
+    Move noLast = {0};
+    return !kingCheck(board, player) && !possibleMove(board, player, noLast);
 }

@@ -5,7 +5,6 @@
 
 #include "ai.h"
 #include "pieces.h"
-#include "board.h"
 #include "move.h"
 
 
@@ -24,7 +23,7 @@ static int moveIsSafe(Piece board[8][10], Color player, int sr, int sc, int er, 
     board[sr][sc].vtable = NULL;
     board[sr][sc].img = NULL;
 
-    int safe = !isInCheck(board, player);
+    int safe = !kingCheck(board, player);
 
     board[sr][sc] = saved_start;
     board[er][ec] = saved_end;
@@ -42,8 +41,9 @@ static int generateLegalMoves(Piece board[8][10], Color player, Move out[], int 
             for (int er = 0; er < 8 && count < maxMoves; er++) {
                 for (int ec = 0; ec < 10 && count < maxMoves; ec++) {
                     if (sr == er && sc == ec) continue;
-                    Move m = { sr, sc, er, ec, 0 };
-                    if (!isLegalMove(board, &m, player)) continue;
+                    Move m = { sr, sc, er, ec, 0, 0, 0 };
+                    Move noLast = {0};
+                    if (!legalMove(board, &m, player, noLast)) continue;
                     if (!moveIsSafe(board, player, sr, sc, er, ec)) continue;
                     out[count++] = m;
                 }

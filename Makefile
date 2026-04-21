@@ -21,6 +21,15 @@ MODULES = \
     $(SRC_DIR)/pieces.c \
     $(SRC_DIR)/undo.c
 
+# ASCII build excludes board.c (GUI-only; depends on Board struct and image code).
+ASCII_MODULES = \
+    $(SRC_DIR)/ai.c     \
+    $(SRC_DIR)/input.c  \
+    $(SRC_DIR)/log.c    \
+    $(SRC_DIR)/move.c   \
+    $(SRC_DIR)/pieces.c \
+    $(SRC_DIR)/undo.c
+
 GUI_SRCS = \
     $(GUI_DIR)/gui.c        \
     $(GUI_DIR)/render.c     \
@@ -43,9 +52,9 @@ $(EXE): $(SRC_DIR)/main.c $(MODULES) | $(BIN_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ \
 	    $(SRC_DIR)/main.c $(MODULES) $(LIBS)
 
-$(ASCII_EXE): $(SRC_DIR)/main.c $(MODULES) | $(BIN_DIR)
+$(ASCII_EXE): $(SRC_DIR)/main.c $(ASCII_MODULES) | $(BIN_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ \
-	    $(SRC_DIR)/main.c $(MODULES) $(ASCII_LIBS)
+	    $(SRC_DIR)/main.c $(ASCII_MODULES) $(ASCII_LIBS)
 
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
