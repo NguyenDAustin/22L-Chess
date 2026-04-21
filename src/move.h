@@ -25,11 +25,13 @@ void executeAnteaterCapture(Piece board[8][10], Move *move);
 void executeEnPassant(Piece board[8][10], Move *move);
 void executeCastle(Piece board[8][10], Move *move);
 
+/* Someone already made it
 //checkmate stalemate
 void copyBoard(Piece new[8][10], Piece og[8][10]); //creates a board to test possible moves - new: new board, og: original board
 int legalMove(Piece board[8][10], Move *move, Color turn, Move lastMove);
 int possibleMove(Piece board[8][10], Color turn, Move lastMove);
 int checkCheckmate(Piece board[8][10], Color turn, Move lastMove);
 int checkStalemate(Piece board[8][10], Color turn, Move lastMove);
+*/
 
 #endif

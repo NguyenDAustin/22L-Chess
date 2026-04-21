@@ -1,5 +1,4 @@
 #include "pieces.h"
-#include "move.h"
 #include <stdlib.h>
 
 void posCtor(Pos *mPos, int row, int col) {
@@ -8,16 +7,16 @@ void posCtor(Pos *mPos, int row, int col) {
     mPos->col = col;
 }
 
-bool isInRange(int p, int limit) { //Queency
+bool isValid(int p, int limit) { //Queency
     return (p >= 0 && p < limit);
 }
 
 bool isRowValid(int row) { //Queency
-    return isInRange(row, BOARD_HEIGHT);
+    return isValid(row, BOARD_HEIGHT);
 }
 
 bool isColValid(int col) { //Queency
-    return isInRange(col, BOARD_WIDTH);
+    return isValid(col, BOARD_WIDTH);
 }
 
 bool isPosValid(Pos pos) { //Queency
@@ -51,8 +50,6 @@ Pos getPos(const Piece *piece) {//Queency
 }
 
 void setPos(Piece *piece, Pos pos) { if (piece) piece->pos = pos; }//Queency
-
-
 
 
 int isEmpty(Piece board[8][10], int r, int c) { // checks if square is empty

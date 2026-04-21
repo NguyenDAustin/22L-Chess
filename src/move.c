@@ -12,7 +12,6 @@ void executeMove(Piece board[8][10], Move *move, Move lastMove)
     move->capture = 0;
     move->enPassant = 0;
     move->castle = 0;
-    //move->promotion = 0;
 
     // castling
     if (moving.type == KING && kingCanCastle(board, &moving,
@@ -24,17 +23,6 @@ void executeMove(Piece board[8][10], Move *move, Move lastMove)
     // en passant
     if (moving.type == PAWN && pawnCanEnPassant(board, &moving, move->startRow, move->startCol, move->endRow, move->endCol, &lastMove)) {
         executeEnPassant(board, move);
-
-        /*
-        int lastRow = (board[move->endRow][move->endCol].color == White) ? BOARD_HEIGHT - 1 : 0;
-        if (move->endRow == lastRow) {
-            move->promotion = 1;
-            if (move->promotionType == EMPTY) {
-                move->promotionType = QUEEN;
-            }
-            promotePawn(board, move->endRow, move->endCol, move->promotionType);
-        } 
-        */
         return;
 
     }
@@ -52,17 +40,6 @@ void executeMove(Piece board[8][10], Move *move, Move lastMove)
 
         board[move->endRow][move->endCol].moved = 1;
 
-        /*
-        int lastRow = (board[move->endRow][move->endCol].color == White) ? BOARD_HEIGHT - 1 : 0;
-        if (board[move->endRow][move->endCol].type == PAWN &&
-            move->endRow == lastRow) {
-            move->promotion = 1;
-            if (move->promotionType == EMPTY) {
-                move->promotionType = QUEEN;
-            }
-            promotePawn(board, move->endRow, move->endCol, move->promotionType);
-        }
-        */
         return;
     }
 
@@ -80,17 +57,6 @@ void executeMove(Piece board[8][10], Move *move, Move lastMove)
         board[move->startRow][move->startCol].moved = 0;
 
         return;
-        /*
-        int lastRow = (board[move->endRow][move->endCol].color == White) ? BOARD_HEIGHT - 1 : 0;
-        if (board[move->endRow][move->endCol].type == PAWN &&
-            move->endRow == lastRow) {
-            move->promotion = 1;
-            if (move->promotionType == EMPTY) {
-                move->promotionType = QUEEN;
-            }
-            promotePawn(board, move->endRow, move->endCol, move->promotionType);
-        }
-        */
     }
 }
 
@@ -332,11 +298,12 @@ int possibleMove(Piece board[8][10], Color turn, Move lastMove)
     return 0;
 }
 
+/* already made
 int checkCheckmate(Piece board[8][10], Color turn, Move lastMove)
 {
     if (!kingCheck(board, turn)) {return 0;}
 
-    if (possibleMove(board, turn, lastMove)) {return 0;}
+    i;:qf (possibleMove(board, turn, lastMove)) {return 0;}
 
     return 1;
 }
@@ -347,6 +314,7 @@ int checkStalemate(Piece board[8][10], Color turn, Move lastMove){
     if (possibleMove(board, turn, lastMove)) {return 0;}
 
     return 1;
+    
 }
-
+*/
 

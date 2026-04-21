@@ -7,13 +7,10 @@
 #include <stddef.h>
 
 typedef enum  //sets up color
-{
+{   
     White = 0,
     Black = 1
 } Color;
-
-#define WHITE White
-#define BLACK Black
 
 typedef enum  //sets up the ranks
 {
@@ -60,8 +57,14 @@ typedef struct {
     int col;
 } Pos;
 
-typedef struct PieceVTable PieceVTable;
+typedef struct Piece Piece;
 typedef struct Move Move;
+
+typedef struct PieceVTable{
+    int (*canMove)(Piece board[8][10], Piece *piece, int sr, int sc, int er, int ec); //sr: starting row, sc: starting column, er: end row, ec: end column
+    int (*canCapture)(Piece board[8][10], Piece *piece, int sr, int sc, int er, int ec);
+} PieceVTable;
+
 
 typedef struct Piece //sets up how the pieces move
 {
@@ -74,14 +77,9 @@ typedef struct Piece //sets up how the pieces move
     int moved;
 } Piece;
 
-struct PieceVTable{
-    int (*canMove)(Piece board[8][10], Piece *piece, int sr, int sc, int er, int ec); //sr: starting row, sc: starting column, er: end row, ec: end column
-    int (*canCapture)(Piece board[8][10], Piece *piece, int sr, int sc, int er, int ec);
-};
-
 //Position Function (by Queency)
 void posCtor(Pos *mPos, int row, int col);
-bool isInRange(int p, int limit);
+bool isValid(int p, int limit);
 bool isRowValid(int row);
 bool isColValid(int col);
 bool isPosValid(Pos pos);
@@ -118,9 +116,10 @@ int anteaterCanCapture(Piece board[8][10], Piece *p, int sr, int sc, int er, int
 int pawnCanEnPassant(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec, Move *lastMove);
 int kingCanCastle(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec);
 
-//check
+/*
 Pos findKing(Piece board[8][10], Color color);
 int attackSquare(Piece board[8][10], int row, int col, Color attColor);
 int kingCheck(Piece board[8][10], Color kingColor);
+*/
 
 #endif
