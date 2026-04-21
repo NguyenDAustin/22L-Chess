@@ -74,3 +74,24 @@ End of game. White quits.
 28 Black  CPU Move             {A1, B2}
 29     White  Quit                 White quits
 End of game. White quits.
+
+ Chess Game Log : Tue Apr 21 14:47:59 2026
+ 
+#  Color  Action               Move
+-------------------------------------------
+1  White  Move                 {E2, E4}
+2  Black  CPU Move             {I8, H6}
+3  White  Move                 {I1, H3}
+4  Black  CPU Move             {A7, A5}
+5  White  Move                 {H3, I5}
+6  Black  CPU Move             {C7, C6}
+7  White  Capture              piece captures piece {H7, I5}
+8      White  Checkmate            White puts Black in checkmate
+End of game. The winner is White
+
+ Chess Game Log : Tue Apr 21 14:49:29 2026
+ 
+#  Color  Action               Move
+-------------------------------------------
+1      White  Quit                 White quits
+End of game. White quits.

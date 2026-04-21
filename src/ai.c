@@ -8,7 +8,7 @@
 #include "move.h"
 
 
-#define MAX_MOVES 2048
+#define MAX_MOVES 512
 
 /* Simulate the move on a copy; return 1 if it does NOT leave `player` in check. */
 static int moveIsSafe(Piece board[8][10], Color player, int sr, int sc, int er, int ec)
