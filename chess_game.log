@@ -14,3 +14,63 @@ End of game. White quits.
 2  Black  CPU Move             {C7, C5}
 3      White  Quit                 White quits
 End of game. White quits.
+
+ Chess Game Log : Tue Apr 21 14:20:57 2026
+ 
+#  Color  Action               Move
+-------------------------------------------
+1      White  Quit                 White quits
+End of game. White quits.
+
+ Chess Game Log : Tue Apr 21 14:25:58 2026
+ 
+#  Color  Action               Move
+-------------------------------------------
+1  White  Move                 {A2, A4}
+2  Black  CPU Move             {D7, D6}
+3  White  Move                 {F2, F4}
+4  Black  CPU Move             {C8, D7}
+5      White  Quit                 White quits
+End of game. White quits.
+
+ Chess Game Log : Tue Apr 21 14:32:22 2026
+ 
+#  Color  Action               Move
+-------------------------------------------
+1      White  Quit                 White quits
+End of game. White quits.
+
+ Chess Game Log : Tue Apr 21 14:40:08 2026
+ 
+#  Color  Action               Move
+-------------------------------------------
+1  White  Move                 {G2, G4}
+2  Black  CPU Move             {I8, J6}
+3  White  Move                 {G1, G2}
+4  Black  CPU Move             {B7, B6}
+5  White  Move                 {G2, G3}
+6  Black  CPU Move             {B6, B5}
+7  White  Move                 {G3, H3}
+8  Black  CPU Move             {I7, I5}
+9  White  Move                 {H3, G3}
+10 Black  CPU Move             {G7, G5}
+11 White  Move                 {G3, F3}
+12 Black  CPU Move             {H8, G7}
+13 White  Move                 {F3, F4}
+14 Black  CPU Move             {G7, B2}
+15 White  Move                 {F4, F5}
+16 Black  CPU Move             {B5, B4}
+17 White  Move                 {F5, F6}
+18 Black  CPU Move             {E7, E5}
+19 White  Move                 {F6, E6}
+20 Black  CPU Move             {J6, I4}
+21 White  Move                 {E6, E7}
+22 Black  CPU Move             {B2, A3}
+23 White  Capture              piece captures piece {D7, E7}
+24 Black  CPU Move             {F7, F5}
+25 White  Move                 {E6, E7}
+26 Black  CPU Move             {B2, A1}
+27 White  Capture              piece captures piece {D7, E7}
+28 Black  CPU Move             {A1, B2}
+29     White  Quit                 White quits
+End of game. White quits.

@@ -1,10 +1,23 @@
-#include ".vscode/render.h"
+#include "render.h"
 
-const char *PIECE_RESOURCES[14] = {"resources/white_king.png", "resources/black_king.png", "resources/white_queen.png", 
-  "resources/black_queen.png",  "resources/white_anteater.png", "resources/black_anteater.png","resources/white_bishop.png", 
-  "resources/black_bishop.png","resources/white_knight.png", "resources/black_knight.png","resources/white_rook.png",  
-  "resources/black_rook.png", "resources/white_ant.png", "resources/black_ant.png"}; 
+const char *PIECE_RESOURCES[14] = {
+    "src/gui/resources/white_king.png",
+    "src/gui/resources/black_king.png",
+    "src/gui/resources/white_queen.png",
+    "src/gui/resources/black_queen.png",
+    "src/gui/resources/white_anteater.png",
+    "src/gui/resources/black_anteater.png",
+    "src/gui/resources/white_bishop.png",
+    "src/gui/resources/black_bishop.png",
+    "src/gui/resources/white_knight.png",
+    "src/gui/resources/black_knight.png",
+    "src/gui/resources/white_rook.png",
+    "src/gui/resources/black_rook.png",
+    "src/gui/resources/white_ant.png",
+    "src/gui/resources/black_ant.png"
+};
 
+ 
 Piece_Icon* textureToSurface(GdkTexture* texture, guchar **pixel_data_out){ 
   int width = gdk_texture_get_width(texture); 
   int height = gdk_texture_get_height(texture); 

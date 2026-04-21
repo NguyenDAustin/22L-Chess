@@ -1,5 +1,7 @@
 
-#include ".vscode/gui.h"
+#include "gui.h"
+
+
 
 //global variables 
 const char FILES[10] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'}; 

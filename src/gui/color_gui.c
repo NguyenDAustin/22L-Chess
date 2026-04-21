@@ -1,4 +1,4 @@
-#include ".vscode/colors_gui.h"
+#include "color_gui.h"
 
 const char* CHESS_BG = ".chess-bg { background-color: rgb(253, 246, 224);}"; 
 
