@@ -116,4 +116,9 @@ int anteaterCanCapture(Piece board[8][10], Piece *p, int sr, int sc, int er, int
 int pawnCanEnPassant(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec, Move *lastMove);
 int kingCanCastle(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec);
 
+//check
+Pos findKing(Piece board[8][10], Color color);
+int attackSquare(Piece board[8][10], int row, int col, Color attColor);
+int kingCheck(Piece board[8][10], Color kingColor);
+
 #endif

@@ -12,7 +12,7 @@ void executeMove(Piece board[8][10], Move *move, Move lastMove)
     move->capture = 0;
     move->enPassant = 0;
     move->castle = 0;
-    move->promotion = 0;
+    //move->promotion = 0;
 
     // castling
     if (moving.type == KING && kingCanCastle(board, &moving,
@@ -25,6 +25,7 @@ void executeMove(Piece board[8][10], Move *move, Move lastMove)
     if (moving.type == PAWN && pawnCanEnPassant(board, &moving, move->startRow, move->startCol, move->endRow, move->endCol, &lastMove)) {
         executeEnPassant(board, move);
 
+        /*
         int lastRow = (board[move->endRow][move->endCol].color == White) ? BOARD_HEIGHT - 1 : 0;
         if (move->endRow == lastRow) {
             move->promotion = 1;
@@ -32,8 +33,10 @@ void executeMove(Piece board[8][10], Move *move, Move lastMove)
                 move->promotionType = QUEEN;
             }
             promotePawn(board, move->endRow, move->endCol, move->promotionType);
-        }
+        } 
+        */
         return;
+
     }
 
     if (moving.vtable->canCapture(board, &moving, move->startRow, move->startCol, move->endRow, move->endCol)) {
@@ -49,6 +52,7 @@ void executeMove(Piece board[8][10], Move *move, Move lastMove)
 
         board[move->endRow][move->endCol].moved = 1;
 
+        /*
         int lastRow = (board[move->endRow][move->endCol].color == White) ? BOARD_HEIGHT - 1 : 0;
         if (board[move->endRow][move->endCol].type == PAWN &&
             move->endRow == lastRow) {
@@ -58,6 +62,7 @@ void executeMove(Piece board[8][10], Move *move, Move lastMove)
             }
             promotePawn(board, move->endRow, move->endCol, move->promotionType);
         }
+        */
         return;
     }
 
@@ -74,6 +79,8 @@ void executeMove(Piece board[8][10], Move *move, Move lastMove)
         board[move->startRow][move->startCol].pos.col = move->startCol;
         board[move->startRow][move->startCol].moved = 0;
 
+        return;
+        /*
         int lastRow = (board[move->endRow][move->endCol].color == White) ? BOARD_HEIGHT - 1 : 0;
         if (board[move->endRow][move->endCol].type == PAWN &&
             move->endRow == lastRow) {
@@ -83,6 +90,7 @@ void executeMove(Piece board[8][10], Move *move, Move lastMove)
             }
             promotePawn(board, move->endRow, move->endCol, move->promotionType);
         }
+        */
     }
 }
 
@@ -251,10 +259,94 @@ void executeCastle(Piece board[8][10], Move *move)
     move->castle = 1;
 }
 
-/*
-void promotePawn(Piece board[8][10], int row, int col, Rank newType)
+void copyBoard(Piece new[8][10], Piece og[8][10])
 {
-  
+    for (int r = 0; r < BOARD_HEIGHT; r++) {
+        for (int c = 0; c < BOARD_WIDTH; c++) {
+            new[r][c] = og[r][c];
+        }
+    }
 }
-*/
+
+int legalMove(Piece board[8][10], Move *move, Color turn, Move lastMove)
+{
+    Piece moving = board[move->startRow][move->startCol];
+
+    if (moving.type == EMPTY || moving.vtable == NULL){
+        return 0;
+    }
+
+    if (moving.color != turn){
+        return 0;
+    }
+
+    Piece testBoard[8][10];
+    copyBoard(testBoard, board);
+
+    Move testMove = *move;
+
+    executeMove(testBoard, &testMove, lastMove);
+
+    if (testBoard[move->endRow][move->endCol].type == EMPTY || testBoard[move->endRow][move->endCol].color != turn){ //check to see if move didn't happen
+        return 0;
+    }
+
+    // if the original square hasn't change
+    if (move->startRow != move->endRow || move->startCol != move->endCol) {
+        if (testBoard[move->startRow][move->startCol].type == moving.type && testBoard[move->startRow][move->startCol].color == moving.color) {
+            return 0;
+        }
+    }
+
+    if (kingCheck(testBoard, turn)) { //if the king will be in check
+        return 0;
+    }
+
+    return 1;
+}
+
+int possibleMove(Piece board[8][10], Color turn, Move lastMove)
+{
+    for (int sr = 0; sr < BOARD_HEIGHT; sr++){
+        for (int sc = 0; sc < BOARD_WIDTH; sc++){
+            if (board[sr][sc].type == EMPTY || board[sr][sc].color != turn){
+                continue;
+            }
+            for (int er = 0; er < BOARD_HEIGHT; er++){
+                for (int ec = 0; ec < BOARD_WIDTH; ec++){
+                    Move move;
+                    move.startRow = sr;
+                    move.startCol = sc;
+                    move.endRow = er;
+                    move.endCol = ec;
+                    move.capture = 0;
+                    move.enPassant = 0;
+                    move.castle = 0;
+
+                    if (legalMove(board, &move, turn, lastMove)){return 1;}
+
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+int checkCheckmate(Piece board[8][10], Color turn, Move lastMove)
+{
+    if (!kingCheck(board, turn)) {return 0;}
+
+    if (possibleMove(board, turn, lastMove)) {return 0;}
+
+    return 1;
+}
+
+int checkStalemate(Piece board[8][10], Color turn, Move lastMove){
+    if (kingCheck(board, turn)) {return 0;}
+
+    if (possibleMove(board, turn, lastMove)) {return 0;}
+
+    return 1;
+}
+
 

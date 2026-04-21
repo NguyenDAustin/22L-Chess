@@ -264,7 +264,6 @@ int kingCanMove(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec)
     }
 
     return 0;
-    /*if () {return 2;}*/ //castle
 }
 
 int kingCanCapture(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec)
@@ -360,6 +359,7 @@ int anteaterCanMove(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec
 
     return 0;
 }
+
 int anteaterCanCapture(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec) 
 {
     int mr = er - sr;
@@ -487,6 +487,54 @@ int kingCanCastle(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec)
     }
 }
 
+Pos findKing(Piece board[8][10], Color color)
+{
+    Pos k = {-1, -1};
+
+    for (int r = 0; r < BOARD_HEIGHT; r++){
+        for (int c = 0; c < BOARD_WIDTH; c++){
+            if (board[r][c].type == KING && board[r][c].color == color){
+                k.row = r;
+                k.col = c;
+                return k;
+            }
+        }
+    }
+    return k;
+}
+
+int attackSquare(Piece board[8][10], int row, int col, Color attColor)
+{
+    for (int r = 0; r < BOARD_HEIGHT; r++){
+        for (int c = 0; c < BOARD_WIDTH; c++){
+            Piece *p = &board[r][c];
+
+            if (p->type == EMPTY || p->color != attColor || p->vtable == NULL){
+                continue;
+            }
+
+            if (p->vtable->canCapture(board, p, r, c, row, col)){
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+int kingCheck(Piece board[8][10], Color kingColor)
+{
+    Pos kingPos = findKing(board, kingColor);
+
+    if (kingPos.row == -1 || kingPos.col == -1){
+        return 0;
+    }
+
+    Color enemyColor = (kingColor == White) ? Black : White;
+
+    return attackSquare(board, kingPos.row, kingPos.col, enemyColor);
+}
+
+
 // virtual Tables
 static PieceVTable rookTable = {rookCanMove, rookCanCapture};
 static PieceVTable bishopTable = {bishopCanMove, bishopCanCapture};
@@ -519,7 +567,3 @@ Piece createPiece(Color color, Rank type){  //constructor
     }
     return p;
 }
-
-//need to work on en passant and castle
-//need to work on promote
-//anteater bug doesn't allow it to eat again
