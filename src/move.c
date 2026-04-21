@@ -1,16 +1,42 @@
 #include <stdio.h>
-#include <string.h>
 #include "move.h"
 
-void executeMove(Piece board[8][10], Move *move){
+void executeMove(Piece board[8][10], Move *move, Move lastMove)
+{
     Piece moving = board[move->startRow][move->startCol];
 
     if (moving.type == EMPTY || moving.vtable == NULL) {
         return;
     }
 
-    if (moving.vtable->canCapture(board, &moving, move->startRow, move->startCol, move->endRow, move->endCol)) { //check capture
+    move->capture = 0;
+    move->enPassant = 0;
+    move->castle = 0;
+    move->promotion = 0;
 
+    // castling
+    if (moving.type == KING && kingCanCastle(board, &moving,
+        move->startRow, move->startCol, move->endRow, move->endCol)) {
+        executeCastle(board, move);
+        return;
+    }
+
+    // en passant
+    if (moving.type == PAWN && pawnCanEnPassant(board, &moving, move->startRow, move->startCol, move->endRow, move->endCol, &lastMove)) {
+        executeEnPassant(board, move);
+
+        int lastRow = (board[move->endRow][move->endCol].color == White) ? BOARD_HEIGHT - 1 : 0;
+        if (move->endRow == lastRow) {
+            move->promotion = 1;
+            if (move->promotionType == EMPTY) {
+                move->promotionType = QUEEN;
+            }
+            promotePawn(board, move->endRow, move->endCol, move->promotionType);
+        }
+        return;
+    }
+
+    if (moving.vtable->canCapture(board, &moving, move->startRow, move->startCol, move->endRow, move->endCol)) {
         if (moving.type == PAWN) {
             executePawnCapture(board, move);
         }
@@ -20,22 +46,43 @@ void executeMove(Piece board[8][10], Move *move){
         else {
             executeCapture(board, move);
         }
+
+        board[move->endRow][move->endCol].moved = 1;
+
+        int lastRow = (board[move->endRow][move->endCol].color == White) ? BOARD_HEIGHT - 1 : 0;
+        if (board[move->endRow][move->endCol].type == PAWN &&
+            move->endRow == lastRow) {
+            move->promotion = 1;
+            if (move->promotionType == EMPTY) {
+                move->promotionType = QUEEN;
+            }
+            promotePawn(board, move->endRow, move->endCol, move->promotionType);
+        }
         return;
     }
 
-    if (moving.vtable->canMove(board, &moving, move->startRow, move->startCol, move->endRow, move->endCol)) { //check move
-
+    if (moving.vtable->canMove(board, &moving, move->startRow, move->startCol, move->endRow, move->endCol)) {
         board[move->endRow][move->endCol] = moving;
         board[move->endRow][move->endCol].pos.row = move->endRow;
         board[move->endRow][move->endCol].pos.col = move->endCol;
+        board[move->endRow][move->endCol].moved = 1;
 
         board[move->startRow][move->startCol].img = NULL;
         board[move->startRow][move->startCol].type = EMPTY;
         board[move->startRow][move->startCol].vtable = NULL;
         board[move->startRow][move->startCol].pos.row = move->startRow;
         board[move->startRow][move->startCol].pos.col = move->startCol;
+        board[move->startRow][move->startCol].moved = 0;
 
-        move->capture = 0;
+        int lastRow = (board[move->endRow][move->endCol].color == White) ? BOARD_HEIGHT - 1 : 0;
+        if (board[move->endRow][move->endCol].type == PAWN &&
+            move->endRow == lastRow) {
+            move->promotion = 1;
+            if (move->promotionType == EMPTY) {
+                move->promotionType = QUEEN;
+            }
+            promotePawn(board, move->endRow, move->endCol, move->promotionType);
+        }
     }
 }
 
@@ -121,98 +168,93 @@ void executeAnteaterCapture(Piece board[8][10], Move *move) {
     move->capture = 1;
 }
 
-int isLegalMove(Piece board[8][10], Move *move, Color player) {
-    int sr = move->startRow, sc = move->startCol;
-    int er = move->endRow,   ec = move->endCol;
+void executeEnPassant(Piece board[8][10], Move *move)
+{
+    Piece moving = board[move->startRow][move->startCol];
 
-    if (sr < 0 || sr >= 8 || sc < 0 || sc >= 10) return 0;
-    if (er < 0 || er >= 8 || ec < 0 || ec >= 10) return 0;
-    if (sr == er && sc == ec) return 0;
+    board[move->endRow][move->endCol] = moving;
+    board[move->endRow][move->endCol].pos.row = move->endRow;
+    board[move->endRow][move->endCol].pos.col = move->endCol;
+    board[move->endRow][move->endCol].moved = 1;
 
-    Piece *p = &board[sr][sc];
-    if (p->type == EMPTY || p->vtable == NULL) return 0;
-    if (p->color != player) return 0;
+    board[move->startRow][move->endCol].img = NULL; //removes pawn
+    board[move->startRow][move->endCol].type = EMPTY;
+    board[move->startRow][move->endCol].vtable = NULL;
+    board[move->startRow][move->endCol].pos.row = move->startRow;
+    board[move->startRow][move->endCol].pos.col = move->endCol;
+    board[move->startRow][move->endCol].moved = 0;
 
-    /* Target blocker: empty means we need canMove; enemy means canCapture;
-     * friendly means illegal outright. */
-    Piece *dst = &board[er][ec];
-    if (dst->type != EMPTY && dst->color == player) return 0;
+    // clears square
+    board[move->startRow][move->startCol].img = NULL;
+    board[move->startRow][move->startCol].type = EMPTY;
+    board[move->startRow][move->startCol].vtable = NULL;
+    board[move->startRow][move->startCol].pos.row = move->startRow;
+    board[move->startRow][move->startCol].pos.col = move->startCol;
+    board[move->startRow][move->startCol].moved = 0;
 
-    if (dst->type == EMPTY) {
-        return p->vtable->canMove ? p->vtable->canMove(board, p, sr, sc, er, ec) : 0;
+    move->capture = 1;
+    move->enPassant = 1;
+}
+
+void executeCastle(Piece board[8][10], Move *move)
+{
+    Piece king = board[move->startRow][move->startCol];
+    int row = move->startRow;
+
+    board[move->endRow][move->endCol] = king;
+    board[move->endRow][move->endCol].pos.row = move->endRow;
+    board[move->endRow][move->endCol].pos.col = move->endCol;
+    board[move->endRow][move->endCol].moved = 1;
+
+    board[move->startRow][move->startCol].img = NULL;
+    board[move->startRow][move->startCol].type = EMPTY;
+    board[move->startRow][move->startCol].vtable = NULL;
+    board[move->startRow][move->startCol].pos.row = move->startRow;
+    board[move->startRow][move->startCol].pos.col = move->startCol;
+    board[move->startRow][move->startCol].moved = 0;
+
+    if (move->endCol > move->startCol) {
+        // kingside
+        int rookStartCol = BOARD_WIDTH - 1;
+        int rookEndCol = move->endCol - 1;
+
+        board[row][rookEndCol] = board[row][rookStartCol];
+        board[row][rookEndCol].pos.row = row;
+        board[row][rookEndCol].pos.col = rookEndCol;
+        board[row][rookEndCol].moved = 1;
+
+        board[row][rookStartCol].img = NULL;
+        board[row][rookStartCol].type = EMPTY;
+        board[row][rookStartCol].vtable = NULL;
+        board[row][rookStartCol].pos.row = row;
+        board[row][rookStartCol].pos.col = rookStartCol;
+        board[row][rookStartCol].moved = 0;
     } else {
-        return p->vtable->canCapture ? p->vtable->canCapture(board, p, sr, sc, er, ec) : 0;
+        // queenside
+        int rookStartCol = 0;
+        int rookEndCol = move->endCol + 1;
+
+        board[row][rookEndCol] = board[row][rookStartCol];
+        board[row][rookEndCol].pos.row = row;
+        board[row][rookEndCol].pos.col = rookEndCol;
+        board[row][rookEndCol].moved = 1;
+
+        board[row][rookStartCol].img = NULL;
+        board[row][rookStartCol].type = EMPTY;
+        board[row][rookStartCol].vtable = NULL;
+        board[row][rookStartCol].pos.row = row;
+        board[row][rookStartCol].pos.col = rookStartCol;
+        board[row][rookStartCol].moved = 0;
     }
+
+    move->capture = 0;
+    move->castle = 1;
 }
 
-static void findKing(Piece board[8][10], Color player, int *outR, int *outC) {
-    *outR = -1;
-    *outC = -1;
-    for (int r = 0; r < 8; r++) {
-        for (int c = 0; c < 10; c++) {
-            if (board[r][c].type == KING && board[r][c].color == player) {
-                *outR = r;
-                *outC = c;
-                return;
-            }
-        }
-    }
+/*
+void promotePawn(Piece board[8][10], int row, int col, Rank newType)
+{
+  
 }
+*/
 
-int isInCheck(Piece board[8][10], Color player) {
-    int kr, kc;
-    findKing(board, player, &kr, &kc);
-    if (kr < 0) return 0;
-
-    for (int r = 0; r < 8; r++) {
-        for (int c = 0; c < 10; c++) {
-            Piece *attacker = &board[r][c];
-            if (attacker->type == EMPTY || attacker->color == player) continue;
-            if (attacker->vtable && attacker->vtable->canCapture &&
-                attacker->vtable->canCapture(board, attacker, r, c, kr, kc)) {
-                return 1;
-            }
-        }
-    }
-    return 0;
-}
-
-/* Try a move on a copy of the board; return 1 if it leaves `player` not in check. */
-static int moveLeavesKingSafe(Piece board[8][10], Color player, int sr, int sc, int er, int ec) {
-    Piece saved_start = board[sr][sc];
-    Piece saved_end   = board[er][ec];
-
-    board[er][ec] = saved_start;
-    board[er][ec].pos.row = er;
-    board[er][ec].pos.col = ec;
-    board[sr][sc].type = EMPTY;
-    board[sr][sc].vtable = NULL;
-    board[sr][sc].img = NULL;
-
-    int safe = !isInCheck(board, player);
-
-    board[sr][sc] = saved_start;
-    board[er][ec] = saved_end;
-    return safe;
-}
-
-int hasAnyLegalMove(Piece board[8][10], Color player) {
-    for (int sr = 0; sr < 8; sr++) {
-        for (int sc = 0; sc < 10; sc++) {
-            Piece *p = &board[sr][sc];
-            if (p->type == EMPTY || p->color != player || p->vtable == NULL) continue;
-
-            for (int er = 0; er < 8; er++) {
-                for (int ec = 0; ec < 10; ec++) {
-                    if (sr == er && sc == ec) continue;
-                    Move m = { sr, sc, er, ec, 0 };
-                    if (!isLegalMove(board, &m, player)) continue;
-                    if (moveLeavesKingSafe(board, player, sr, sc, er, ec)) {
-                        return 1;
-                    }
-                }
-            }
-        }
-    }
-    return 0;
-}

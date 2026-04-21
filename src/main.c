@@ -21,7 +21,7 @@ static void placePiece(Piece board[8][10], int r, int c, Color color, Rank type)
 
 #define LOG_FILENAME "chess_game.log"
 #define INPUT_BUF 128
-#define DEBUG_MODE 0 // set it to 1 to force a board setup to for testing
+#define DEBUG_MODE 0// set it to 1 to force a board setup to for testing
 
 static Color chooseHumanColor(void);
 static const char *colorName(Color c);

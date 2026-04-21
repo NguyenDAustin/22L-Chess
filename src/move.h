@@ -9,21 +9,21 @@ typedef struct {
     int endRow; //er
     int endCol; //ec
     int capture; //capture
+
+    int enPassant;
+    int castle;
+    int promotion;
+    Rank promotionType;
 } Move;
 
-void executeMove (Piece board[8][10], Move *move);
+void executeMove(Piece board[8][10], Move *move, Move lastMove);
+
 void recordMove (Move move, const char *filename);
 void executeCapture(Piece board[8][10], Move *move);
 void executePawnCapture(Piece board[8][10], Move *move);
 void executeAnteaterCapture(Piece board[8][10], Move *move);
 
-/* Returns 1 if `move` is legal for `player` on `board`, else 0. */
-int isLegalMove(Piece board[8][10], Move *move, Color player);
-
-/* Returns 1 if `player`'s king is currently under attack on `board`. */
-int isInCheck(Piece board[8][10], Color player);
-
-/* Returns 1 if `player` has at least one legal move on `board`. */
-int hasAnyLegalMove(Piece board[8][10], Color player);
-
+void executeEnPassant(Piece board[8][10], Move *move);
+void executeCastle(Piece board[8][10], Move *move);
+//void promotePawn();
 #endif

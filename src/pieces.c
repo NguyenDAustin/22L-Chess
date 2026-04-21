@@ -7,16 +7,16 @@ void posCtor(Pos *mPos, int row, int col) {
     mPos->col = col;
 }
 
-bool isInRange(int p, int limit) { //Queency
+bool isValid(int p, int limit) { //Queency
     return (p >= 0 && p < limit);
 }
 
 bool isRowValid(int row) { //Queency
-    return isInRange(row, BOARD_HEIGHT);
+    return isValid(row, BOARD_HEIGHT);
 }
 
 bool isColValid(int col) { //Queency
-    return isInRange(col, BOARD_WIDTH);
+    return isValid(col, BOARD_WIDTH);
 }
 
 bool isPosValid(Pos pos) { //Queency
@@ -32,6 +32,7 @@ void pieceCtor(Piece *mPiece, Piece_Icon *img, Color color, Rank type, Pos pos, 
     mPiece->type = type;
     mPiece->pos = pos;
     mPiece->vtable = vtable;
+    mPiece->moved = 0;
 }
 
 Piece_Icon *getImage(const Piece *piece) { return piece ? piece->img : NULL; } //Queency
@@ -400,6 +401,92 @@ int anteaterCanCapture(Piece board[8][10], Piece *p, int sr, int sc, int er, int
     return 1;
 }
 
+int pawnCanEnPassant(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec, Move *lastMove)
+{
+    if (!lastMove) {return 0;}
+    int mr = (p->color == White) ? 1 : -1;
+
+
+    if (er != sr + mr || abs(ec - sc) != 1) { //move diagonally
+        return 0;
+    }
+
+    if (!isEmpty(board, er, ec)) {
+        return 0;
+    }
+
+    Piece lastPiece = board[lastMove->endRow][lastMove->endCol]; //pawn has to move two squares
+
+    if (lastPiece.type != PAWN) {
+        return 0;
+    }
+
+    if (lastPiece.color == p->color) {
+        return 0;
+    }
+
+    if (abs(lastMove->endRow - lastMove->startRow) != 2) {
+        return 0;
+    }
+
+    if (lastMove->endRow != sr || lastMove->endCol != ec) {     //pawn must be next to other pawn
+        return 0;
+    }
+
+    return 1;
+}
+
+int kingCanCastle(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec)
+{
+    if (p->type != KING || p->moved) {
+        return 0;
+    }
+
+    // same row, moved two columns
+    if (sr != er || abs(ec - sc) != 2) {
+        return 0;
+    }
+
+    // check for empty
+    if (!isEmpty(board, er, ec)) {
+        return 0;
+    }
+
+    if (ec > sc) {
+        // kingside rook
+        int rookCol = BOARD_WIDTH - 1;
+
+        if (board[sr][rookCol].type != ROOK ||
+            board[sr][rookCol].color != p->color ||
+            board[sr][rookCol].moved) {
+            return 0;
+        }
+
+        for (int c = sc + 1; c < rookCol; c++) {
+            if (!isEmpty(board, sr, c)) {
+                return 0;
+            }
+        }
+        return 1;
+    } else {
+        // queenside rook
+        int rookCol = 0;
+
+        if (board[sr][rookCol].type != ROOK ||
+            board[sr][rookCol].color != p->color ||
+            board[sr][rookCol].moved) {
+            return 0;
+        }
+
+        for (int c = rookCol + 1; c < sc; c++) {
+            if (!isEmpty(board, sr, c)) {
+                return 0;
+            }
+        }
+        return 1;
+    }
+}
+
 // virtual Tables
 static PieceVTable rookTable = {rookCanMove, rookCanCapture};
 static PieceVTable bishopTable = {bishopCanMove, bishopCanCapture};
@@ -414,6 +501,11 @@ Piece createPiece(Color color, Rank type){  //constructor
     Piece p;
     p.color = color;
     p.type = type; 
+    p.img = NULL;
+    p.value = 0;
+    p.pos.row = -1;
+    p.pos.col = -1;
+    p.moved = 0;
 
     switch (type) {
         case ROOK: p.vtable = &rookTable; break;
@@ -429,3 +521,5 @@ Piece createPiece(Color color, Rank type){  //constructor
 }
 
 //need to work on en passant and castle
+//need to work on promote
+//anteater bug doesn't allow it to eat again
