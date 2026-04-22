@@ -3,6 +3,7 @@
 
 #include "render.h"
 #include "pieces.h"
+#include "board_state.h"
 
 //global variables 
 extern const char FILES[10]; 

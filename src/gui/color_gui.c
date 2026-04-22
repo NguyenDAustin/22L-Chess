@@ -26,3 +26,10 @@ GdkRGBA WHITE_SQUARE(){ //chess square
    color.alpha = 1; 
    return color; 
 }
+
+GdkRGBA HIGHLIGHT_COLOR(){
+  GdkRGBA color; 
+  colorCtor(&color, 255, 255, 255); 
+  color.alpha = 1; 
+  return color; 
+}

@@ -359,19 +359,19 @@ static char pieceSymbol(const Piece *p)
     switch (p->type)
     {
     case KING:
-        return (p->color == White) ? 'K' : 'k';
+        return (p->color == WHITE) ? 'K' : 'k';
     case QUEEN:
-        return (p->color == White) ? 'Q' : 'q';
+        return (p->color == WHITE) ? 'Q' : 'q';
     case ANTEATER:
-        return (p->color == White) ? 'A' : 'a';
+        return (p->color == WHITE) ? 'A' : 'a';
     case BISHOP:
-        return (p->color == White) ? 'B' : 'b';
+        return (p->color == WHITE) ? 'B' : 'b';
     case KNIGHT:
-        return (p->color == White) ? 'N' : 'n';
+        return (p->color == WHITE) ? 'N' : 'n';
     case ROOK:
-        return (p->color == White) ? 'R' : 'r';
+        return (p->color == WHITE) ? 'R' : 'r';
     case PAWN:
-        return (p->color == White) ? 'P' : 'p';
+        return (p->color == WHITE) ? 'P' : 'p';
     default:
         return '?';
     }

@@ -1,12 +1,9 @@
 #ifndef BOARD_H 
 #define BOARD_H
 
-#include <stdbool.h>
-#include<stdio.h>
-#include <stdlib.h>
-#include "enum.h"
 #include "pieces.h"
 
+typedef struct Board_State Board_State; 
 
 
 extern const int NUMBER_OF_FLAGS; 
@@ -20,30 +17,30 @@ extern const int MAX_COL;
 
 //BOARD FUNCTIONS
 
-typedef struct {
+typedef struct Board {
     Piece* board[BOARD_HEIGHT][BOARD_WIDTH]; 
 } Board; 
 
 
-Piece_Icon* getImagePiece(Piece_Icon** images, Color color, Rank rank);
-Piece_Icon* getWhiteImagePiece(Piece_Icon** images, Rank rank); 
-Piece_Icon* getBlackImagePiece(Piece_Icon** images, Rank rank); 
+Icon* getImagePiece(Icon** images, Color color, Rank rank);
+Icon* getWhiteImagePiece(Icon** images, Rank rank); 
+Icon* getBlackImagePiece(Icon** images, Rank rank); 
 
 
-Piece* createPiecePtr(Piece_Icon* img, Color color, Rank rank, Pos pos);
+Piece* createPiecePtr(Icon* img, Color color, Rank rank, Pos pos);
 
 
-void createPieces( Board* mBoard, Piece_Icon** images, Color color);
-void createWhitePieces(Board* mBoard, Piece_Icon** images); 
-void createBlackPieces(Board* mBoard, Piece_Icon** images); 
+void createPieces( Board* mBoard, Icon** images, Color color);
+void createWhitePieces(Board* mBoard, Icon** images); 
+void createBlackPieces(Board* mBoard, Icon** images); 
 
-void createAnts(Board* mBoard, Piece_Icon** images, Color color); 
-void createBlackAnts(Board* mBoard, Piece_Icon** images);
-void createWhiteAnts(Board* mBoard, Piece_Icon** images);
+void createAnts(Board* mBoard, Icon** images, Color color); 
+void createBlackAnts(Board* mBoard, Icon** images);
+void createWhiteAnts(Board* mBoard, Icon** images);
 
 //BOARD INITIALIZATION FUNCTIONS
 void defaultInitializeBoard(Board* mBoard); 
-void initializeBoard(Board* mBoard, Piece_Icon** images); 
+void initializeBoard(Board* mBoard, Icon** images); 
 
 //BOARD 
 bool hasPiece(const Board* board, int row, int col); 
@@ -59,42 +56,6 @@ void addPiece(Board* board, Piece* piece, Pos pos);
 void movePiece(Board* board, Pos oldPos, Pos newPos);
 
 
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-//BOARD STATE FUNCTIONS
-
-typedef enum{  
-    //gui to board 
-    PIECE_WAS_CLICKED = 0,
-    PIECE_WAS_MOVED = 1,
-
-    //board to gui
-    PIECE_WAS_CAPTURED = 2
-} FLAG; 
-
-
-
-typedef struct {
-  Piece* clickedPiece; 
-  bool hasUpdate; 
-  Pos clickPos; 
-  //FLAG flags[NUMBER_OF_FLAGS]; //do certain things in array depending on what flag has been set
-} Board_State; 
-
-
-//BOARD STATE - STATE FUNCTIONS
-bool aPieceWasClicked(const Board_State* boardState);
-bool newPieceWasClicked(const Board_State* boardState, Piece* clickedPiece);
-bool hasUpdate(const Board_State* boardState);
-
-//BOARD STATE - GETTERS + SETTERS
-void setUpdate(Board_State* boardState, bool update);
-Piece* getClickedPiece(const Board_State* boardState);
-void setClickedPiece(Board_State* boardState, Piece* piece);
-void resetClickedPiece(Board_State* boardState);
-
-//BOARD STATE - MAIN FUUNCTIONALITY 
+//BOARD  - MAIN FUUNCTIONALITY 
 void sendInput(Board* board, Board_State* boardState, Pos clickPos);
-
-
 #endif 

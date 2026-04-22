@@ -56,19 +56,6 @@ void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer
   
   sendInput(board, boardState, clickPos); 
 
-  /*
-  Pos legalMoves[30];  //for now --> replace with linked list or something later //30 is max number of moves a piece can possible have avail
-  int size = 0; 
-
-  if(aPieceWasClicked(boardState)){ 
-    Piece* clickedPiece = getClickedPiece(boardState); 
-    calculateForwardMoves(board, clickPos, legalMoves, &size); 
-    printMoves(legalMoves, size); 
-  }
-    */
-
-  //////
-
   if(hasUpdate(boardState))
     gtk_widget_queue_draw(boardWidget); 
 }

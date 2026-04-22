@@ -1,5 +1,6 @@
 #include "pieces.h"
-#include <stdlib.h>
+#include "board.h"
+#include "move.h"
 
 void posCtor(Pos *mPos, int row, int col) {
     if (!mPos) return;
@@ -7,38 +8,42 @@ void posCtor(Pos *mPos, int row, int col) {
     mPos->col = col;
 }
 
-bool isValid(int p, int limit) { //Queency
+bool isValidPos(int p, int limit) { //Queency
     return (p >= 0 && p < limit);
 }
 
 bool isRowValid(int row) { //Queency
-    return isValid(row, BOARD_HEIGHT);
+    return isValidPos(row, BOARD_HEIGHT);
 }
 
 bool isColValid(int col) { //Queency
-    return isValid(col, BOARD_WIDTH);
+    return isValidPos(col, BOARD_WIDTH);
 }
 
 bool isPosValid(Pos pos) { //Queency
     return isRowValid(pos.row) && isColValid(pos.col);
 }
 
+bool isSamePos(Pos p1, Pos p2){
+    return (isSameRow(p1.row, p2.row) && isSameCol(p1.col, p2.col)); 
+}
 
 
-void pieceCtor(Piece *mPiece, Piece_Icon *img, Color color, Rank type, Pos pos, PieceVTable *vtable) { //Queency
+
+void pieceCtor(Piece *mPiece, Icon *img, Color color, Rank type, Pos pos) { //Queency
     if (!mPiece) return;
     mPiece->img = img;
     mPiece->color = color;
     mPiece->type = type;
     mPiece->pos = pos;
-    mPiece->vtable = vtable;
+    mPiece->vtable = getVtable(type);
     mPiece->moved = 0;
 }
 
-Piece_Icon *getImage(const Piece *piece) { return piece ? piece->img : NULL; } //Queency
-void setImage(Piece *piece, Piece_Icon *img) { if (piece) piece->img = img; } //Queency
+Icon *getImage(const Piece *piece) { return piece ? piece->img : NULL; } //Queency
+void setImage(Piece *piece, Icon *img) { if (piece) piece->img = img; } //Queency
 
-Color getColor(const Piece *piece) { return piece ? piece->color : White; } //Queency
+Color getColor(const Piece *piece) { return piece ? piece->color : WHITE; } //Queency
 void setColor(Piece *piece, Color color) { if (piece) piece->color = color; } //Queency
 
 Rank getType(const Piece *piece) { return piece ? piece->type : EMPTY; }//Queency
@@ -52,21 +57,36 @@ Pos getPos(const Piece *piece) {//Queency
 void setPos(Piece *piece, Pos pos) { if (piece) piece->pos = pos; }//Queency
 
 
-int isEmpty(Piece board[8][10], int r, int c) { // checks if square is empty
-    return board[r][c].type == EMPTY;
+//boolean helper functions for piece 
+bool isSameRow(int r1, int r2){ 
+    return (r1 == r2); 
+}
+bool isSameCol(int c1, int c2){
+    return (c1 == c2); 
 }
 
-int isEnemy(Piece board[8][10], Piece *p, int r, int c) { // checks if square has enemy
-    return board[r][c].type != EMPTY && board[r][c].color != p->color;
+
+
+bool isEmpty(Board* board, int r, int c) { // checks if square is empty
+    Rank type = getType(board->board[r][c]); 
+    return (type == EMPTY || !board->board[r][c]);
 }
 
-int isStraightPathClear(Piece board[8][10], int sr, int sc, int er, int ec) {
+bool isEnemy(Board* board, Piece *p, int r, int c) { // checks if square has enemy
+    Piece* piece = board->board[r][c]; 
+    Rank type = getType(piece); 
+    return (type != EMPTY || board->board[r][c]) && (getColor(piece) != p->color);
+}
+
+
+
+int isStraightPathClear(Board* board, int sr, int sc, int er, int ec) {
     int rStep = 0;
     int cStep = 0;
 
-    if (sr == er) {
+    if (isSameRow(sr, er)) {
         cStep = (ec > sc) ? 1 : -1;
-    } else if (sc == ec) {
+    } else if (isSameCol(sc, ec)) {
         rStep = (er > sr) ? 1 : -1;
     } else {
         return 0;
@@ -86,7 +106,7 @@ int isStraightPathClear(Piece board[8][10], int sr, int sc, int er, int ec) {
     return 1;
 }
 
-int isDiagonalPathClear(Piece board[8][10], int sr, int sc, int er, int ec) {
+int isDiagonalPathClear(Board* board, int sr, int sc, int er, int ec) {
     if (abs(sr - er) != abs(sc - ec)) {
         return 0; // not diagonal
     }
@@ -122,21 +142,19 @@ int isDiagonalPathClear(Piece board[8][10], int sr, int sc, int er, int ec) {
 
 
 //movement
-int rookCanMove(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec) 
+int rookCanMove(Board* board, Piece *p, int sr, int sc, int er, int ec) 
 {
-    if (!isEmpty(board, er, ec)) {
-        return 0;
+    if(!isEmpty(board, er, ec))
+        return false; 
+
+    if ((isSameCol(sr, er) || isSameCol(ec, er)) && isStraightPathClear(board, sr, sc, er, ec)) { // checks to see if it is within the same row or same column
+            return true;
     }
 
-    if (sr == er || sc == ec) { // checks to see if it is within the same row or same column
-        if (isStraightPathClear(board, sr, sc, er, ec)) {
-            return 1;
-        }
-    }
     return 0;
 }
 
-int rookCanCapture(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec)
+int rookCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec)
 {
     if (!isEnemy(board, p, er, ec)) {
         return 0;
@@ -150,7 +168,7 @@ int rookCanCapture(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec)
 }
 
 
-int bishopCanMove(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec)
+int bishopCanMove(Board* board, Piece *p, int sr, int sc, int er, int ec)
 {   
     if (!isEmpty(board, er, ec)) {
         return 0;
@@ -164,7 +182,7 @@ int bishopCanMove(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec)
     return 0;
 }
 
-int bishopCanCapture(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec)
+int bishopCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec)
 {
     if (!isEnemy(board, p, er, ec)) {
         return 0;
@@ -177,7 +195,7 @@ int bishopCanCapture(Piece board[8][10], Piece *p, int sr, int sc, int er, int e
     return 0;
 }
 
-int knightCanMove(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec) {
+int knightCanMove(Board* board, Piece *p, int sr, int sc, int er, int ec) {
     int mr = abs(sr - er);
     int mc = abs(sc - ec);
 
@@ -191,7 +209,7 @@ int knightCanMove(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec) 
     return 0;
 }
 
-int knightCanCapture(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec)
+int knightCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec)
 {
     int mr = abs(sr - er);
     int mc = abs(sc - ec);
@@ -209,13 +227,13 @@ int knightCanCapture(Piece board[8][10], Piece *p, int sr, int sc, int er, int e
 
 
 
-int queenCanMove(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec) 
+int queenCanMove(Board* board, Piece *p, int sr, int sc, int er, int ec) 
 {
     if (!isEmpty(board, er, ec)) {
         return 0;
     }
 
-    if (sr == er || sc == ec) {
+    if (isSameRow(sr, er) || isSameCol(sc, ec)) {
         return isStraightPathClear(board, sr, sc, er, ec); //rook move + bishop move
     }
 
@@ -226,13 +244,13 @@ int queenCanMove(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec)
     return 0;
 }
 
-int queenCanCapture(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec)
+int queenCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec)
 {
     if (!isEnemy(board, p, er, ec)) {
         return 0;
     }
 
-    if (sr == er || sc == ec) {
+    if (isSameRow(sr, er) || isSameCol(sc, ec)) {
         return isStraightPathClear(board, sr, sc, er, ec);
     }
 
@@ -244,7 +262,7 @@ int queenCanCapture(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec
 }
 
 
-int kingCanMove(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec) 
+int kingCanMove(Board* board, Piece *p, int sr, int sc, int er, int ec) 
 {
     int mr = abs(er - sr); //moved rows
     int mc = abs(ec - sc); //moved columns
@@ -264,7 +282,7 @@ int kingCanMove(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec)
     return 0;
 }
 
-int kingCanCapture(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec)
+int kingCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec)
 {
     int mr = abs(er - sr);
     int mc = abs(ec - sc);
@@ -285,14 +303,15 @@ int kingCanCapture(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec)
 }
 
 
-int pawnCanMove(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec) 
+int pawnCanMove(Board* board, Piece *p, int sr, int sc, int er, int ec) 
 {
     int mr;
 
-    if (p->color == White) {
-        mr = 1;
-    } else {
+
+    if (p->color == WHITE) {
         mr = -1;
+    } else {
+        mr = 1; //switched this --> board orientation is top left corner is 0 0 
     }
 
     // move forward 1
@@ -301,13 +320,13 @@ int pawnCanMove(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec)
     }
 
     if (ec == sc && er == sr + 2 * mr){
-        if (p->color == White && sr == 1 &&
+        if (p->color == WHITE && sr == 1 &&
             isEmpty(board, sr + mr, sc) &&
             isEmpty(board, er, ec)) {
             return 1;
         }
 
-        if (p->color == Black && sr == 6 &&
+        if (p->color == BLACK && sr == 6 &&
             isEmpty(board, sr + mr, sc) &&
             isEmpty(board, er, ec)) {
             return 1;
@@ -318,11 +337,13 @@ int pawnCanMove(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec)
 }
 
 
-int pawnCanCapture(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec) 
+int pawnCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec) 
 {
     int mr;
 
-    if (p->color == White) {
+    Piece* piece = board->board[er][ec]; 
+
+    if (p->color == WHITE) {
         mr = 1;
     } else {
         mr = -1;
@@ -330,7 +351,7 @@ int pawnCanCapture(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec)
 
     if (er == sr + mr && abs(ec - sc) == 1) {
 
-        if (board[er][ec].type != EMPTY && board[er][ec].color != p->color) { //checks to see if the spot diagonal has an enemy piece
+        if (getType(piece) != EMPTY && getColor(piece) != getColor(p)) { //checks to see if the spot diagonal has an enemy piece
             return 1;
         }
     }
@@ -340,17 +361,18 @@ int pawnCanCapture(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec)
 }
 
 
-int anteaterCanMove(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec) 
+int anteaterCanMove(Board* board, Piece *p, int sr, int sc, int er, int ec) 
 {
     int mr = abs(er - sr);
     int mc = abs(ec - sc);
+    Piece* piece = board->board[er][ec]; 
 
     if (mr == 0 && mc == 0) {
         return 0;
     }
 
     if (mr <= 1 && mc <= 1) {
-        if (board[er][ec].type == EMPTY) {
+        if (getType(piece) == EMPTY) {
             return 1;
         }
     }
@@ -358,7 +380,7 @@ int anteaterCanMove(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec
     return 0;
 }
 
-int anteaterCanCapture(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec) 
+int anteaterCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec) 
 {
     int mr = er - sr;
     int mc = ec - sc;
@@ -384,25 +406,30 @@ int anteaterCanCapture(Piece board[8][10], Piece *p, int sr, int sc, int er, int
     int r = sr + rowStep;
     int c = sc + colStep;
 
+    Piece* piece1 = board->board[r][c]; 
+    
+
     while (r != er || c != ec) {
-        if (board[r][c].type != PAWN || board[r][c].color == p->color)  {
+        if (getType(piece1) != PAWN || getColor(piece1) == getColor(p))  {
             return 0;
         }
         r += rowStep;
         c += colStep;
     }
 
-    if (board[er][ec].type != PAWN || board[er][ec].color == p->color) {
+    Piece* piece2 = board->board[er][ec];
+
+    if (getType(piece2) != PAWN || getColor(piece2) == getColor(p)) {
         return 0;
     }
 
     return 1;
 }
 
-int pawnCanEnPassant(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec, Move *lastMove)
+int pawnCanEnPassant(Board* board, Piece *p, int sr, int sc, int er, int ec, Move *lastMove)
 {
     if (!lastMove) {return 0;}
-    int mr = (p->color == White) ? 1 : -1;
+    int mr = (p->color == WHITE) ? 1 : -1;
 
 
     if (er != sr + mr || abs(ec - sc) != 1) { //move diagonally
@@ -413,13 +440,13 @@ int pawnCanEnPassant(Piece board[8][10], Piece *p, int sr, int sc, int er, int e
         return 0;
     }
 
-    Piece lastPiece = board[lastMove->endRow][lastMove->endCol]; //pawn has to move two squares
+    Piece* lastPiece = board->board[lastMove->endRow][lastMove->endCol]; //pawn has to move two squares
 
-    if (lastPiece.type != PAWN) {
+    if (lastPiece->type != PAWN) {
         return 0;
     }
 
-    if (lastPiece.color == p->color) {
+    if (lastPiece->color == p->color) {
         return 0;
     }
 
@@ -434,7 +461,7 @@ int pawnCanEnPassant(Piece board[8][10], Piece *p, int sr, int sc, int er, int e
     return 1;
 }
 
-int kingCanCastle(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec)
+int kingCanCastle(Board* board, Piece *p, int sr, int sc, int er, int ec)
 {
     if (p->type != KING || p->moved) {
         return 0;
@@ -454,9 +481,9 @@ int kingCanCastle(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec)
         // kingside rook
         int rookCol = BOARD_WIDTH - 1;
 
-        if (board[sr][rookCol].type != ROOK ||
-            board[sr][rookCol].color != p->color ||
-            board[sr][rookCol].moved) {
+        if (board->board[sr][rookCol]->type != ROOK ||
+            board->board[sr][rookCol]->color != p->color ||
+            board->board[sr][rookCol]->moved) {
             return 0;
         }
 
@@ -470,9 +497,9 @@ int kingCanCastle(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec)
         // queenside rook
         int rookCol = 0;
 
-        if (board[sr][rookCol].type != ROOK ||
-            board[sr][rookCol].color != p->color ||
-            board[sr][rookCol].moved) {
+        if (board->board[sr][rookCol]->type != ROOK ||
+            board->board[sr][rookCol]->color != p->color ||
+            board->board[sr][rookCol]->moved) {
             return 0;
         }
 
@@ -485,13 +512,13 @@ int kingCanCastle(Piece board[8][10], Piece *p, int sr, int sc, int er, int ec)
     }
 }
 
-Pos findKing(Piece board[8][10], Color color)
+Pos findKing(Board* board, Color color)
 {
     Pos k = {-1, -1};
 
     for (int r = 0; r < BOARD_HEIGHT; r++){
         for (int c = 0; c < BOARD_WIDTH; c++){
-            if (board[r][c].type == KING && board[r][c].color == color){
+            if (board->board[r][c]->type == KING && board->board[r][c]->color == color){
                 k.row = r;
                 k.col = c;
                 return k;
@@ -501,11 +528,11 @@ Pos findKing(Piece board[8][10], Color color)
     return k;
 }
 
-int attackSquare(Piece board[8][10], int row, int col, Color attColor)
+int attackSquare(Board* board, int row, int col, Color attColor)
 {
     for (int r = 0; r < BOARD_HEIGHT; r++){
         for (int c = 0; c < BOARD_WIDTH; c++){
-            Piece *p = &board[r][c];
+            Piece *p = board->board[r][c];
 
             if (p->type == EMPTY || p->color != attColor || p->vtable == NULL){
                 continue;
@@ -519,7 +546,7 @@ int attackSquare(Piece board[8][10], int row, int col, Color attColor)
     return 0;
 }
 
-int kingCheck(Piece board[8][10], Color kingColor)
+int kingCheck(Board* board, Color kingColor)
 {
     Pos kingPos = findKing(board, kingColor);
 
@@ -527,7 +554,7 @@ int kingCheck(Piece board[8][10], Color kingColor)
         return 0;
     }
 
-    Color enemyColor = (kingColor == White) ? Black : White;
+    Color enemyColor = (kingColor == WHITE) ? BLACK : WHITE;
 
     return attackSquare(board, kingPos.row, kingPos.col, enemyColor);
 }
@@ -552,16 +579,19 @@ Piece createPiece(Color color, Rank type){  //constructor
     p.pos.row = -1;
     p.pos.col = -1;
     p.moved = 0;
-
-    switch (type) {
-        case ROOK: p.vtable = &rookTable; break;
-        case BISHOP: p.vtable = &bishopTable; break;
-        case KNIGHT: p.vtable = &knightTable; break;
-        case QUEEN: p.vtable = &queenTable; break;
-        case KING: p.vtable = &kingTable; break;
-        case PAWN: p.vtable = &pawnTable; break;
-        case ANTEATER: p.vtable = &anteaterTable; break;
-        default: p.vtable = NULL; break;
-    }
+    p.vtable = getVtable(type);
     return p;
+}
+
+PieceVTable* getVtable(Rank type){
+    switch (type) {
+        case ROOK: return &rookTable; 
+        case BISHOP: return &bishopTable; 
+        case KNIGHT: return &knightTable; 
+        case QUEEN: return &queenTable; 
+        case KING: return &kingTable; 
+        case PAWN: return &pawnTable; 
+        case ANTEATER: return &anteaterTable; 
+        default: return NULL; 
+    }
 }
