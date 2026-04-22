@@ -1,10 +1,6 @@
 #ifndef BOARD_H 
 #define BOARD_H
 
-#include <stdbool.h>
-#include<stdio.h>
-#include <stdlib.h>
-#include "enum.h"
 #include "pieces.h"
 
 
@@ -20,7 +16,7 @@ extern const int MAX_COL;
 
 //BOARD FUNCTIONS
 
-typedef struct {
+typedef struct Board {
     Piece* board[BOARD_HEIGHT][BOARD_WIDTH]; 
 } Board; 
 

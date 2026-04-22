@@ -24,7 +24,7 @@ Piece_Icon *getBlackImagePiece(Piece_Icon **images, Rank rank)
         return images[BLACK_QUEEN];
     case KING:
         return images[BLACK_KING];
-    case ANT:
+    case PAWN:
         return images[BLACK_ANT];
     case EMPTY:
         return NULL;
@@ -49,7 +49,7 @@ Piece_Icon *getWhiteImagePiece(Piece_Icon **images, Rank rank)
         return images[WHITE_QUEEN];
     case KING:
         return images[WHITE_KING];
-    case ANT:
+    case PAWN:
         return images[WHITE_ANT];
     case EMPTY:
         return NULL;
@@ -104,13 +104,13 @@ void createBlackPieces(Board *mBoard, Piece_Icon **images)
 void createAnts(Board *mBoard, Piece_Icon **images, Color color)
 {
     int row = (color == BLACK) ? BLACK_ANT_ROW : WHITE_ANT_ROW;
-    Piece_Icon *image = (color == BLACK) ? getBlackImagePiece(images, ANT) : getWhiteImagePiece(images, ANT);
+    Piece_Icon *image = (color == BLACK) ? getBlackImagePiece(images, PAWN) : getWhiteImagePiece(images, PAWN);
     Piece *piece;
     Pos pos;
     for (int col = 0; col < BOARD_WIDTH; col++)
     { // initialize black ants
         posCtor(&pos, row, col);
-        piece = (color == BLACK) ? createPiecePtr(image, BLACK, ANT, pos) : createPiecePtr(image, WHITE, ANT, pos);
+        piece = (color == BLACK) ? createPiecePtr(image, BLACK, PAWN, pos) : createPiecePtr(image, WHITE, PAWN, pos);
         addPiece(mBoard, piece, pos);
     }
 }
@@ -167,7 +167,11 @@ bool isBoardEdge(int row, int col)
     return (isRowEdge(row) || isColEdge(col));
 }
 
-Piece *getSquare(const Board *board, int row, int col)
+Piece* getPiece(const Board* board, int row, int col){ 
+    return (hasPiece(board, row, col)) ?  getSquare(board, row, col) : NULL; 
+}
+
+Piece* getSquare(const Board *board, int row, int col)
 {
     return board->board[row][col];
 }
@@ -240,7 +244,7 @@ void sendInput(Board *board, Board_State *boardState, Pos clickPos)
 
     int row = clickPos.row, col = clickPos.col;
 
-    Piece *clicked = getSquare(board, row, col);
+    Piece *clicked = getPiece(board, row, col);
 
     if (hasPiece(board, row, col))
     { // if the square we clicked has a piece

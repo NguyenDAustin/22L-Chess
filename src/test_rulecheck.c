@@ -44,7 +44,7 @@ int main(void)
 
     /* Place a white rook at (0,0) */
     Piece rook;
-    rook.color = White;
+    rook.color = WHITE;
     rook.type  = ROOK;
     rook.value = 5;
     rook.img   = NULL;

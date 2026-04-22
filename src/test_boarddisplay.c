@@ -18,7 +18,7 @@ static void pieceSymbol(const Piece *p, char out[3])
         out[0] = ' '; out[1] = ' '; out[2] = '\0';
         return;
     }
-    out[0] = (p->color == White) ? 'w' : 'b';
+    out[0] = (p->color == WHITE) ? 'w' : 'b';
     switch (p->type) {
         case KING:     out[1] = 'K'; break;
         case QUEEN:    out[1] = 'Q'; break;
@@ -75,10 +75,10 @@ static void setupInitial(Piece board[8][10])
     Rank order[10] = { ROOK, KNIGHT, BISHOP, ANTEATER, QUEEN,
                        KING, ANTEATER, BISHOP, KNIGHT, ROOK };
     for (int c = 0; c < 10; c++) {
-        placePiece(board, 0, c, White, order[c]);
-        placePiece(board, 7, c, Black, order[c]);
-        placePiece(board, 1, c, White, PAWN);
-        placePiece(board, 6, c, Black, PAWN);
+        placePiece(board, 0, c, WHITE, order[c]);
+        placePiece(board, 7, c, BLACK, order[c]);
+        placePiece(board, 1, c, WHITE, PAWN);
+        placePiece(board, 6, c, BLACK, PAWN);
     }
 }
 
@@ -94,7 +94,7 @@ int main(void)
     /* Modify: move white pawn from F2 (row 1, col 5) to F4 (row 3, col 5). */
     board[3][5] = board[1][5];
     board[1][5].type  = EMPTY;
-    board[1][5].color = White;
+    board[1][5].color = WHITE;
 
     printf("\nAfter moving white pawn F2 -> F4:\n\n");
     displayBoardAscii(board);
