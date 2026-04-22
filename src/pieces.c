@@ -1,6 +1,5 @@
 #include "pieces.h"
-#include "board.h"
-#include "move.h"
+#include <stdlib.h>
 
 void posCtor(Pos *mPos, int row, int col) {
     if (!mPos) return;
@@ -13,11 +12,11 @@ bool isValidPos(int p, int limit) { //Queency
 }
 
 bool isRowValid(int row) { //Queency
-    return isValidPos(row, BOARD_HEIGHT);
+    return isValid(row, BOARD_HEIGHT);
 }
 
 bool isColValid(int col) { //Queency
-    return isValidPos(col, BOARD_WIDTH);
+    return isValid(col, BOARD_WIDTH);
 }
 
 bool isPosValid(Pos pos) { //Queency
@@ -27,8 +26,6 @@ bool isPosValid(Pos pos) { //Queency
 bool isSamePos(Pos p1, Pos p2){
     return (isSameRow(p1.row, p2.row) && isSameCol(p1.col, p2.col)); 
 }
-
-
 
 void pieceCtor(Piece *mPiece, Icon *img, Color color, Rank type, Pos pos) { //Queency
     if (!mPiece) return;
@@ -79,7 +76,6 @@ bool isEnemy(Board* board, Piece *p, int r, int c) { // checks if square has ene
 }
 
 
-
 int isStraightPathClear(Board* board, int sr, int sc, int er, int ec) {
     int rStep = 0;
     int cStep = 0;
@@ -106,7 +102,7 @@ int isStraightPathClear(Board* board, int sr, int sc, int er, int ec) {
     return 1;
 }
 
-int isDiagonalPathClear(Board* board, int sr, int sc, int er, int ec) {
+int isDiagonalPathClear(Piece board[8][10], int sr, int sc, int er, int ec) {
     if (abs(sr - er) != abs(sc - ec)) {
         return 0; // not diagonal
     }
@@ -140,7 +136,6 @@ int isDiagonalPathClear(Board* board, int sr, int sc, int er, int ec) {
     return 1;
 }
 
-
 //movement
 int rookCanMove(Board* board, Piece *p, int sr, int sc, int er, int ec) 
 {
@@ -166,6 +161,7 @@ int rookCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec)
 
     return 0;
 }
+
 
 
 int bishopCanMove(Board* board, Piece *p, int sr, int sc, int er, int ec)
@@ -195,7 +191,8 @@ int bishopCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec)
     return 0;
 }
 
-int knightCanMove(Board* board, Piece *p, int sr, int sc, int er, int ec) {
+int knightCanMove(Board* board, Piece *p, int sr, int sc, int er, int ec) 
+{
     int mr = abs(sr - er);
     int mc = abs(sc - ec);
 
@@ -311,7 +308,7 @@ int pawnCanMove(Board* board, Piece *p, int sr, int sc, int er, int ec)
     if (p->color == WHITE) {
         mr = -1;
     } else {
-        mr = 1; //switched this --> board orientation is top left corner is 0 0 
+        mr = 1; //board orientation is top left corner is 0 0 
     }
 
     // move forward 1
@@ -320,15 +317,11 @@ int pawnCanMove(Board* board, Piece *p, int sr, int sc, int er, int ec)
     }
 
     if (ec == sc && er == sr + 2 * mr){
-        if (p->color == WHITE && sr == 1 &&
-            isEmpty(board, sr + mr, sc) &&
-            isEmpty(board, er, ec)) {
+        if (p->color == BLACK && sr == 1 && isEmpty(board, sr + mr, sc) && isEmpty(board, er, ec)) {
             return 1;
         }
 
-        if (p->color == BLACK && sr == 6 &&
-            isEmpty(board, sr + mr, sc) &&
-            isEmpty(board, er, ec)) {
+        if (p->color == WHITE && sr == 6 && isEmpty(board, sr + mr, sc) && isEmpty(board, er, ec)) {
             return 1;
         }
     }
@@ -426,6 +419,7 @@ int anteaterCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec)
     return 1;
 }
 
+
 int pawnCanEnPassant(Board* board, Piece *p, int sr, int sc, int er, int ec, Move *lastMove)
 {
     if (!lastMove) {return 0;}
@@ -460,6 +454,7 @@ int pawnCanEnPassant(Board* board, Piece *p, int sr, int sc, int er, int ec, Mov
 
     return 1;
 }
+
 
 int kingCanCastle(Board* board, Piece *p, int sr, int sc, int er, int ec)
 {
@@ -512,6 +507,7 @@ int kingCanCastle(Board* board, Piece *p, int sr, int sc, int er, int ec)
     }
 }
 
+/*
 Pos findKing(Board* board, Color color)
 {
     Pos k = {-1, -1};
@@ -558,6 +554,7 @@ int kingCheck(Board* board, Color kingColor)
 
     return attackSquare(board, kingPos.row, kingPos.col, enemyColor);
 }
+*/
 
 
 // virtual Tables
@@ -579,19 +576,16 @@ Piece createPiece(Color color, Rank type){  //constructor
     p.pos.row = -1;
     p.pos.col = -1;
     p.moved = 0;
-    p.vtable = getVtable(type);
-    return p;
-}
 
-PieceVTable* getVtable(Rank type){
     switch (type) {
-        case ROOK: return &rookTable; 
-        case BISHOP: return &bishopTable; 
-        case KNIGHT: return &knightTable; 
-        case QUEEN: return &queenTable; 
-        case KING: return &kingTable; 
-        case PAWN: return &pawnTable; 
-        case ANTEATER: return &anteaterTable; 
-        default: return NULL; 
+        case ROOK: p.vtable = &rookTable; break;
+        case BISHOP: p.vtable = &bishopTable; break;
+        case KNIGHT: p.vtable = &knightTable; break;
+        case QUEEN: p.vtable = &queenTable; break;
+        case KING: p.vtable = &kingTable; break;
+        case PAWN: p.vtable = &pawnTable; break;
+        case ANTEATER: p.vtable = &anteaterTable; break;
+        default: p.vtable = NULL; break;
     }
+    return p;
 }

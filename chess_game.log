@@ -123,3 +123,88 @@ End of game. White quits.
 -------------------------------------------
 1      White  Quit                 White quits
 End of game. White quits.
+
+ Chess Game Log : Tue Apr 21 15:45:55 2026
+ 
+#  Color  Action               Move
+-------------------------------------------
+
+ Chess Game Log : Tue Apr 21 15:47:55 2026
+ 
+#  Color  Action               Move
+-------------------------------------------
+1      White  Quit                 White quits
+End of game. White quits.
+
+ Chess Game Log : Tue Apr 21 15:48:34 2026
+ 
+#  Color  Action               Move
+-------------------------------------------
+1      White  Quit                 White quits
+End of game. White quits.
+
+ Chess Game Log : Tue Apr 21 15:51:30 2026
+ 
+#  Color  Action               Move
+-------------------------------------------
+1      White  Quit                 White quits
+End of game. White quits.
+
+ Chess Game Log : Tue Apr 21 15:52:32 2026
+ 
+#  Color  Action               Move
+-------------------------------------------
+1      White  Quit                 White quits
+End of game. White quits.
+
+ Chess Game Log : Tue Apr 21 15:53:01 2026
+ 
+#  Color  Action               Move
+-------------------------------------------
+1      White  Quit                 White quits
+End of game. White quits.
+
+ Chess Game Log : Tue Apr 21 15:57:32 2026
+ 
+#  Color  Action               Move
+-------------------------------------------
+1  White  Move                 {I2, I3}
+2  Black  CPU Move             {A7, A5}
+3  White  Move                 {I3, I4}
+4  Black  CPU Move             {F7, F5}
+5  White  Move                 {I4, I5}
+6  Black  CPU Move             {J7, J6}
+7  White  Move                 {I5, I6}
+8  Black  CPU Move             {B7, B6}
+9  White  Capture              piece captures piece {H7, I6}
+10 Black  CPU Move             {G8, F7}
+11 White  Capture              piece captures piece {I8, H7}
+12 Black  CPU Move             {F7, G6}
+13     White  Quit                 White quits
+End of game. White quits.
+
+ Chess Game Log : Tue Apr 21 16:01:03 2026
+ 
+#  Color  Action               Move
+-------------------------------------------
+1      White  Quit                 White quits
+End of game. White quits.
+
+ Chess Game Log : Tue Apr 21 16:03:39 2026
+ 
+#  Color  Action               Move
+-------------------------------------------
+1  White  Move                 {I2, I3}
+2  Black  CPU Move             {B7, B5}
+3  White  Move                 {I3, I4}
+4  Black  CPU Move             {D7, D6}
+5  White  Move                 {I4, I5}
+6  Black  CPU Move             {D6, D5}
+7  White  Move                 {I5, I6}
+8  Black  CPU Move             {H7, H5}
+9  White  Capture              piece captures piece {J7, I6}
+10 Black  CPU Move             {A7, A5}
+11 White  Capture              piece captures piece {I8, J7}
+12 Black  CPU Move             {F7, F5}
+13     White  Quit                 White quits
+End of game. White quits.

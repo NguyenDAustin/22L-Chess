@@ -5,9 +5,8 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include "enum.h"
 
-typedef cairo_surface_t Icon;
+typedef cairo_surface_t Piece_Icon;
 
 typedef struct {
     int row;
@@ -18,12 +17,12 @@ typedef struct Board Board;
 typedef struct Piece Piece;
 typedef struct Move Move;
 
-typedef struct PieceVTable {
-    int (*canMove)(Board *board, Piece *piece, int sr, int sc, int er, int ec);
+typedef struct PieceVTable { //sr: starting row, sc: starting column, er: end row, ec: end column
+    int (*canMove)(Board *board, Piece *piece, int sr, int sc, int er, int ec); 
     int (*canCapture)(Board *board, Piece *piece, int sr, int sc, int er, int ec);
 } PieceVTable;
 
-struct Piece {
+struct Piece { //sets up how the pieces move
     Icon *img;
     Color color;
     Rank type;
@@ -33,6 +32,7 @@ struct Piece {
     int moved;
 };
 
+//Position Function (by Queency)
 void posCtor(Pos *mPos, int row, int col);
 bool isValidPos(int p, int limit);
 bool isRowValid(int row);
@@ -42,8 +42,9 @@ bool isSameRow(int r1, int r2);
 bool isSameCol(int c1, int c2);
 bool isSamePos(Pos p1, Pos p2);
 
-
+//Piece Functions (by Queency)
 void pieceCtor(Piece *mPiece, Icon *img, Color color, Rank type, Pos pos);
+
 
 Icon *getImage(const Piece *piece);
 void setImage(Piece *piece, Icon *img);
@@ -55,6 +56,9 @@ Pos getPos(const Piece *piece);
 void setPos(Piece *piece, Pos pos);
 PieceVTable* getVtable(Rank type); 
 
+Piece createPiece(Color color, Rank type);  //connects the pieces together
+
+//Movement and Capture
 int rookCanMove(Board *board, Piece *p, int sr, int sc, int er, int ec);
 int rookCanCapture(Board *board, Piece *p, int sr, int sc, int er, int ec);
 int bishopCanMove(Board *board, Piece *p, int sr, int sc, int er, int ec);
@@ -70,6 +74,9 @@ int pawnCanCapture(Board *board, Piece *p, int sr, int sc, int er, int ec);
 int anteaterCanMove(Board *board, Piece *p, int sr, int sc, int er, int ec);
 int anteaterCanCapture(Board *board, Piece *p, int sr, int sc, int er, int ec);
 
+//special moves
+int pawnCanEnPassant(Board *board, Piece *p, int sr, int sc, int er, int ec, Move *lastMove);
+int kingCanCastle(Board *board, Piece *p, int sr, int sc, int er, int ec);
 
 /*
 Pos findKing(Piece board[8][10], Color color);
