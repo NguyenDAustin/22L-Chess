@@ -128,6 +128,7 @@ void drawBoard(GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointe
       drawSquare(area, cr, col, row); 
 
       if(isLegalMoveSquare(boardState, pos)){
+         printf("is a legal move: %d %d\n", pos.row, pos.col);
          drawHighlight(cr, row, col);  
       }
        

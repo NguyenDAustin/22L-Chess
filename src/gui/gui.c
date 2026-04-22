@@ -70,6 +70,7 @@ static void activate (GtkApplication *app, gpointer user_data)
   Board_Bundle* boardData = malloc(sizeof(Board_Bundle)); 
   boardData->boardState = malloc(sizeof(Board_State)); 
   boardData->boardState->clickedPiece = NULL; 
+  boardData->boardState->legalMoveCount = 0; 
   boardData->boardWidget = board; 
   boardData->board = user_data;  
 
