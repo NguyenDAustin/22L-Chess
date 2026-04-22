@@ -88,6 +88,11 @@ void drawPiece(cairo_t *cr, Piece_Icon* img, int row, int col){
 }
 
 
+void drawHighlight(cairo_t* cr){ 
+  //get legal moves 
+  //
+}
+
 void drawBoard(GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer data){ 
   Board_Bundle* boardInfo = data; 
   Board* mBoard = boardInfo->board; 

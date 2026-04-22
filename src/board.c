@@ -66,8 +66,11 @@ Piece_Icon *getImagePiece(Piece_Icon **images, Color color, Rank rank)
 Piece *createPiecePtr(Piece_Icon *img, Color color, Rank rank, Pos pos)
 {
     Piece *temp = malloc(sizeof(Piece));
-    // check if malloc NULL
-
+    if(temp == NULL){
+        printf("ERROR: MALLOC HAS FAILED\n");
+        return NULL; 
+    }
+    
     pieceCtor(temp, img, color, rank, pos, NULL);
     return temp;
 }
@@ -196,42 +199,6 @@ void movePiece(Board *board, Pos oldPos, Pos newPos)
 {
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-bool aPieceWasClicked(const Board_State *boardState)
-{
-    return boardState->clickedPiece;
-}
-
-bool newPieceWasClicked(const Board_State *boardState, Piece *clickedPiece)
-{
-    return (clickedPiece != boardState->clickedPiece && clickedPiece != NULL);
-}
-
-bool hasUpdate(const Board_State *boardState)
-{
-    return boardState->hasUpdate;
-}
-
-void setUpdate(Board_State *boardState, bool update)
-{
-    boardState->hasUpdate = update;
-}
-
-Piece *getClickedPiece(const Board_State *boardState)
-{
-    return boardState->clickedPiece;
-}
-
-void setClickedPiece(Board_State *boardState, Piece *piece)
-{
-    boardState->clickedPiece = piece;
-}
-
-void resetClickedPiece(Board_State *boardState)
-{
-    setClickedPiece(boardState, NULL);
-}
 
 void sendInput(Board *board, Board_State *boardState, Pos clickPos)
 {
@@ -250,6 +217,7 @@ void sendInput(Board *board, Board_State *boardState, Pos clickPos)
     { // if the square we clicked has a piece
         printf("new piece was clicked!\n");
         setClickedPiece(boardState, clicked);
+
         setUpdate(boardState, false); // for now is false since we haven't implemented move highlighting
     }
     else if (aPieceWasClicked(boardState))
