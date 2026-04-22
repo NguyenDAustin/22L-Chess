@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include "enum.h"
 
-typedef cairo_surface_t Piece_Icon;
+typedef cairo_surface_t Icon;
 
 typedef struct {
     int row;
@@ -24,7 +24,7 @@ typedef struct PieceVTable {
 } PieceVTable;
 
 struct Piece {
-    Piece_Icon *img;
+    Icon *img;
     Color color;
     Rank type;
     PieceVTable *vtable;
@@ -38,20 +38,22 @@ bool isValidPos(int p, int limit);
 bool isRowValid(int row);
 bool isColValid(int col);
 bool isPosValid(Pos pos);
+bool isSameRow(int r1, int r2);
+bool isSameCol(int c1, int c2);
+bool isSamePos(Pos p1, Pos p2);
 
-void pieceCtor(Piece *mPiece, Piece_Icon *img, Color color, Rank type, Pos pos, PieceVTable *vtable);
 
-Piece_Icon *getImage(const Piece *piece);
-void setImage(Piece *piece, Piece_Icon *img);
+void pieceCtor(Piece *mPiece, Icon *img, Color color, Rank type, Pos pos);
 
+Icon *getImage(const Piece *piece);
+void setImage(Piece *piece, Icon *img);
 Color getColor(const Piece *piece);
 void setColor(Piece *piece, Color color);
-
 Rank getType(const Piece *piece);
 void setType(Piece *piece, Rank type);
-
 Pos getPos(const Piece *piece);
 void setPos(Piece *piece, Pos pos);
+PieceVTable* getVtable(Rank type); 
 
 int rookCanMove(Board *board, Piece *p, int sr, int sc, int er, int ec);
 int rookCanCapture(Board *board, Piece *p, int sr, int sc, int er, int ec);

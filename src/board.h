@@ -2,8 +2,8 @@
 #define BOARD_H
 
 #include "pieces.h"
-#include "board_state.h"
 
+typedef struct Board_State Board_State; 
 
 
 extern const int NUMBER_OF_FLAGS; 
@@ -22,25 +22,25 @@ typedef struct Board {
 } Board; 
 
 
-Piece_Icon* getImagePiece(Piece_Icon** images, Color color, Rank rank);
-Piece_Icon* getWhiteImagePiece(Piece_Icon** images, Rank rank); 
-Piece_Icon* getBlackImagePiece(Piece_Icon** images, Rank rank); 
+Icon* getImagePiece(Icon** images, Color color, Rank rank);
+Icon* getWhiteImagePiece(Icon** images, Rank rank); 
+Icon* getBlackImagePiece(Icon** images, Rank rank); 
 
 
-Piece* createPiecePtr(Piece_Icon* img, Color color, Rank rank, Pos pos);
+Piece* createPiecePtr(Icon* img, Color color, Rank rank, Pos pos);
 
 
-void createPieces( Board* mBoard, Piece_Icon** images, Color color);
-void createWhitePieces(Board* mBoard, Piece_Icon** images); 
-void createBlackPieces(Board* mBoard, Piece_Icon** images); 
+void createPieces( Board* mBoard, Icon** images, Color color);
+void createWhitePieces(Board* mBoard, Icon** images); 
+void createBlackPieces(Board* mBoard, Icon** images); 
 
-void createAnts(Board* mBoard, Piece_Icon** images, Color color); 
-void createBlackAnts(Board* mBoard, Piece_Icon** images);
-void createWhiteAnts(Board* mBoard, Piece_Icon** images);
+void createAnts(Board* mBoard, Icon** images, Color color); 
+void createBlackAnts(Board* mBoard, Icon** images);
+void createWhiteAnts(Board* mBoard, Icon** images);
 
 //BOARD INITIALIZATION FUNCTIONS
 void defaultInitializeBoard(Board* mBoard); 
-void initializeBoard(Board* mBoard, Piece_Icon** images); 
+void initializeBoard(Board* mBoard, Icon** images); 
 
 //BOARD 
 bool hasPiece(const Board* board, int row, int col); 

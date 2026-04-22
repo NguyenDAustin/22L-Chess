@@ -1,14 +1,15 @@
 #include "board.h"
+#include "board_state.h"
 
 const int NUMBER_OF_FLAGS = 10;
-const int BLACK_ANT_ROW = 6;
-const int WHITE_ANT_ROW = 1;
+const int BLACK_ANT_ROW = 1;
+const int WHITE_ANT_ROW = 6;
 const int MIN_ROW = 0;
 const int MAX_ROW = 7;
 const int MIN_COL = 0;
 const int MAX_COL = 9;
 
-Piece_Icon *getBlackImagePiece(Piece_Icon **images, Rank rank)
+Icon *getBlackImagePiece(Icon **images, Rank rank)
 {
     switch (rank)
     {
@@ -33,7 +34,7 @@ Piece_Icon *getBlackImagePiece(Piece_Icon **images, Rank rank)
     }
 }
 
-Piece_Icon *getWhiteImagePiece(Piece_Icon **images, Rank rank)
+Icon *getWhiteImagePiece(Icon **images, Rank rank)
 {
     switch (rank)
     {
@@ -58,12 +59,12 @@ Piece_Icon *getWhiteImagePiece(Piece_Icon **images, Rank rank)
     }
 }
 
-Piece_Icon *getImagePiece(Piece_Icon **images, Color color, Rank rank)
+Icon *getImagePiece(Icon **images, Color color, Rank rank)
 {
     return (color == BLACK) ? getBlackImagePiece(images, rank) : getWhiteImagePiece(images, rank);
 }
 
-Piece *createPiecePtr(Piece_Icon *img, Color color, Rank rank, Pos pos)
+Piece *createPiecePtr(Icon *img, Color color, Rank rank, Pos pos)
 {
     Piece *temp = malloc(sizeof(Piece));
     if(temp == NULL){
@@ -71,18 +72,18 @@ Piece *createPiecePtr(Piece_Icon *img, Color color, Rank rank, Pos pos)
         return NULL; 
     }
     
-    pieceCtor(temp, img, color, rank, pos, NULL);
+    pieceCtor(temp, img, color, rank, pos);
     return temp;
 }
 
-void createPieces(Board *mBoard, Piece_Icon **images, Color color)
+void createPieces(Board *mBoard, Icon **images, Color color)
 {
     int order[BOARD_WIDTH] = {ROOK, KNIGHT, BISHOP, ANTEATER, QUEEN, KING, ANTEATER, BISHOP, KNIGHT, ROOK};
     int row = (color == BLACK) ? MIN_ROW : MAX_ROW;
     int rank;
     Pos pos;
     Piece *piece;
-    Piece_Icon *image;
+    Icon *image;
 
     for (int col = 0; col < BOARD_WIDTH; col++)
     {
@@ -94,20 +95,20 @@ void createPieces(Board *mBoard, Piece_Icon **images, Color color)
     }
 }
 
-void createWhitePieces(Board *mBoard, Piece_Icon **images)
+void createWhitePieces(Board *mBoard, Icon **images)
 {
     createPieces(mBoard, images, WHITE);
 }
 
-void createBlackPieces(Board *mBoard, Piece_Icon **images)
+void createBlackPieces(Board *mBoard, Icon **images)
 {
     createPieces(mBoard, images, BLACK);
 }
 
-void createAnts(Board *mBoard, Piece_Icon **images, Color color)
+void createAnts(Board *mBoard, Icon **images, Color color)
 {
     int row = (color == BLACK) ? BLACK_ANT_ROW : WHITE_ANT_ROW;
-    Piece_Icon *image = (color == BLACK) ? getBlackImagePiece(images, PAWN) : getWhiteImagePiece(images, PAWN);
+    Icon *image = (color == BLACK) ? getBlackImagePiece(images, PAWN) : getWhiteImagePiece(images, PAWN);
     Piece *piece;
     Pos pos;
     for (int col = 0; col < BOARD_WIDTH; col++)
@@ -118,12 +119,12 @@ void createAnts(Board *mBoard, Piece_Icon **images, Color color)
     }
 }
 
-void createBlackAnts(Board *mBoard, Piece_Icon **images)
+void createBlackAnts(Board *mBoard, Icon **images)
 {
     createAnts(mBoard, images, BLACK);
 }
 
-void createWhiteAnts(Board *mBoard, Piece_Icon **images)
+void createWhiteAnts(Board *mBoard, Icon **images)
 {
     createAnts(mBoard, images, WHITE);
 }
@@ -140,7 +141,7 @@ void defaultInitializeBoard(Board *mBoard)
     }
 }
 
-void initializeBoard(Board *mBoard, Piece_Icon **images)
+void initializeBoard(Board *mBoard, Icon **images)
 { // temporarily we will just alloc for pawns
     createBlackAnts(mBoard, images);
     createWhiteAnts(mBoard, images);
@@ -217,10 +218,10 @@ void sendInput(Board *board, Board_State *boardState, Pos clickPos)
     { // if the square we clicked has a piece
         printf("new piece was clicked!\n");
         setClickedPiece(boardState, clicked);
-
-        setUpdate(boardState, false); // for now is false since we haven't implemented move highlighting
+        generateLegalMoves(boardState, board, clicked, getPos(clicked));  //highlight
+        setUpdate(boardState, true); // for now is false since we haven't implemented move highlighting
     }
-    else if (aPieceWasClicked(boardState))
+    else if (aPieceWasClicked(boardState)) //piece is moving
     { // square was clicked // but we clicked a piece before //set update flag
         printf("a piece is moving\n");
         Piece *clickedPiece = getClickedPiece(boardState);
@@ -228,6 +229,7 @@ void sendInput(Board *board, Board_State *boardState, Pos clickPos)
         addPiece(board, clickedPiece, clickPos);
         deletePiece(board, oldPos);
         resetClickedPiece(boardState);
+        resetLegalMoveCount(boardState);
         setUpdate(boardState, true);
     }
 }

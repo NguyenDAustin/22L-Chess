@@ -24,20 +24,24 @@ bool isPosValid(Pos pos) { //Queency
     return isRowValid(pos.row) && isColValid(pos.col);
 }
 
+bool isSamePos(Pos p1, Pos p2){
+    return (isSameRow(p1.row, p2.row) && isSameCol(p1.col, p2.col)); 
+}
 
 
-void pieceCtor(Piece *mPiece, Piece_Icon *img, Color color, Rank type, Pos pos, PieceVTable *vtable) { //Queency
+
+void pieceCtor(Piece *mPiece, Icon *img, Color color, Rank type, Pos pos) { //Queency
     if (!mPiece) return;
     mPiece->img = img;
     mPiece->color = color;
     mPiece->type = type;
     mPiece->pos = pos;
-    mPiece->vtable = vtable;
+    mPiece->vtable = getVtable(type);
     mPiece->moved = 0;
 }
 
-Piece_Icon *getImage(const Piece *piece) { return piece ? piece->img : NULL; } //Queency
-void setImage(Piece *piece, Piece_Icon *img) { if (piece) piece->img = img; } //Queency
+Icon *getImage(const Piece *piece) { return piece ? piece->img : NULL; } //Queency
+void setImage(Piece *piece, Icon *img) { if (piece) piece->img = img; } //Queency
 
 Color getColor(const Piece *piece) { return piece ? piece->color : WHITE; } //Queency
 void setColor(Piece *piece, Color color) { if (piece) piece->color = color; } //Queency
@@ -62,15 +66,16 @@ bool isSameCol(int c1, int c2){
 }
 
 
+
 bool isEmpty(Board* board, int r, int c) { // checks if square is empty
     Rank type = getType(board->board[r][c]); 
-    return (type == EMPTY);
+    return (type == EMPTY || !board->board[r][c]);
 }
 
 bool isEnemy(Board* board, Piece *p, int r, int c) { // checks if square has enemy
     Piece* piece = board->board[r][c]; 
     Rank type = getType(piece); 
-    return type != EMPTY && getColor(piece) != p->color;
+    return (type != EMPTY || board->board[r][c]) && (getColor(piece) != p->color);
 }
 
 
@@ -302,10 +307,11 @@ int pawnCanMove(Board* board, Piece *p, int sr, int sc, int er, int ec)
 {
     int mr;
 
+
     if (p->color == WHITE) {
-        mr = 1;
-    } else {
         mr = -1;
+    } else {
+        mr = 1; //switched this --> board orientation is top left corner is 0 0 
     }
 
     // move forward 1
@@ -573,16 +579,19 @@ Piece createPiece(Color color, Rank type){  //constructor
     p.pos.row = -1;
     p.pos.col = -1;
     p.moved = 0;
-
-    switch (type) {
-        case ROOK: p.vtable = &rookTable; break;
-        case BISHOP: p.vtable = &bishopTable; break;
-        case KNIGHT: p.vtable = &knightTable; break;
-        case QUEEN: p.vtable = &queenTable; break;
-        case KING: p.vtable = &kingTable; break;
-        case PAWN: p.vtable = &pawnTable; break;
-        case ANTEATER: p.vtable = &anteaterTable; break;
-        default: p.vtable = NULL; break;
-    }
+    p.vtable = getVtable(type);
     return p;
+}
+
+PieceVTable* getVtable(Rank type){
+    switch (type) {
+        case ROOK: return &rookTable; 
+        case BISHOP: return &bishopTable; 
+        case KNIGHT: return &knightTable; 
+        case QUEEN: return &queenTable; 
+        case KING: return &kingTable; 
+        case PAWN: return &pawnTable; 
+        case ANTEATER: return &anteaterTable; 
+        default: return NULL; 
+    }
 }
