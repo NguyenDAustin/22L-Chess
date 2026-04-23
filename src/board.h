@@ -29,6 +29,7 @@ Icon* getBlackImagePiece(Icon** images, Rank rank);
 
 Piece* createPiecePtr(Icon* img, Color color, Rank rank, Pos pos);
 
+void promotion(Board *board, Pos pos, Rank newRank);
 
 void createPieces( Board* mBoard, Icon** images, Color color);
 void createWhitePieces(Board* mBoard, Icon** images); 

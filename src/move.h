@@ -2,6 +2,7 @@
 #define MOVE_H
 
 #include "pieces.h"
+#include "board.h"
 
 typedef struct Move{
     int startRow; //scr
