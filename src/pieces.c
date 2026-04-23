@@ -147,8 +147,8 @@ int rookCanMove(Board* board, Piece *p, int sr, int sc, int er, int ec)
     if(!isEmpty(board, er, ec))
         return false; 
 
-    if ((isSameCol(sr, er) || isSameCol(ec, er)) && isStraightPathClear(board, sr, sc, er, ec)) { // checks to see if it is within the same row or same column
-            return true;
+    if (isSameRow(sr, er) || isSameCol(sc, ec)) {
+        return isStraightPathClear(board, sr, sc, er, ec); //rook move + bishop move
     }
 
     return 0;
