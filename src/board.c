@@ -185,9 +185,11 @@ void setSquare(Board *board, Piece *piece, int row, int col)
     board->board[row][col] = piece;
 }
 
-void deletePiece(Board *board, Pos pos)
+Piece* deletePiece(Board *board, Pos pos)
 {
+    Piece* delete = board->board[pos.row][pos.col]; 
     board->board[pos.row][pos.col] = NULL;
+    return delete; 
 }
 
 void addPiece(Board *board, Piece *piece, Pos pos)
@@ -196,10 +198,19 @@ void addPiece(Board *board, Piece *piece, Pos pos)
     piece->pos = pos;
 }
 
-void movePiece(Board *board, Pos oldPos, Pos newPos)
+void movePiece(Board *board, Board_State* boardState, Piece* piece, Pos newPos)
 {
+    deletePiece(board, getPos(piece));
+    addPiece(board, piece, newPos);
+    resetClickedPiece(boardState);
+    resetLegalMoveCount(boardState);
 }
 
+void capturePiece(Board* board, Board_State* boardState, Piece* piece, Pos capturePos){
+    Piece* deleted = deletePiece(board, capturePos);  
+    movePiece(board, boardState, piece, capturePos); 
+    free(deleted);
+}
 
 void sendInput(Board *board, Board_State *boardState, Pos clickPos)
 {
@@ -214,22 +225,21 @@ void sendInput(Board *board, Board_State *boardState, Pos clickPos)
 
     Piece *clicked = getPiece(board, row, col);
 
-    if (hasPiece(board, row, col))
-    { // if the square we clicked has a piece
-        printf("new piece was clicked!\n");
+    if(hasPiece(board, row, col) && !isLegalMoveSquare(boardState, clickPos)){ //if square has piece and we havent clicked a piece before --> a newPiece was clicked
+        printf("new piece was clicked\n"); 
         setClickedPiece(boardState, clicked);
         generateLegalMoves(boardState, board, clicked, getPos(clicked));  //highlight
         setUpdate(boardState, true); // for now is false since we haven't implemented move highlighting
     }
-    else if (aPieceWasClicked(boardState)) //piece is moving
-    { // square was clicked // but we clicked a piece before //set update flag
-        printf("a piece is moving\n");
+    else if(hasPiece(board, row, col) && aPieceWasClicked(boardState) && isLegalMoveSquare(boardState, clickPos)){ //we clicked a piece before and its legal to move there
+        printf("capture\n");
+        capturePiece(board, boardState, getClickedPiece(boardState), getPos(clicked)); 
+        setUpdate(boardState, true);
+    }
+    else if(aPieceWasClicked(boardState) && isLegalMoveSquare(boardState, clickPos)){
+        printf("moving\n"); 
         Piece *clickedPiece = getClickedPiece(boardState);
-        Pos oldPos = getPos(clickedPiece);
-        addPiece(board, clickedPiece, clickPos);
-        deletePiece(board, oldPos);
-        resetClickedPiece(boardState);
-        resetLegalMoveCount(boardState);
+        movePiece(board, boardState, clickedPiece, clickPos); 
         setUpdate(boardState, true);
     }
 }

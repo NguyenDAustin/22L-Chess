@@ -51,10 +51,9 @@ bool isRowEdge(int row);
 Piece* getSquare(const Board* board, int row, int col); 
 
 void setSquare(Board* board, Piece* piece, int row, int col);
-void deletePiece(Board* board, Pos pos);
+Piece* deletePiece(Board* board, Pos pos);
 void addPiece(Board* board, Piece* piece, Pos pos);
-void movePiece(Board* board, Pos oldPos, Pos newPos);
-
+void movePiece(Board *board, Board_State* boardState, Piece* piece, Pos newPos);
 
 //BOARD  - MAIN FUUNCTIONALITY 
 void sendInput(Board* board, Board_State* boardState, Pos clickPos);

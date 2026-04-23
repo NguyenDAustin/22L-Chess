@@ -95,12 +95,6 @@ bool canPieceGoTo(Board* board, Piece* piece, Pos start, Pos end) {
 
     Piece* target = getSquare(board, end.row, end.col); //square we want to go to
 
-    
-    if(end.row == 2 && end.col == 8){ 
-        printf("here!\n"); 
-        printf("target is null %d", (target == NULL)); 
-    }
-
     return target ? piece->vtable->canCapture(board, piece, start.row, start.col, end.row, end.col) 
                   : piece->vtable->canMove(board, piece, start.row, start.col, end.row, end.col); 
 }
@@ -109,14 +103,11 @@ void generateLegalMoves(Board_State* boardState, Board* board, Piece* piece, Pos
     resetLegalMoveCount(boardState); 
 
     Pos end; 
-
-    printf("start pos: %d %d\n", start.row, start.col);
-
     for(int row = 0; row < BOARD_HEIGHT; row++){
         for(int col = 0; col < BOARD_WIDTH; col++){
             posCtor(&end, row, col);
             if(canPieceGoTo(board, piece, start, end)){
-                printf("legalMove: [%d][%d]\n", end.row, end.col);
+                //printf("legalMove: [%d][%d]\n", end.row, end.col);
                 addLegalMove(boardState, end); 
             }
               
