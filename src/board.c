@@ -229,7 +229,7 @@ void sendInput(Board *board, Board_State *boardState, Pos clickPos)
         printf("new piece was clicked\n"); 
         setClickedPiece(boardState, clicked);
         generateLegalMoves(boardState, board, clicked, getPos(clicked));  //highlight
-        setUpdate(boardState, true); // for now is false since we haven't implemented move highlighting
+        setUpdate(boardState, true);
     }
     else if(hasPiece(board, row, col) && aPieceWasClicked(boardState) && isLegalMoveSquare(boardState, clickPos)){ //we clicked a piece before and its legal to move there
         printf("capture\n");
@@ -241,8 +241,11 @@ void sendInput(Board *board, Board_State *boardState, Pos clickPos)
         Piece *clickedPiece = getClickedPiece(boardState);
         movePiece(board, boardState, clickedPiece, clickPos); 
         setUpdate(boardState, true);
-    }
+    } 
+
+    //if not legal move --> just cancel move --> reset clicked piece
 }
+
 
 void promotion(Board *board, Pos pos, Rank newRank)
 {

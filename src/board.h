@@ -54,6 +54,7 @@ void setSquare(Board* board, Piece* piece, int row, int col);
 Piece* deletePiece(Board* board, Pos pos);
 void addPiece(Board* board, Piece* piece, Pos pos);
 void movePiece(Board *board, Board_State* boardState, Piece* piece, Pos newPos);
+void capturePiece(Board* board, Board_State* boardState, Piece* piece, Pos capturePos);
 
 //BOARD  - MAIN FUUNCTIONALITY 
 void sendInput(Board* board, Board_State* boardState, Pos clickPos);

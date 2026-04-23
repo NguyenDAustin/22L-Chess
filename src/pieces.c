@@ -344,9 +344,9 @@ int pawnCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec)
     Piece* piece = board->board[er][ec]; 
 
     if (p->color == WHITE) {
-        mr = 1;
+        mr = -1; //switched for board orientation 
     } else {
-        mr = -1;
+        mr = 1;
     }
 
     if (er == sr + mr && abs(ec - sc) == 1) {
