@@ -10,6 +10,7 @@ typedef struct {
   GtkWidget* boardWidget; 
 
   
+  
 } Board_Bundle; 
 
 

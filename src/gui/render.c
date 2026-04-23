@@ -97,7 +97,7 @@ void drawPiece(cairo_t *cr, Icon* img, int row, int col){
 void drawHighlight(cairo_t* cr, int row, int col){  
     double x = indexToPix(col) + (SQUARE_SIZE / 2.0);
     double y = indexToPix(row) + (SQUARE_SIZE / 2.0);
-    double r  = SQUARE_SIZE * 0.22;   // controls size
+    double r  = SQUARE_SIZE * 0.1;   // controls size
     GdkRGBA color = HIGHLIGHT_COLOR(); 
 
     cairo_save(cr);

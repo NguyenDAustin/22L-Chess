@@ -4,6 +4,7 @@
 #include "render.h"
 #include "pieces.h"
 #include "board_bundle.h"
+#include "game_controller.h"
 
 //global variables 
 extern const char FILES[10]; 

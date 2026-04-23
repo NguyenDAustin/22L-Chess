@@ -90,15 +90,6 @@ static void activate (GtkApplication *app, gpointer user_data)
   GtkWidget* board = gtk_drawing_area_new(); 
   GtkWidget* logScroller = gtk_scrolled_window_new(); 
   GtkWidget* log = gtk_text_view_new();
-
-  //setting up data
-  /*
-  Board_Bundle* boardData = malloc(sizeof(Board_Bundle)); 
-  boardData->boardState = malloc(sizeof(Board_State)); 
-  initializeBoardState(boardData->boardState); 
-  boardData->boardWidget = board; 
-  boardData->board = user_data; 
-  */ 
  
   Board_Bundle* boardData = malloc(sizeof(Board_Bundle)); 
   initializeBoardBundle(boardData, user_data, board); 
