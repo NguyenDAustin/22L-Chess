@@ -72,10 +72,9 @@ int anteaterCanCapture(Board *board, Piece *p, int sr, int sc, int er, int ec);
 int pawnCanEnPassant(Board *board, Piece *p, int sr, int sc, int er, int ec, Move *lastMove);
 int kingCanCastle(Board *board, Piece *p, int sr, int sc, int er, int ec);
 
-/*
-Pos findKing(Piece board[8][10], Color color);
-int attackSquare(Piece board[8][10], int row, int col, Color attColor);
-int kingCheck(Piece board[8][10], Color kingColor);
-*/
+//check check
+Pos findKing(Board* board, Color color);
+int attackSquare(Board* board, int row, int col, Color attColor);
+int kingCheck(Board* board, Color kingColor);
 
 #endif

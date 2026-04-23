@@ -148,7 +148,7 @@ int rookCanMove(Board* board, Piece *p, int sr, int sc, int er, int ec)
         return false; 
 
     if (isSameRow(sr, er) || isSameCol(sc, ec)) {
-        return isStraightPathClear(board, sr, sc, er, ec); //rook move + bishop move
+        return isStraightPathClear(board, sr, sc, er, ec);
     }
 
     return 0;
@@ -512,43 +512,6 @@ int kingCanCastle(Board* board, Piece *p, int sr, int sc, int er, int ec)
     }
 }
 
-// virtual Tables
-static PieceVTable rookTable = {rookCanMove, rookCanCapture};
-static PieceVTable bishopTable = {bishopCanMove, bishopCanCapture};
-static PieceVTable knightTable = {knightCanMove, knightCanCapture};
-static PieceVTable queenTable = {queenCanMove, queenCanCapture};
-static PieceVTable kingTable = {kingCanMove, kingCanCapture};
-static PieceVTable pawnTable = {pawnCanMove, pawnCanCapture};
-static PieceVTable anteaterTable = {anteaterCanMove, anteaterCanCapture};
-
-
-Piece createPiece(Color color, Rank type){  //constructor
-    Piece p;
-    p.color = color;
-    p.type = type; 
-    p.img = NULL;
-    p.value = 0;
-    p.pos.row = -1;
-    p.pos.col = -1;
-    p.moved = 0;
-    p.vtable = getVtable(type);
-    return p;
-}
-
-PieceVTable* getVtable(Rank type){
-    switch (type) {
-        case ROOK: return &rookTable; 
-        case BISHOP: return &bishopTable; 
-        case KNIGHT: return &knightTable; 
-        case QUEEN: return &queenTable; 
-        case KING: return &kingTable; 
-        case PAWN: return &pawnTable; 
-        case ANTEATER: return &anteaterTable; 
-        default: return NULL; 
-    }
-}
-
-/*
 Pos findKing(Board* board, Color color)
 {
     Pos k = {-1, -1};
@@ -595,4 +558,40 @@ int kingCheck(Board* board, Color kingColor)
 
     return attackSquare(board, kingPos.row, kingPos.col, enemyColor);
 }
-*/
+
+// virtual Tables
+static PieceVTable rookTable = {rookCanMove, rookCanCapture};
+static PieceVTable bishopTable = {bishopCanMove, bishopCanCapture};
+static PieceVTable knightTable = {knightCanMove, knightCanCapture};
+static PieceVTable queenTable = {queenCanMove, queenCanCapture};
+static PieceVTable kingTable = {kingCanMove, kingCanCapture};
+static PieceVTable pawnTable = {pawnCanMove, pawnCanCapture};
+static PieceVTable anteaterTable = {anteaterCanMove, anteaterCanCapture};
+
+
+Piece createPiece(Color color, Rank type){  //constructor
+    Piece p;
+    p.color = color;
+    p.type = type; 
+    p.img = NULL;
+    p.value = 0;
+    p.pos.row = -1;
+    p.pos.col = -1;
+    p.moved = 0;
+    p.vtable = getVtable(type);
+    return p;
+}
+
+PieceVTable* getVtable(Rank type){
+    switch (type) {
+        case ROOK: return &rookTable; 
+        case BISHOP: return &bishopTable; 
+        case KNIGHT: return &knightTable; 
+        case QUEEN: return &queenTable; 
+        case KING: return &kingTable; 
+        case PAWN: return &pawnTable; 
+        case ANTEATER: return &anteaterTable; 
+        default: return NULL; 
+    }
+}
+
