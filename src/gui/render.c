@@ -125,15 +125,16 @@ void drawBoard(GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointe
 
       posCtor(&pos, row, col); 
 
-      drawSquare(area, cr, col, row); 
-
-      if(isLegalMoveSquare(boardState, pos))
-         drawHighlight(cr, row, col);  
-       
+      drawSquare(area, cr, col, row);
+      
       if(hasPiece(mBoard, row, col)){ 
         piece = getSquare(mBoard, row, col); 
         drawPiece(cr, getImage(piece), row, col); 
       }
+
+      if(isLegalMoveSquare(boardState, pos))
+         drawHighlight(cr, row, col);  
+       
     }
   }
 }

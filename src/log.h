@@ -26,4 +26,6 @@ void logCheckmate(const char *filename, int moveNum, const char *winner, const c
 void logDraw(const char *filename, int moveNum);
 
 void logQuit(const char *filename, int moveNum, const char *color);
+
+
 #endif

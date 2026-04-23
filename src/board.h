@@ -49,13 +49,11 @@ bool isColEdge(int col);
 bool isRowEdge(int row); 
 
 Piece* getSquare(const Board* board, int row, int col); 
-
 void setSquare(Board* board, Piece* piece, int row, int col);
-Piece* deletePiece(Board* board, Pos pos);
+
+Piece* deletePiece(Board* board, Pos pos); //sets the piece* to null at pos
 void addPiece(Board* board, Piece* piece, Pos pos);
 void movePiece(Board *board, Board_State* boardState, Piece* piece, Pos newPos);
 void capturePiece(Board* board, Board_State* boardState, Piece* piece, Pos capturePos);
 
-//BOARD  - MAIN FUUNCTIONALITY 
-void sendInput(Board* board, Board_State* boardState, Pos clickPos);
 #endif 

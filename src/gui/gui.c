@@ -10,6 +10,7 @@ const char* CSS_CLASS = "chess-bg";
 const int MIN_LOG_WIDTH = 300; 
 const int MIN_LOG_HEIGHT = 500;
 const int GRID_COLUMN_SPACING = 50;  
+const int LOG_SPACING = 10; 
 
 void whichSquare(float x, float y){ //just for debug purposes
   int file = x / SQUARE_SIZE; 
@@ -53,6 +54,10 @@ void createLogScroller(GtkWidget* logScroller){
 }
 
 void createLog(GtkWidget* logScroller, GtkWidget* log){ 
+  gtk_text_view_set_left_margin(GTK_TEXT_VIEW(log), LOG_SPACING);
+  gtk_text_view_set_right_margin(GTK_TEXT_VIEW(log), LOG_SPACING);
+  gtk_text_view_set_top_margin(GTK_TEXT_VIEW(log), LOG_SPACING);
+  gtk_text_view_set_bottom_margin(GTK_TEXT_VIEW(log), LOG_SPACING);
   gtk_text_view_set_editable(GTK_TEXT_VIEW(log), FALSE);
   gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(log), FALSE);
   gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(logScroller), log);
@@ -67,7 +72,7 @@ void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer
   Board_Bundle* boardData = user_data; 
   GtkWidget* boardWidget = boardData->boardWidget; 
   Board_State* boardState = boardData->boardState; 
-  Board* board = boardData->board; 
+
   whichSquare(x,y); //just for debug purposes 
 
   int row = pixToIndex(y); 
@@ -76,10 +81,29 @@ void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer
   Pos clickPos;  
   posCtor(&clickPos, row, col);  
 
-  sendInput(board, boardState, clickPos); 
+  sendInput(boardData, clickPos); 
 
   if(hasUpdate(boardState))
-    gtk_widget_queue_draw(boardWidget); 
+     gtk_widget_queue_draw(boardWidget); 
+
+  if(moveSucces(boardState)) 
+    appendToLogUI(boardData); 
+   
+}
+
+void appendToLogUI(Board_Bundle* boardData) {
+  GtkTextBuffer* logBuffer = boardData->logBuffer; 
+  GtkTextView* logView = boardData->log; 
+  char* text = boardData->move; 
+
+  GtkTextIter end;
+  gtk_text_buffer_get_end_iter(logBuffer, &end);
+  gtk_text_buffer_insert(logBuffer, &end, text, -1);
+
+  gtk_text_buffer_get_end_iter(logBuffer, &end);
+  GtkTextMark *mark = gtk_text_buffer_create_mark(logBuffer, NULL, &end, FALSE);
+  gtk_text_view_scroll_mark_onscreen(logView, mark);
+  gtk_text_buffer_delete_mark(logBuffer, mark);
 }
 
 
@@ -90,9 +114,10 @@ static void activate (GtkApplication *app, gpointer user_data)
   GtkWidget* board = gtk_drawing_area_new(); 
   GtkWidget* logScroller = gtk_scrolled_window_new(); 
   GtkWidget* log = gtk_text_view_new();
+  GtkTextBuffer* buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(log)); 
  
   Board_Bundle* boardData = malloc(sizeof(Board_Bundle)); 
-  initializeBoardBundle(boardData, user_data, board); 
+  initializeBoardBundle(boardData, user_data, board, GTK_TEXT_VIEW(log), buffer); 
 
   //setting background
   GdkDisplay *display = gdk_display_get_default();

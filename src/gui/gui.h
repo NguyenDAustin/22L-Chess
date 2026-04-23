@@ -13,6 +13,7 @@ extern const char* CSS_CLASS;
 extern const int MIN_LOG_WIDTH; 
 extern const int MIN_LOG_HEIGHT; 
 extern const int GRID_COLUMN_SPACING; 
+extern const int LOG_SPACING; 
 
 void whichSquare(float x, float y); //just for debug processes 
 
@@ -29,5 +30,6 @@ void createLog(GtkWidget* logScroller, GtkWidget* log);
 
 void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data);
 static void activate (GtkApplication *app, gpointer user_data);
+void appendToLogUI(Board_Bundle* boardData);
 
 #endif 

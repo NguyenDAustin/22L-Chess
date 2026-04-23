@@ -8,7 +8,10 @@ const int MAX_LEGAL_MOVES = BOARD_WIDTH * BOARD_HEIGHT;
 void initializeBoardState(Board_State* boardState){
   boardState->clickedPiece = NULL; 
   boardState->hasUpdate = false; 
+  boardState->moveSuccess = false; 
   boardState->legalMoveCount = 0; 
+  boardState->movesMade = 0; 
+
 }
 
 //BOARD STATE - boolean state functions 
@@ -25,6 +28,10 @@ bool hasUpdate(const Board_State* boardState){
     return boardState->hasUpdate;
 }
 
+bool moveSucces(const Board_State* boardState){
+    return boardState->moveSuccess; 
+}
+
 bool isLegalMoveSquare(const Board_State* boardState, Pos pos){
     const Pos* legalMoves = boardState->legalMoves; 
     int size = boardState->legalMoveCount; 
@@ -36,9 +43,16 @@ bool isLegalMoveSquare(const Board_State* boardState, Pos pos){
     return false; 
 }
 
+
+//BOARD STATE - general functions 
+
+void incrementMovesMade(Board_State* boardState){
+    boardState->movesMade++; 
+}
+
 //BOARD STATE - general getters + setters 
 
-void setUpdate(Board_State *boardState, bool update){
+void setUpdate(Board_State *boardState, bool update){ //sets update flag. is true if board has changed
     boardState->hasUpdate = update;
 }
 
@@ -53,6 +67,16 @@ void setClickedPiece(Board_State *boardState, Piece *piece){
 void resetClickedPiece(Board_State *boardState){
     setClickedPiece(boardState, NULL);
 }
+
+void setMovesMade(Board_State* boardState, int moves){
+    boardState->movesMade = moves; 
+}
+
+int getMovesMade(const Board_State* boardState){
+    return boardState->movesMade; 
+}
+
+
 
 
 //BOARD STATE - legal moves getter + setters 
@@ -70,7 +94,7 @@ void resetLegalMoveCount(Board_State* boardState){
 
 
 //BOARD STATE - LEGAL MOVE FUNCTIONS 
-
+//adds the given move (pos) to the legalmoves array
 void addLegalMove(Board_State* boardState, Pos pos){ 
     int size = boardState->legalMoveCount; 
 
@@ -80,15 +104,11 @@ void addLegalMove(Board_State* boardState, Pos pos){
     }
 }
 
-
-//maybe move to its own file for legal move generation ...
-
+//takes in a start pos (piece's position) and an end position (target position (user click))
+//if the piece can perform a capture or legally move to that target position --> return true 
 bool canPieceGoTo(Board* board, Piece* piece, Pos start, Pos end) {
     if (!board || !piece || !piece->vtable){
         printf("ERROR: BOARD, PIECE, OR PIECE VTABLE IS NULL!\n");
-        printf("board is null: %d", (!board));
-        printf("piece is null: %d", !piece); 
-        printf("piece vtable is null: %d", !piece->vtable); 
         return false;
     }
 
@@ -107,6 +127,7 @@ bool canPieceGoTo(Board* board, Piece* piece, Pos start, Pos end) {
                   : piece->vtable->canMove(board, piece, start.row, start.col, end.row, end.col); 
 }
 
+//given a piece and its position --> generate all the legal moves that piece can make
 void generateLegalMoves(Board_State* boardState, Board* board, Piece* piece, Pos start){ //might change to make more efficient in future
     resetLegalMoveCount(boardState); 
 
