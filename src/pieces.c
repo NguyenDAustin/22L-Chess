@@ -512,7 +512,7 @@ int kingCanCastle(Board* board, Piece *p, int sr, int sc, int er, int ec)
     }
 }
 
-Pos findKing(Board* board, Color color)
+Pos findKing(Board *board, Color color)
 {
     Pos k = {-1, -1};
 
@@ -528,7 +528,7 @@ Pos findKing(Board* board, Color color)
     return k;
 }
 
-int attackSquare(Board* board, int row, int col, Color attColor)
+int attackSquare(Board *board, int row, int col, Color attColor)
 {
     for (int r = 0; r < BOARD_HEIGHT; r++){
         for (int c = 0; c < BOARD_WIDTH; c++){
@@ -546,7 +546,7 @@ int attackSquare(Board* board, int row, int col, Color attColor)
     return 0;
 }
 
-int kingCheck(Board* board, Color kingColor)
+int kingCheck(Board *board, Color kingColor)
 {
     Pos kingPos = findKing(board, kingColor);
 
