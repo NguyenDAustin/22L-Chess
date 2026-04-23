@@ -3,6 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <time.h>
 
 #include "pieces.h"
 #include "move.h"
@@ -20,13 +21,16 @@ static void placePiece(Piece board[8][10], int r, int c, Color color, Rank type)
 
 #define LOG_FILENAME "chess_game.log"
 #define INPUT_BUF 128
-#define DEBUG_MODE 1// set it to 1 to force a board setup to for testing
+#define DEBUG_MODE 1 // set it to 1 to force a board setup to for testing
+#define TURN_LIMIT_SECONDS 60
 
 static Color chooseHumanColor(void);
 static const char *colorName(Color c);
 static Move makeMoveFromInput(Pos start, Pos end);
 static void printPrompt(Color turn, int isHumanTurn);
 static void squareName(int row, int col, char out[4]);
+static void startTurn(void);
+static double getTimeRemaining(void);
 
 int main(void)
 {
@@ -49,6 +53,7 @@ int main(void)
     humanColor = chooseHumanColor();
     cpuColor = (humanColor == WHITE) ? BLACK : WHITE;
     currentTurn = WHITE;
+    startTurn();
 
     printf("\nAnteater Chess started.\n");
     printf("Human: %s\n", colorName(humanColor));
@@ -119,6 +124,13 @@ int main(void)
                 {
                     printf("Illegal move for that piece. Try again.\n");
                     continue;
+                }
+
+                if (getTimeRemaining() <= 0)
+                {
+                    printf("%s wins! %s took too long to move. \n", colorName((currentTurn == WHITE) ? BLACK : WHITE), colorName(currentTurn));
+
+                    break;
                 }
 
                 list rec;
@@ -226,6 +238,7 @@ int main(void)
                     logCheck(LOG_FILENAME, moveNumber, colorName(nextPlayer));
                 }
                 currentTurn = nextPlayer;
+                startTurn();
             }
         }
     }
@@ -252,6 +265,10 @@ static void debugInitBoard(Piece board[8][10])
     placePiece(board, 0, 5, WHITE, KING);
     placePiece(board, 7, 5, BLACK, KING);
     placePiece(board, 6, 1, WHITE, PAWN);
+}
+
+void startTurn(void)
+{
 }
 
 static Color chooseHumanColor(void)
