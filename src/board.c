@@ -211,5 +211,5 @@ void capturePiece(Board* board, Board_State* boardState, Piece* piece, Pos captu
 void promotion(Board *board, Pos pos, Rank newRank)
 {
     Piece *piece = getSquare(board, pos.row, pos.col);
-    piece->type = newRank;
+    piece->type = newRank; //change --> img too 
 }
