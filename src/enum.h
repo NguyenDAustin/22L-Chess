@@ -45,4 +45,7 @@ enum { //for the board (by Queency)
     WINDOW_WIDTH = 1500
 }; 
 
+
+typedef cairo_surface_t Icon;
+
 #endif

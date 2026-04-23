@@ -8,7 +8,8 @@ const char FILES[10] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
 const char* TITLE = "CHESS APP"; 
 const char* CSS_CLASS = "chess-bg"; 
 const int MIN_LOG_WIDTH = 300; 
-const int MIN_LOG_HEIGHT = 500; 
+const int MIN_LOG_HEIGHT = 500;
+const int GRID_COLUMN_SPACING = 50;  
 
 void whichSquare(float x, float y){ //just for debug purposes
   int file = x / SQUARE_SIZE; 
@@ -21,10 +22,20 @@ void setBackground(GdkDisplay* display, GtkCssProvider* provider, const char* BG
   gtk_style_context_add_provider_for_display(display, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 }
 
-void createWindow(GtkWidget* window, const char* title, const char* cssClass){ 
+GtkWidget* createWindow(GtkApplication* app, const char* title, const char* cssClass){ 
+  GtkWidget* window = gtk_application_window_new(app);
   gtk_window_set_title (GTK_WINDOW (window), title);
   gtk_window_set_default_size (GTK_WINDOW (window), WINDOW_HEIGHT, WINDOW_WIDTH);
   gtk_widget_add_css_class(window, cssClass); 
+  return window; 
+}
+
+GtkWidget* createGrid(){
+  GtkWidget* grid = gtk_grid_new(); 
+  gtk_grid_set_column_spacing(GTK_GRID(grid), GRID_COLUMN_SPACING);
+  gtk_widget_set_halign(grid, GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(grid, GTK_ALIGN_CENTER);
+  return grid; 
 }
 
 void createBoard(GtkWidget* board, Board_Bundle* boardData){ 
@@ -36,8 +47,15 @@ void createBoard(GtkWidget* board, Board_Bundle* boardData){
   gtk_widget_set_valign(board, GTK_ALIGN_CENTER); 
 }
 
-void createLog(GtkWidget* log){
-  gtk_widget_set_size_request(log, MIN_LOG_WIDTH, -1);
+
+void createLogScroller(GtkWidget* logScroller){
+  gtk_widget_set_size_request(logScroller, MIN_LOG_WIDTH, -1);
+}
+
+void createLog(GtkWidget* logScroller, GtkWidget* log){ 
+  gtk_text_view_set_editable(GTK_TEXT_VIEW(log), FALSE);
+  gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(log), FALSE);
+  gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(logScroller), log);
 }
 
 //get user click 
@@ -58,7 +76,6 @@ void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer
   Pos clickPos;  
   posCtor(&clickPos, row, col);  
 
-  
   sendInput(board, boardState, clickPos); 
 
   if(hasUpdate(boardState))
@@ -68,32 +85,37 @@ void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer
 
 static void activate (GtkApplication *app, gpointer user_data)
 {
-  GtkWidget* grid = gtk_grid_new(); 
-  GtkWidget* window = gtk_application_window_new(app);
+  GtkWidget* grid = createGrid(); 
+  GtkWidget* window = createWindow(app, TITLE, CSS_CLASS); 
   GtkWidget* board = gtk_drawing_area_new(); 
-  GtkWidget* log = gtk_scrolled_window_new(); 
+  GtkWidget* logScroller = gtk_scrolled_window_new(); 
+  GtkWidget* log = gtk_text_view_new();
 
   //setting up data
+  /*
   Board_Bundle* boardData = malloc(sizeof(Board_Bundle)); 
   boardData->boardState = malloc(sizeof(Board_State)); 
-  boardData->boardState->clickedPiece = NULL; 
-  boardData->boardState->legalMoveCount = 0; 
+  initializeBoardState(boardData->boardState); 
   boardData->boardWidget = board; 
-  boardData->board = user_data;  
+  boardData->board = user_data; 
+  */ 
+ 
+  Board_Bundle* boardData = malloc(sizeof(Board_Bundle)); 
+  initializeBoardBundle(boardData, user_data, board); 
 
   //setting background
   GdkDisplay *display = gdk_display_get_default();
   GtkCssProvider *provider = gtk_css_provider_new();
   setBackground(display, provider, CHESS_BG); 
 
-  //creating window
-  createWindow(window, TITLE, CSS_CLASS); 
-
   //creating board
   createBoard(board, boardData); 
 
+  //creating log scroller container 
+  createLogScroller(logScroller); 
+
   //creating log 
-  createLog(log); 
+  createLog(logScroller, log);
   
   //event controller
   GtkGesture *click = gtk_gesture_click_new(); 
@@ -102,11 +124,10 @@ static void activate (GtkApplication *app, gpointer user_data)
 
 
   g_object_unref(provider);
-  //gtk_window_set_child(GTK_WINDOW(window), board);
 
   gtk_window_set_child(GTK_WINDOW(window), grid);
-  gtk_grid_attach(GTK_GRID(grid), board,  0, 0, 1, 1); //row col rowspan col span
-  gtk_grid_attach(GTK_GRID(grid), log,  0, 1, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), board,  0, 0, 1, 1); //col row colspan rowspan
+  gtk_grid_attach(GTK_GRID(grid), logScroller,  1, 0, 1, 1);
   gtk_window_present (GTK_WINDOW (window));
 
 }

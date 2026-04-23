@@ -7,8 +7,6 @@
 #include <stddef.h>
 #include "enum.h"
 
-typedef cairo_surface_t Icon;
-
 typedef struct {
     int row;
     int col;

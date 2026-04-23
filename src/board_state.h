@@ -36,6 +36,8 @@ typedef struct Board_State {
   //FLAG flags[NUMBER_OF_FLAGS]; //do certain things in array depending on what flag has been set
 } Board_State; 
 
+//BOARD - CTOR
+void initializeBoardState(Board_State* boardState);
 
 //BOARD STATE - STATE FUNCTIONS
 bool aPieceWasClicked(const Board_State* boardState);
@@ -49,7 +51,6 @@ void setUpdate(Board_State* boardState, bool update);
 Piece* getClickedPiece(const Board_State* boardState);
 void setClickedPiece(Board_State* boardState, Piece* piece);
 void resetClickedPiece(Board_State* boardState);
-
 
 
 //BOARD STATE - legal move getters + setters 

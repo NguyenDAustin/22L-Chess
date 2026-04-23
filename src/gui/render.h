@@ -6,18 +6,11 @@
 #include <gtk/gtk.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include "color_gui.h"
+#include "board_bundle.h"
 #include "enum.h"
-#include "board.h"
 
 
 extern const char *PIECE_RESOURCES[14]; 
-
-typedef struct {
-  Board* board; 
-  Board_State* boardState; 
-  GtkWidget* boardWidget; 
-} Board_Bundle; 
-
 
 void createImages(cairo_surface_t** imgs, int numOfImgs); 
 
@@ -26,7 +19,6 @@ Icon* textureToSurface(GdkTexture* texture, guchar **pixel_data_out);
 int pixToIndex(int pix); 
 int indexToPix(int i); 
 void scale(cairo_t* cr, Icon* img, float targetSize); 
-
 
 //draw functions 
 void drawImg(cairo_t* cr, Icon* img, float targetSize, int row, int col); 

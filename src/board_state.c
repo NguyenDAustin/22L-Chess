@@ -3,6 +3,14 @@
 
 const int MAX_LEGAL_MOVES = BOARD_WIDTH * BOARD_HEIGHT; 
 
+
+//Board Ctor
+void initializeBoardState(Board_State* boardState){
+  boardState->clickedPiece = NULL; 
+  boardState->hasUpdate = false; 
+  boardState->legalMoveCount = 0; 
+}
+
 //BOARD STATE - boolean state functions 
 
 bool aPieceWasClicked(const Board_State* boardState){

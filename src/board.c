@@ -242,7 +242,6 @@ void sendInput(Board *board, Board_State *boardState, Pos clickPos)
         movePiece(board, boardState, clickedPiece, clickPos); 
         setUpdate(boardState, true);
     } 
-
     //if not legal move --> just cancel move --> reset clicked piece
 }
 
