@@ -320,13 +320,13 @@ int pawnCanMove(Board* board, Piece *p, int sr, int sc, int er, int ec)
     }
 
     if (ec == sc && er == sr + 2 * mr){
-        if (p->color == WHITE && sr == 1 &&
+        if (p->color == BLACK && sr == 1 &&
             isEmpty(board, sr + mr, sc) &&
             isEmpty(board, er, ec)) {
             return 1;
         }
 
-        if (p->color == BLACK && sr == 6 &&
+        if (p->color == WHITE && sr == 6 &&
             isEmpty(board, sr + mr, sc) &&
             isEmpty(board, er, ec)) {
             return 1;
@@ -385,41 +385,14 @@ int anteaterCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec)
     int mr = er - sr;
     int mc = ec - sc;
 
-    int rowStep = 0;
-    int colStep = 0;
-
-    if (mr == 0 && mc == 0) {
+    if (!((abs(mr) == 1 && mc == 0) || (mr == 0 && abs(mc) == 1))) {
         return 0;
     }
 
-    if (mr != 0 && mc != 0) {
-        return 0;
-    }
+    Piece* target = board->board[er][ec];
 
-    if (mr != 0) {
-        rowStep = (mr > 0) ? 1 : -1;
-    }
-    if (mc != 0) {
-        colStep = (mc > 0) ? 1 : -1;
-    }
-
-    int r = sr + rowStep;
-    int c = sc + colStep;
-
-    Piece* piece1 = board->board[r][c]; 
-    
-
-    while (r != er || c != ec) {
-        if (getType(piece1) != PAWN || getColor(piece1) == getColor(p))  {
-            return 0;
-        }
-        r += rowStep;
-        c += colStep;
-    }
-
-    Piece* piece2 = board->board[er][ec];
-
-    if (getType(piece2) != PAWN || getColor(piece2) == getColor(p)) {
+    // Target must be an enemy pawn
+    if (getType(target) != PAWN || getColor(target) == getColor(p)) {
         return 0;
     }
 
