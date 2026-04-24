@@ -148,7 +148,7 @@ int rookCanMove(Board* board, Piece *p, int sr, int sc, int er, int ec)
         return false; 
 
     if (isSameRow(sr, er) || isSameCol(sc, ec)) {
-        return isStraightPathClear(board, sr, sc, er, ec); //rook move + bishop move
+        return isStraightPathClear(board, sr, sc, er, ec);
     }
 
     return 0;
@@ -512,6 +512,53 @@ int kingCanCastle(Board* board, Piece *p, int sr, int sc, int er, int ec)
     }
 }
 
+Pos findKing(Board *board, Color color)
+{
+    Pos k = {-1, -1};
+
+    for (int r = 0; r < BOARD_HEIGHT; r++){
+        for (int c = 0; c < BOARD_WIDTH; c++){
+            if (board->board[r][c]->type == KING && board->board[r][c]->color == color){
+                k.row = r;
+                k.col = c;
+                return k;
+            }
+        }
+    }
+    return k;
+}
+
+int attackSquare(Board *board, int row, int col, Color attColor)
+{
+    for (int r = 0; r < BOARD_HEIGHT; r++){
+        for (int c = 0; c < BOARD_WIDTH; c++){
+            Piece *p = board->board[r][c];
+
+            if (p->type == EMPTY || p->color != attColor || p->vtable == NULL){
+                continue;
+            }
+
+            if (p->vtable->canCapture(board, p, r, c, row, col)){
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+int kingCheck(Board *board, Color kingColor)
+{
+    Pos kingPos = findKing(board, kingColor);
+
+    if (kingPos.row == -1 || kingPos.col == -1){
+        return 0;
+    }
+
+    Color enemyColor = (kingColor == WHITE) ? BLACK : WHITE;
+
+    return attackSquare(board, kingPos.row, kingPos.col, enemyColor);
+}
+
 // virtual Tables
 static PieceVTable rookTable = {rookCanMove, rookCanCapture};
 static PieceVTable bishopTable = {bishopCanMove, bishopCanCapture};
@@ -548,51 +595,3 @@ PieceVTable* getVtable(Rank type){
     }
 }
 
-/*
-Pos findKing(Board* board, Color color)
-{
-    Pos k = {-1, -1};
-
-    for (int r = 0; r < BOARD_HEIGHT; r++){
-        for (int c = 0; c < BOARD_WIDTH; c++){
-            if (board->board[r][c]->type == KING && board->board[r][c]->color == color){
-                k.row = r;
-                k.col = c;
-                return k;
-            }
-        }
-    }
-    return k;
-}
-
-int attackSquare(Board* board, int row, int col, Color attColor)
-{
-    for (int r = 0; r < BOARD_HEIGHT; r++){
-        for (int c = 0; c < BOARD_WIDTH; c++){
-            Piece *p = board->board[r][c];
-
-            if (p->type == EMPTY || p->color != attColor || p->vtable == NULL){
-                continue;
-            }
-
-            if (p->vtable->canCapture(board, p, r, c, row, col)){
-                return 1;
-            }
-        }
-    }
-    return 0;
-}
-
-int kingCheck(Board* board, Color kingColor)
-{
-    Pos kingPos = findKing(board, kingColor);
-
-    if (kingPos.row == -1 || kingPos.col == -1){
-        return 0;
-    }
-
-    Color enemyColor = (kingColor == WHITE) ? BLACK : WHITE;
-
-    return attackSquare(board, kingPos.row, kingPos.col, enemyColor);
-}
-*/
