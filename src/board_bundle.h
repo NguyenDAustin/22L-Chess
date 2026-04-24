@@ -10,10 +10,15 @@ typedef struct {
   GtkWidget* boardWidget; 
   GtkTextView* log; 
   GtkTextBuffer* logBuffer; 
+
+  GtkWidget* promotionPopUp; 
+  GtkWidget* whitePromotionGrid;
+  GtkWidget* blackPromotionGrid;  
+  
   char* move;
 } Board_Bundle; 
 
 
-void initializeBoardBundle(Board_Bundle* boardData, Board* board, GtkWidget* boardWidget, GtkTextView* log, GtkTextBuffer* buffer);
+void initializeBoardBundle(Board_Bundle* boardData, Board* board, GtkWidget* boardWidget, GtkWidget* promotionPopUp, GtkWidget* promotionGrid, GtkWidget* blackPromotionGrid, GtkTextView* log, GtkTextBuffer* buffer);
 
 #endif 

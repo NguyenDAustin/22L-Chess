@@ -10,7 +10,9 @@ const char* CSS_CLASS = "chess-bg";
 const int MIN_LOG_WIDTH = 300; 
 const int MIN_LOG_HEIGHT = 500;
 const int GRID_COLUMN_SPACING = 50;  
+const int PROMOTION_COLUMN_SPACING = 5; 
 const int LOG_SPACING = 10; 
+const int PROMOTION_BUTTON_SIZE = 80;
 
 void whichSquare(float x, float y){ //just for debug purposes
   int file = x / SQUARE_SIZE; 
@@ -31,13 +33,24 @@ GtkWidget* createWindow(GtkApplication* app, const char* title, const char* cssC
   return window; 
 }
 
-GtkWidget* createGrid(){
+GtkWidget* createGrid(int columnSpacing){
   GtkWidget* grid = gtk_grid_new(); 
-  gtk_grid_set_column_spacing(GTK_GRID(grid), GRID_COLUMN_SPACING);
+  gtk_grid_set_column_spacing(GTK_GRID(grid), columnSpacing);
   gtk_widget_set_halign(grid, GTK_ALIGN_CENTER);
   gtk_widget_set_valign(grid, GTK_ALIGN_CENTER);
   return grid; 
 }
+
+GtkWidget* createPromotionGrid(GtkWidget** buttons){ 
+  GtkWidget* grid = createGrid(PROMOTION_COLUMN_SPACING);  
+  gridAttacher(grid, buttons, NUMBER_OF_PROMOTION_BUTTONS); 
+  return grid; 
+}
+
+GtkWidget* createMainGrid(){ 
+  return createGrid(GRID_COLUMN_SPACING); 
+}
+
 
 void createBoard(GtkWidget* board, Board_Bundle* boardData){ 
   gtk_drawing_area_set_content_width (GTK_DRAWING_AREA (board), SQUARE_SIZE * BOARD_WIDTH);
@@ -68,6 +81,34 @@ void createLog(GtkWidget* logScroller, GtkWidget* log){
 //board will update  
 //i draw if things have changed 
 
+
+void createPopUp(const Board_Bundle* boardData){ 
+  Board_State* boardState = boardData->boardState; 
+  Piece* promoting = boardState->clickedPiece; 
+  Color pieceColor = getColor(promoting); 
+  GtkWidget* popUp = boardData->promotionPopUp; 
+  GtkWidget* promotionGrid; 
+
+  printf("creating pop up\n");
+  
+  if(popUp == NULL) 
+      printf("ERROR: POP UP IS NULL\n");
+
+  if(pieceColor == WHITE){ 
+    printf("here white\n");
+    promotionGrid = boardData->whitePromotionGrid;  
+    gtk_popover_set_position(GTK_POPOVER(popUp), GTK_POS_TOP);
+  }
+  else{
+    printf("here black\n");
+    promotionGrid = boardData->blackPromotionGrid;  
+    gtk_popover_set_position(GTK_POPOVER(popUp), GTK_POS_BOTTOM); 
+  }
+
+  gtk_popover_set_child(GTK_POPOVER(popUp), promotionGrid); 
+  gtk_popover_popup(GTK_POPOVER(popUp)); 
+}
+
 void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data){  
   Board_Bundle* boardData = user_data; 
   GtkWidget* boardWidget = boardData->boardWidget; 
@@ -87,8 +128,25 @@ void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer
      gtk_widget_queue_draw(boardWidget); 
 
   if(moveSucces(boardState)) 
-    appendToLogUI(boardData); 
-   
+    appendToLogUI(boardData);  
+
+  if(isPromotion(boardState)){
+    printf("is promotion\n");  
+    createPopUp(boardData); 
+
+
+    //gtk_popover_set_child(GTK_POPOVER(boardData->promotionPopUp), popGrid);  
+    //gtk_popover_popup(GTK_POPOVER(boardData->promotionPopUp));
+  }
+    
+}
+
+GtkWidget* createPromotionButton(const char *imagePath) {
+    GtkWidget *button = gtk_button_new();
+    GtkWidget *picture = gtk_picture_new_for_filename(imagePath);
+    gtk_widget_set_size_request(picture, PROMOTION_BUTTON_SIZE, PROMOTION_BUTTON_SIZE);
+    gtk_button_set_child(GTK_BUTTON(button), picture);
+    return button;
 }
 
 void appendToLogUI(Board_Bundle* boardData) {
@@ -106,23 +164,52 @@ void appendToLogUI(Board_Bundle* boardData) {
   gtk_text_buffer_delete_mark(logBuffer, mark);
 }
 
+void gridAttacher(GtkWidget* grid, GtkWidget** attachments, int size){
+  int row = 0; 
+  for(int col = 0; col < size; col++){
+    gtk_grid_attach(GTK_GRID(grid), attachments[col], col, row, 1, 1); 
+  }
+}
+
+void initializePromotionButtonArr(GtkWidget** buttons, const char** images){
+  for(int i = 0; i < NUMBER_OF_PROMOTION_BUTTONS; i++){ 
+    buttons[i] = createPromotionButton(images[i]); 
+  } 
+}
 
 static void activate (GtkApplication *app, gpointer user_data)
 {
-  GtkWidget* grid = createGrid(); 
+  GtkWidget* grid = createMainGrid(); 
   GtkWidget* window = createWindow(app, TITLE, CSS_CLASS); 
   GtkWidget* board = gtk_drawing_area_new(); 
   GtkWidget* logScroller = gtk_scrolled_window_new(); 
   GtkWidget* log = gtk_text_view_new();
   GtkTextBuffer* buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(log)); 
- 
+
+
+  //white buttons 
+  const char* whiteImages[NUMBER_OF_PROMOTION_BUTTONS] = {PIECE_RESOURCES[WHITE_QUEEN], PIECE_RESOURCES[WHITE_ROOK], PIECE_RESOURCES[WHITE_BISHOP], PIECE_RESOURCES[WHITE_KNIGHT], PIECE_RESOURCES[WHITE_ANTEATER]}; 
+  GtkWidget* whiteButtons[NUMBER_OF_PROMOTION_BUTTONS]; 
+  initializePromotionButtonArr(whiteButtons, whiteImages); 
+
+  //black buttons
+  const char* blackImages[NUMBER_OF_PROMOTION_BUTTONS] = {PIECE_RESOURCES[BLACK_QUEEN], PIECE_RESOURCES[BLACK_ROOK], PIECE_RESOURCES[BLACK_BISHOP], PIECE_RESOURCES[BLACK_KNIGHT], PIECE_RESOURCES[BLACK_ANTEATER]}; 
+  GtkWidget* blackButtons[NUMBER_OF_PROMOTION_BUTTONS]; 
+  initializePromotionButtonArr(blackButtons, blackImages);  
+
+
+  GtkWidget* whitePromotionGrid = createPromotionGrid(whiteButtons); 
+  GtkWidget* blackPromotionGrid = createPromotionGrid(blackButtons);  
+  GtkWidget* promotionPop = gtk_popover_new(); 
+  gtk_widget_set_parent(promotionPop, board); //promotion Pop needs to be handle memory
+
   Board_Bundle* boardData = malloc(sizeof(Board_Bundle)); 
-  initializeBoardBundle(boardData, user_data, board, GTK_TEXT_VIEW(log), buffer); 
+  initializeBoardBundle(boardData, user_data, board, promotionPop, whitePromotionGrid, blackPromotionGrid, GTK_TEXT_VIEW(log), buffer); 
 
   //setting background
   GdkDisplay *display = gdk_display_get_default();
   GtkCssProvider *provider = gtk_css_provider_new();
-  setBackground(display, provider, CHESS_BG); 
+  setBackground(display, provider, CHESS_BG);  
 
   //creating board
   createBoard(board, boardData); 

@@ -54,6 +54,16 @@ Pos getPos(const Piece *piece) {//Queency
     return piece ? piece->pos : bad;
 }
 
+int getPosRow(const Piece* piece){
+    Pos pos = getPos(piece); 
+    return pos.row; 
+}
+
+int getPosCol(const Piece* piece){ 
+    Pos pos = getPos(piece); 
+    return pos.col; 
+}
+
 void setPos(Piece *piece, Pos pos) { if (piece) piece->pos = pos; }//Queency
 
 

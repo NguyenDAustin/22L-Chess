@@ -42,7 +42,9 @@ enum { //for the board (by Queency)
     BOARD_WIDTH = 10,
     SQUARE_SIZE = 100,
     WINDOW_HEIGHT = 1500, 
-    WINDOW_WIDTH = 1500
+    WINDOW_WIDTH = 1500,
+
+    NUMBER_OF_PROMOTION_BUTTONS = 5
 }; 
 
 

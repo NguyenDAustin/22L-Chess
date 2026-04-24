@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "move.h"
 
-void executeMove(Board->board *board->board, Move *move, Move lastMove)
+void executeMove(Board* board, Move *move, Move lastMove)
 {
     Piece moving = board->board->board->board[move->startRow][move->startCol];
 
@@ -93,7 +93,7 @@ void recordMove (Move move, const char *filename){
     fclose(fp);
 }
 
-void executeCapture(Board->board *board->board, Move *move) {
+void executeCapture(Board* board, Move *move) {
     move->capture = 1;
 
     board->board[move->endRow][move->endCol] = board->board[move->startRow][move->startCol];
@@ -107,7 +107,7 @@ void executeCapture(Board->board *board->board, Move *move) {
     board->board[move->startRow][move->startCol].pos.col = move->startCol;
 }
 
-void executePawnCapture(Board->board *board->board, Move *move) {
+void executePawnCapture(Board* board, Move *move) {
     move->capture = 1;
 
     board->board[move->endRow][move->endCol] = board->board[move->startRow][move->startCol];
@@ -121,7 +121,7 @@ void executePawnCapture(Board->board *board->board, Move *move) {
     board->board[move->startRow][move->startCol].pos.col = move->startCol;
 }
 
-void executeAnteaterCapture(Board->board *board->board, Move *move) {
+void executeAnteaterCapture(Board* board, Move *move) {
     Piece moving = board->board[move->startRow][move->startCol];
 
     int mr = move->endRow - move->startRow;
@@ -166,7 +166,7 @@ void executeAnteaterCapture(Board->board *board->board, Move *move) {
     move->capture = 1;
 }
 
-void executeEnPassant(Board->board *board->board, Move *move)
+void executeEnPassant(Board* board, Move *move)
 {
     Piece moving = board->board[move->startRow][move->startCol];
 
@@ -194,7 +194,7 @@ void executeEnPassant(Board->board *board->board, Move *move)
     move->enPassant = 1;
 }
 
-void executeCastle(Board->board *board->board, Move *move)
+void executeCastle(Board* board, Move *move)
 {
     Piece king = board->board[move->startRow][move->startCol];
     int row = move->startRow;
@@ -295,7 +295,7 @@ int legalMove(Board->board *board->board, Move *move, Color turn, Move lastMove)
     return 1;
 }
 
-int possibleMove(Board->board *board->board, Color turn, Move lastMove)
+int possibleMove(Board* board, Color turn, Move lastMove)
 {
     for (int sr = 0; sr < BOARD->board_HEIGHT; sr++){
         for (int sc = 0; sc < BOARD->board_WIDTH; sc++){

@@ -158,12 +158,12 @@ bool hasPiece(const Board *board, int row, int col)
 
 bool isRowEdge(int row)
 {
-    return (row == MIN_ROW || row >= MAX_ROW);
+    return (row == MIN_ROW || row == MAX_ROW);
 }
 
 bool isColEdge(int col)
 {
-    return (col <= MIN_COL || col >= MAX_COL);
+    return (col == MIN_COL || col == MAX_COL);
 }
 
 bool isBoardEdge(int row, int col)

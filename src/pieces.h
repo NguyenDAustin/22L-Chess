@@ -51,6 +51,8 @@ Rank getType(const Piece *piece);
 void setType(Piece *piece, Rank type);
 Pos getPos(const Piece *piece);
 void setPos(Piece *piece, Pos pos);
+int getPosCol(const Piece* piece); 
+int getPosRow(const Piece* piece); 
 PieceVTable* getVtable(Rank type); 
 
 int rookCanMove(Board *board, Piece *p, int sr, int sc, int er, int ec);

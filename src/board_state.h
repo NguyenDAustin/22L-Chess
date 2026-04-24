@@ -36,6 +36,7 @@ bool hasUpdate(const Board_State* boardState);
 bool moveSucces(const Board_State* boardState);
 bool canPieceGoTo(Board* board, Piece* piece, Pos start, Pos end);
 bool isLegalMoveSquare(const Board_State* boardState, Pos pos);
+bool isPromotion(const Board_State* boardState); 
 
 
 //BOARD STATE - general functions 
