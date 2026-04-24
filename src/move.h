@@ -31,7 +31,7 @@ int legalMove(Board *board, Move *move, Color turn, Move lastMove);
 int possibleMove(Board *board, Color turn, Move lastMove);
 
 //checkmate stalemate
-void copyBoard(&testBoard, board); //creates a board to test possible moves - new: new board, og: original board
+//void copyBoard(&testBoard, board); //creates a board to test possible moves - new: new board, og: original board
 int checkCheckmate(Board *board, Color turn, Move lastMove);
 int checkStalemate(Board *board, Color turn, Move lastMove);
 
