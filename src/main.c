@@ -31,6 +31,7 @@ static void printPrompt(Color turn, int isHumanTurn);
 static void squareName(int row, int col, char out[4]);
 static void startTurn(void);
 static double getTimeRemaining(void);
+static struct timespec turnStartTime;
 
 int main(void)
 {
@@ -128,9 +129,9 @@ int main(void)
 
                 if (getTimeRemaining() <= 0)
                 {
-                    printf("%s wins! %s took too long to move. \n", colorName((currentTurn == WHITE) ? BLACK : WHITE), colorName(currentTurn));
-
-                    break;
+                    printf("%s wins! %s ran out of time. \n", colorName((currentTurn == WHITE) ? BLACK : WHITE), colorName(currentTurn));
+                    running = 0;
+                    continue;
                 }
 
                 list rec;
@@ -267,8 +268,20 @@ static void debugInitBoard(Piece board[8][10])
     placePiece(board, 6, 1, WHITE, PAWN);
 }
 
-void startTurn(void)
+static void startTurn(void)
 {
+    clock_gettime(CLOCK_MONOTONIC, &turnStartTime);
+}
+
+static double getTimeRemaining(void)
+{
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+
+    double elapsed = (now.tv_sec - turnStartTime.tv_sec) +
+                     (now.tv_nsec - turnStartTime.tv_nsec) / 1e9;
+
+    return TURN_LIMIT_SECONDS - elapsed;
 }
 
 static Color chooseHumanColor(void)

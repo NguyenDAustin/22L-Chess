@@ -7,7 +7,8 @@
 #include <stddef.h>
 #include "enum.h"
 
-typedef struct {
+typedef struct
+{
     int row;
     int col;
 } Pos;
@@ -16,12 +17,14 @@ typedef struct Board Board;
 typedef struct Piece Piece;
 typedef struct Move Move;
 
-typedef struct PieceVTable {
+typedef struct PieceVTable
+{
     int (*canMove)(Board *board, Piece *piece, int sr, int sc, int er, int ec);
     int (*canCapture)(Board *board, Piece *piece, int sr, int sc, int er, int ec);
 } PieceVTable;
 
-struct Piece {
+struct Piece
+{
     Icon *img;
     Color color;
     Rank type;
@@ -40,7 +43,6 @@ bool isSameRow(int r1, int r2);
 bool isSameCol(int c1, int c2);
 bool isSamePos(Pos p1, Pos p2);
 
-
 void pieceCtor(Piece *mPiece, Icon *img, Color color, Rank type, Pos pos);
 
 Icon *getImage(const Piece *piece);
@@ -51,7 +53,7 @@ Rank getType(const Piece *piece);
 void setType(Piece *piece, Rank type);
 Pos getPos(const Piece *piece);
 void setPos(Piece *piece, Pos pos);
-PieceVTable* getVtable(Rank type); 
+PieceVTable *getVtable(Rank type);
 
 int rookCanMove(Board *board, Piece *p, int sr, int sc, int er, int ec);
 int rookCanCapture(Board *board, Piece *p, int sr, int sc, int er, int ec);
@@ -68,11 +70,11 @@ int pawnCanCapture(Board *board, Piece *p, int sr, int sc, int er, int ec);
 int anteaterCanMove(Board *board, Piece *p, int sr, int sc, int er, int ec);
 int anteaterCanCapture(Board *board, Piece *p, int sr, int sc, int er, int ec);
 
-//special moves
+// special moves
 int pawnCanEnPassant(Board *board, Piece *p, int sr, int sc, int er, int ec, Move *lastMove);
 int kingCanCastle(Board *board, Piece *p, int sr, int sc, int er, int ec);
 
-//check check
+// check check
 Pos findKing(Board *board, Color color);
 int attackSquare(Board *board, int row, int col, Color attColor);
 int kingCheck(Board *board, Color kingColor);

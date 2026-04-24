@@ -319,29 +319,23 @@ int possibleMove(Board *board, Color turn, Move lastMove)
                 board->board[sr][sc]->color != turn)
             {
                 continue;
-                for (int er = 0; er < BOARD_HEIGHT; er++)
-                {
-                    for (int ec = 0; ec < BOARD_WIDTH; ec++)
-                    {
-                        Move move;
-                        move.startRow = sr;
-                        move.startCol = sc;
-                        move.endRow = er;
-                        move.endCol = ec;
-                        move.capture = 0;
-                        move.enPassant = 0;
-                        move.castle = 0;
+            }
 
-                        if (legalMove(board->board, &move, turn, lastMove))
-                        {
-                            return 1;
-                        }
+            for (int er = 0; er < BOARD_HEIGHT; er++)
+            {
+                for (int ec = 0; ec < BOARD_WIDTH; ec++)
+                {
+                    Move move = {sr, sc, er, ec, 0, 0, 0};
+
+                    if (legalMove(board, &move, turn, lastMove))
+                    {
+                        return 1;
                     }
                 }
             }
         }
-        return 0;
     }
+    return 0;
 }
 
 /* already made
