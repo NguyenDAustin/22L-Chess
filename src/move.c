@@ -309,7 +309,6 @@ int possibleMove(Board *board, Color turn, Move lastMove)
                 board->board[sr][sc]->color != turn){
                 continue;
             }
-<<<<<<< HEAD
             for (int er = 0; er < 8; er++){
                 for (int ec = 0; ec < 10; ec++){
                     Move move;
@@ -322,17 +321,6 @@ int possibleMove(Board *board, Color turn, Move lastMove)
                     move.castle = 0;
 
                     if (legalMove(board, &move, turn, lastMove)) {
-=======
-
-            for (int er = 0; er < BOARD_HEIGHT; er++)
-            {
-                for (int ec = 0; ec < BOARD_WIDTH; ec++)
-                {
-                    Move move = {sr, sc, er, ec, 0, 0, 0};
-
-                    if (legalMove(board, &move, turn, lastMove))
-                    {
->>>>>>> a6adb5723f847994783f2624c0bc2ebc71500f20
                         return 1;
                     }
                 }
@@ -342,8 +330,7 @@ int possibleMove(Board *board, Color turn, Move lastMove)
     return 0;
 }
 
-<<<<<<< HEAD
-
+ 
 int checkCheckmate(Board *board, Color turn, Move lastMove)
 {
     if (!kingCheck(board, turn)) {return 0;}
@@ -361,7 +348,6 @@ int checkStalemate(Board *board, Color turn, Move lastMove){
     return 1;
 }
 /* already made*/
-=======
 /* already made
 int checkCheckmate(Board *board, Color turn, Move lastMove)
 {
@@ -381,4 +367,3 @@ int checkStalemate(Board *board, Color turn, Move lastMove){
 
 }
 */
->>>>>>> a6adb5723f847994783f2624c0bc2ebc71500f20

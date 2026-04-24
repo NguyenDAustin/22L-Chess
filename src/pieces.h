@@ -66,12 +66,11 @@ int queenCanCapture(Board *board, Piece *p, int sr, int sc, int er, int ec);
 int kingCanMove(Board *board, Piece *p, int sr, int sc, int er, int ec);
 int kingCanCapture(Board *board, Piece *p, int sr, int sc, int er, int ec);
 int pawnCanMove(Board *board, Piece *p, int sr, int sc, int er, int ec);
-int pawnCanCapture(Board *board, Piece *p, int sr, int sc, int er, int ec);
+int pawnCanCapture(Board *board, Piece *p, int sr, int sc, int er, int ec, Move *lastMove);
 int anteaterCanMove(Board *board, Piece *p, int sr, int sc, int er, int ec);
 int anteaterCanCapture(Board *board, Piece *p, int sr, int sc, int er, int ec);
 
 // special moves
-int pawnCanEnPassant(Board *board, Piece *p, int sr, int sc, int er, int ec, Move *lastMove);
 int kingCanCastle(Board *board, Piece *p, int sr, int sc, int er, int ec);
 
 // check check
