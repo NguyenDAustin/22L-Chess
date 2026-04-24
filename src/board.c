@@ -67,11 +67,12 @@ Icon *getImagePiece(Icon **images, Color color, Rank rank)
 Piece *createPiecePtr(Icon *img, Color color, Rank rank, Pos pos)
 {
     Piece *temp = malloc(sizeof(Piece));
-    if(temp == NULL){
+    if (temp == NULL)
+    {
         printf("ERROR: MALLOC HAS FAILED\n");
-        return NULL; 
+        return NULL;
     }
-    
+
     pieceCtor(temp, img, color, rank, pos);
     return temp;
 }
@@ -171,7 +172,7 @@ bool isBoardEdge(int row, int col)
     return (isRowEdge(row) || isColEdge(col));
 }
 
-Piece* getSquare(const Board *board, int row, int col)
+Piece *getSquare(const Board *board, int row, int col)
 {
     return board->board[row][col];
 }
@@ -181,11 +182,11 @@ void setSquare(Board *board, Piece *piece, int row, int col)
     board->board[row][col] = piece;
 }
 
-Piece* deletePiece(Board *board, Pos pos)
+Piece *deletePiece(Board *board, Pos pos)
 {
-    Piece* delete = board->board[pos.row][pos.col]; 
+    Piece *delete = board->board[pos.row][pos.col];
     board->board[pos.row][pos.col] = NULL;
-    return delete; 
+    return delete;
 }
 
 void addPiece(Board *board, Piece *piece, Pos pos)
@@ -194,7 +195,7 @@ void addPiece(Board *board, Piece *piece, Pos pos)
     piece->pos = pos;
 }
 
-void movePiece(Board *board, Board_State* boardState, Piece* piece, Pos newPos)
+void movePiece(Board *board, Board_State *boardState, Piece *piece, Pos newPos)
 {
     deletePiece(board, getPos(piece));
     addPiece(board, piece, newPos);
@@ -202,14 +203,15 @@ void movePiece(Board *board, Board_State* boardState, Piece* piece, Pos newPos)
     resetLegalMoveCount(boardState);
 }
 
-void capturePiece(Board* board, Board_State* boardState, Piece* piece, Pos capturePos){
-    Piece* deleted = deletePiece(board, capturePos);  
-    movePiece(board, boardState, piece, capturePos); 
+void capturePiece(Board *board, Board_State *boardState, Piece *piece, Pos capturePos)
+{
+    Piece *deleted = deletePiece(board, capturePos);
+    movePiece(board, boardState, piece, capturePos);
     free(deleted);
 }
 
 void promotion(Board *board, Pos pos, Rank newRank)
 {
     Piece *piece = getSquare(board, pos.row, pos.col);
-    piece->type = newRank; //change --> img too 
+    piece->type = newRank; // change --> img too
 }
