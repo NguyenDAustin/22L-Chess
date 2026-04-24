@@ -3,9 +3,9 @@
 
 void executeMove(Board *board, Move *move, Move lastMove)
 {
-    Piece moving = board->board[move->startRow][move->startCol];
+    Piece *moving = board->board[move->startRow][move->startCol];
 
-    if (moving.type == EMPTY || moving.vtable == NULL)
+    if (moving->type == EMPTY || moving->vtable == NULL)
     {
         return;
     }
@@ -15,27 +15,27 @@ void executeMove(Board *board, Move *move, Move lastMove)
     move->castle = 0;
 
     // castling
-    if (moving.type == KING && kingCanCastle(board->board, &moving,
-                                             move->startRow, move->startCol, move->endRow, move->endCol))
+    if (moving->type == KING && kingCanCastle(board->board, &moving,
+                                              move->startRow, move->startCol, move->endRow, move->endCol))
     {
         executeCastle(board->board, move);
         return;
     }
 
     // en passant
-    if (moving.type == PAWN && pawnCanEnPassant(board->board, &moving, move->startRow, move->startCol, move->endRow, move->endCol, &lastMove))
+    if (moving->type == PAWN && pawnCanEnPassant(board->board, &moving, move->startRow, move->startCol, move->endRow, move->endCol, &lastMove))
     {
         executeEnPassant(board->board, move);
         return;
     }
 
-    if (moving.vtable->canCapture(board->board, &moving, move->startRow, move->startCol, move->endRow, move->endCol))
+    if (moving->vtable->canCapture(board->board, &moving, move->startRow, move->startCol, move->endRow, move->endCol))
     {
-        if (moving.type == PAWN)
+        if (moving->type == PAWN)
         {
             executePawnCapture(board->board, move);
         }
-        else if (moving.type == ANTEATER)
+        else if (moving->type == ANTEATER)
         {
             executeAnteaterCapture(board->board, move);
         }
@@ -49,7 +49,7 @@ void executeMove(Board *board, Move *move, Move lastMove)
         return;
     }
 
-    if (moving.vtable->canMove(board->board, &moving, move->startRow, move->startCol, move->endRow, move->endCol))
+    if (moving->vtable->canMove(board->board, &moving, move->startRow, move->startCol, move->endRow, move->endCol))
     {
         board->board[move->endRow][move->endCol] = &moving;
         board->board[move->endRow][move->endCol]->pos.row = move->endRow;
@@ -66,11 +66,11 @@ void executeMove(Board *board, Move *move, Move lastMove)
         return;
     }
 
-    if (moving.vtable->canMove(board->board, &moving, move->startRow, move->startCol, move->endRow, move->endCol))
+    if (moving->vtable->canMove(board->board, &moving, move->startRow, move->startCol, move->endRow, move->endCol))
     { // promotion
 
         // move the piece first
-        board->board[move->endRow][move->endCol] = moving;
+        board->board[move->endRow][move->endCol] = &moving;
         board->board[move->endRow][move->endCol]->pos.row = move->endRow;
         board->board[move->endRow][move->endCol]->pos.col = move->endCol;
         board->board[move->endRow][move->endCol]->moved = 1;
@@ -80,10 +80,10 @@ void executeMove(Board *board, Move *move, Move lastMove)
         board->board[move->startRow][move->startCol]->vtable = NULL;
 
         // check promotion
-        if (moving.type == PAWN)
+        if (moving->type == PAWN)
         {
-            if ((moving.color == WHITE && move->endRow == BOARD_HEIGHT - 1) ||
-                (moving.color == BLACK && move->endRow == 0))
+            if ((moving->color == WHITE && move->endRow == BOARD_HEIGHT - 1) ||
+                (moving->color == BLACK && move->endRow == 0))
             {
 
                 promotion(board, (Pos){move->endRow, move->endCol}, QUEEN);
@@ -137,7 +137,7 @@ void executePawnCapture(Board *board, Move *move)
 
 void executeAnteaterCapture(Board *board, Move *move)
 {
-    Piece moving = board->board[move->startRow][move->startCol];
+    Piece *moving = board->board[move->startRow][move->startCol];
 
     int mr = move->endRow - move->startRow;
     int mc = move->endCol - move->startCol;
@@ -171,7 +171,7 @@ void executeAnteaterCapture(Board *board, Move *move)
     board->board[move->endRow][move->endCol]->pos.row = move->endRow;
     board->board[move->endRow][move->endCol]->pos.col = move->endCol;
 
-    board->board[move->endRow][move->endCol] = moving;
+    board->board[move->endRow][move->endCol] = &moving;
     board->board[move->endRow][move->endCol]->pos.row = move->endRow;
     board->board[move->endRow][move->endCol]->pos.col = move->endCol;
 
@@ -186,9 +186,9 @@ void executeAnteaterCapture(Board *board, Move *move)
 
 void executeEnPassant(Board *board, Move *move)
 {
-    Piece moving = board->board[move->startRow][move->startCol];
+    Piece *moving = board->board[move->startRow][move->startCol];
 
-    board->board[move->endRow][move->endCol] = moving;
+    board->board[move->endRow][move->endCol] = &moving;
     board->board[move->endRow][move->endCol]->pos.row = move->endRow;
     board->board[move->endRow][move->endCol]->pos.col = move->endCol;
     board->board[move->endRow][move->endCol]->moved = 1;
@@ -214,7 +214,7 @@ void executeEnPassant(Board *board, Move *move)
 
 void executeCastle(Board *board, Move *move)
 {
-    Piece king = board->board[move->startRow][move->startCol];
+    Piece *king = board->board[move->startRow][move->startCol];
     int row = move->startRow;
 
     board->board[move->endRow][move->endCol] = king;
@@ -270,7 +270,7 @@ void executeCastle(Board *board, Move *move)
     move->castle = 1;
 }
 
-void copyBoard(Board board, Piece new[8][10], Piece og[8][10])
+void copyBoard(Piece new[8][10], Piece og[8][10])
 {
     for (int r = 0; r < BOARD_HEIGHT; r++)
     {
@@ -281,22 +281,22 @@ void copyBoard(Board board, Piece new[8][10], Piece og[8][10])
     }
 }
 
-int legalMove(Board board, Move *move, Color turn, Move lastMove)
+int legalMove(Board *board, Move *move, Color turn, Move lastMove)
 {
-    Piece moving = board->board[move->startRow][move->startCol];
+    Piece *moving = board->board[move->startRow][move->startCol];
 
-    if (moving.type == EMPTY || moving.vtable == NULL)
+    if (moving->type == EMPTY || moving->vtable == NULL)
     {
         return 0;
     }
 
-    if (moving.color != turn)
+    if (moving->color != turn)
     {
         return 0;
     }
 
     Piece testBoard->board[8][10];
-    copyBoard->board(testBoard->board, board->board);
+    copyBoard(testBoard->board, board->board);
 
     Move testMove = *move;
 
@@ -310,7 +310,7 @@ int legalMove(Board board, Move *move, Color turn, Move lastMove)
     // if the original square hasn't change
     if (move->startRow != move->endRow || move->startCol != move->endCol)
     {
-        if (testBoard->board[move->startRow][move->startCol]->type == moving.type && testBoard->board[move->startRow][move->startCol]->color == moving.color)
+        if (testBoard->board[move->startRow][move->startCol]->type == moving->type && testBoard->board[move->startRow][move->startCol]->color == moving->color)
         {
             return 0;
         }
@@ -324,7 +324,7 @@ int legalMove(Board board, Move *move, Color turn, Move lastMove)
     return 1;
 }
 
-int possibleMove(Board board, Color turn, Move lastMove)
+int possibleMove(Board *board, Color turn, Move lastMove)
 {
     for (int sr = 0; sr < BOARD_HEIGHT; sr++)
     {
