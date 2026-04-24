@@ -4,25 +4,26 @@
 #include "pieces.h"
 #include "board.h"
 
-typedef struct Move{
-    int startRow; //scr
-    int startCol; //sc
-    int endRow; //er
-    int endCol; //ec
-    int capture; //capture
+struct Move
+{
+    int startRow; // scr
+    int startCol; // sc
+    int endRow;   // er
+    int endCol;   // ec
+    int capture;  // capture
 
     int enPassant;
     int castle;
-} Move;
+};
 
 void executeMove(Board *board, Move *move, Move lastMove);
 
-void recordMove (Move move, const char *filename);
+void recordMove(Move move, const char *filename);
 void executeCapture(Board *board, Move *move);
 void executePawnCapture(Board *board, Move *move);
 void executeAnteaterCapture(Board *board, Move *move);
 
-//special moves
+// special moves
 void executeEnPassant(Board *board, Move *move);
 void executeCastle(Board *board, Move *move);
 

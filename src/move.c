@@ -118,7 +118,36 @@ void executeAnteaterCapture(Board *board, Move *move)
 {
     Piece *moving = board->board[move->startRow][move->startCol];
 
+<<<<<<< HEAD
     // Move anteater onto captured pawn's square
+=======
+    int mr = move->endRow - move->startRow;
+    int mc = move->endCol - move->startCol;
+
+    int rowStep = 0;
+    int colStep = 0;
+
+    if (mr != 0)
+    {
+        rowStep = (mr > 0) ? 1 : -1;
+    }
+    if (mc != 0)
+    {
+        colStep = (mc > 0) ? 1 : -1;
+    }
+
+    int r = move->startRow + rowStep;
+    int c = move->startCol + colStep;
+
+    while (r != move->endRow || c != move->endCol)
+    { // remove pawns
+        board->board[r][c]->type = EMPTY;
+        board->board[r][c]->vtable = NULL;
+        r += rowStep;
+        c += colStep;
+    }
+
+>>>>>>> a6adb5723f847994783f2624c0bc2ebc71500f20
     board->board[move->endRow][move->endCol] = moving;
 
     if (moving != NULL) {
@@ -173,6 +202,7 @@ void executeCastle(Board *board, Move *move)
         int rookEndCol = move->endCol - 1;
 
         board->board[row][rookEndCol] = board->board[row][rookStartCol];
+<<<<<<< HEAD
         if (board->board[row][rookEndCol] != NULL) {
             board->board[row][rookEndCol]->pos.row = row;
             board->board[row][rookEndCol]->pos.col = rookEndCol;
@@ -181,6 +211,21 @@ void executeCastle(Board *board, Move *move)
 
         board->board[row][rookStartCol] = NULL;
     } else {
+=======
+        board->board[row][rookEndCol]->pos.row = row;
+        board->board[row][rookEndCol]->pos.col = rookEndCol;
+        board->board[row][rookEndCol]->moved = 1;
+
+        board->board[row][rookStartCol]->img = NULL;
+        board->board[row][rookStartCol]->type = EMPTY;
+        board->board[row][rookStartCol]->vtable = NULL;
+        board->board[row][rookStartCol]->pos.row = row;
+        board->board[row][rookStartCol]->pos.col = rookStartCol;
+        board->board[row][rookStartCol]->moved = 0;
+    }
+    else
+    {
+>>>>>>> a6adb5723f847994783f2624c0bc2ebc71500f20
         // queenside
         int rookStartCol = 0;
         int rookEndCol = move->endCol + 1;
@@ -201,8 +246,15 @@ void executeCastle(Board *board, Move *move)
 
 void copyBoard(Board *dest, Board *src)
 {
+<<<<<<< HEAD
     for (int r = 0; r < 8; r++) {
         for (int c = 0; c < 10; c++) {
+=======
+    for (int r = 0; r < BOARD_HEIGHT; r++)
+    {
+        for (int c = 0; c < BOARD_WIDTH; c++)
+        {
+>>>>>>> a6adb5723f847994783f2624c0bc2ebc71500f20
             dest->board[r][c] = src->board[r][c];
         }
     }
@@ -257,6 +309,7 @@ int possibleMove(Board *board, Color turn, Move lastMove)
                 board->board[sr][sc]->color != turn){
                 continue;
             }
+<<<<<<< HEAD
             for (int er = 0; er < 8; er++){
                 for (int ec = 0; ec < 10; ec++){
                     Move move;
@@ -269,6 +322,17 @@ int possibleMove(Board *board, Color turn, Move lastMove)
                     move.castle = 0;
 
                     if (legalMove(board, &move, turn, lastMove)) {
+=======
+
+            for (int er = 0; er < BOARD_HEIGHT; er++)
+            {
+                for (int ec = 0; ec < BOARD_WIDTH; ec++)
+                {
+                    Move move = {sr, sc, er, ec, 0, 0, 0};
+
+                    if (legalMove(board, &move, turn, lastMove))
+                    {
+>>>>>>> a6adb5723f847994783f2624c0bc2ebc71500f20
                         return 1;
                     }
                 }
@@ -278,6 +342,7 @@ int possibleMove(Board *board, Color turn, Move lastMove)
     return 0;
 }
 
+<<<<<<< HEAD
 
 int checkCheckmate(Board *board, Color turn, Move lastMove)
 {
@@ -296,3 +361,24 @@ int checkStalemate(Board *board, Color turn, Move lastMove){
     return 1;
 }
 /* already made*/
+=======
+/* already made
+int checkCheckmate(Board *board, Color turn, Move lastMove)
+{
+    if (!kingCheck(board, turn)) {return 0;}
+
+    if (possibleMove(board, turn, lastMove)) {return 0;}
+
+    return 1;
+}
+
+int checkStalemate(Board *board, Color turn, Move lastMove){
+    if (kingCheck(board, turn)) {return 0;}
+
+    if (possibleMove(board, turn, lastMove)) {return 0;}
+
+    return 1;
+
+}
+*/
+>>>>>>> a6adb5723f847994783f2624c0bc2ebc71500f20
