@@ -5,7 +5,7 @@
 
 void executeMove(Board *board, Move *move, Move lastMove)
 {
-    Piece **moving = board->board[move->startRow][move->startCol];
+    Piece *moving = board->board[move->startRow][move->startCol];
 
     if (moving == NULL || moving->type == EMPTY || moving->vtable == NULL)
     {
@@ -156,8 +156,8 @@ void executeAnteaterCapture(Board *board, Move *move)
 
     while (r != move->endRow || c != move->endCol)
     { // remove pawns
-        board->board[r][c].type = EMPTY;
-        board->board[r][c].vtable = NULL;
+        board->board[r][c]->type = EMPTY;
+        board->board[r][c]->vtable = NULL;
         r += rowStep;
         c += colStep;
     }
@@ -219,16 +219,16 @@ void executeCastle(Board *board, Move *move)
         int rookEndCol = move->endCol - 1;
 
         board->board[row][rookEndCol] = board->board[row][rookStartCol];
-        board->board[row][rookEndCol].pos.row = row;
-        board->board[row][rookEndCol].pos.col = rookEndCol;
-        board->board[row][rookEndCol].moved = 1;
+        board->board[row][rookEndCol]->pos.row = row;
+        board->board[row][rookEndCol]->pos.col = rookEndCol;
+        board->board[row][rookEndCol]->moved = 1;
 
-        board->board[row][rookStartCol].img = NULL;
-        board->board[row][rookStartCol].type = EMPTY;
-        board->board[row][rookStartCol].vtable = NULL;
-        board->board[row][rookStartCol].pos.row = row;
-        board->board[row][rookStartCol].pos.col = rookStartCol;
-        board->board[row][rookStartCol].moved = 0;
+        board->board[row][rookStartCol]->img = NULL;
+        board->board[row][rookStartCol]->type = EMPTY;
+        board->board[row][rookStartCol]->vtable = NULL;
+        board->board[row][rookStartCol]->pos.row = row;
+        board->board[row][rookStartCol]->pos.col = rookStartCol;
+        board->board[row][rookStartCol]->moved = 0;
     }
     else
     {
@@ -257,7 +257,7 @@ void copyBoard(Board *dest, Board *src)
     {
         for (int c = 0; c < BOARD_WIDTH; c++)
         {
-            new[r][c] = og[r][c];
+            dest->board[r][c] = src->board[r][c];
         }
     }
 }
@@ -342,23 +342,24 @@ int possibleMove(Board *board, Color turn, Move lastMove)
         }
         return 0;
     }
+}
 
-    /* already made
-    int checkCheckmate(Board *board, Color turn, Move lastMove)
-    {
-        if (!kingCheck(board, turn)) {return 0;}
+/* already made
+int checkCheckmate(Board *board, Color turn, Move lastMove)
+{
+    if (!kingCheck(board, turn)) {return 0;}
 
-        if (possibleMove(board, turn, lastMove)) {return 0;}
+    if (possibleMove(board, turn, lastMove)) {return 0;}
 
-        return 1;
-    }
+    return 1;
+}
 
-    int checkStalemate(Board *board, Color turn, Move lastMove){
-        if (kingCheck(board, turn)) {return 0;}
+int checkStalemate(Board *board, Color turn, Move lastMove){
+    if (kingCheck(board, turn)) {return 0;}
 
-        if (possibleMove(board, turn, lastMove)) {return 0;}
+    if (possibleMove(board, turn, lastMove)) {return 0;}
 
-        return 1;
+    return 1;
 
-    }
-    */
+}
+*/
