@@ -16,6 +16,9 @@ void initializeBoardBundle(Board_Bundle* boardData, Board* board, Icon** images,
   boardData->timerSourceId = 0;
   boardData->whiteSeconds = 0;
   boardData->blackSeconds = 0;
+  boardData->userColor = WHITE;
+  boardData->cpuColor = BLACK;
+  boardData->userStarts = true;
   boardData->move = NULL; 
 
   initializeBoardState(boardData->boardState); 
