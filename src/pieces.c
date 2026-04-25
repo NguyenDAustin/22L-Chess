@@ -264,18 +264,24 @@ int queenCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec)
 
 int kingCanMove(Board* board, Piece *p, int sr, int sc, int er, int ec) 
 {
-    int mr = abs(er - sr); //moved rows
-    int mc = abs(ec - sc); //moved columns
-    
+    int mr = abs(er - sr); //move rows
+    int mc = abs(ec - sc); //move columns
+
     if (!isEmpty(board, er, ec)) {
         return 0;
     }
 
-    if (mr == 0 && mc ==0){ //to check if the king moved
+    if (mr == 0 && mc == 0) {
         return 0;
     }
 
-    if (mr <= 1 && mc <= 1){ //checks if king move is legal, <= is to see if its diagonal
+    // normal king move
+    if (mr <= 1 && mc <= 1) {
+        return 1;
+    }
+
+    // castle castle
+    if (kingCanCastle(board, p, sr, sc, er, ec)) {
         return 1;
     }
 
@@ -302,6 +308,62 @@ int kingCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec)
     return 0;
 }
 
+int kingCanCastle(Board* board, Piece *p, int sr, int sc, int er, int ec)
+{
+    if (p->type != KING || p->moved) {
+        return 0;
+    }
+
+    // move 2 squares
+    if (sr != er || abs(ec - sc) != 2) {
+        return 0;
+    }
+
+    if (!isEmpty(board, er, ec)) {
+        return 0;
+    }
+
+    // kingside
+    if (ec > sc) {
+        int rookCol = BOARD_WIDTH - 1;
+        Piece *rook = board->board[sr][rookCol];
+
+        if (rook == NULL ||
+            rook->type != ROOK ||
+            rook->color != p->color ||
+            rook->moved) {
+            return 0;
+        }
+
+        for (int c = sc + 1; c < rookCol; c++) {
+            if (!isEmpty(board, sr, c)) {
+                return 0;
+            }
+        }
+
+        return 1;
+    }
+    else {
+        // queenside
+        int rookCol = 0;
+        Piece *rook = board->board[sr][rookCol];
+
+        if (rook == NULL ||
+            rook->type != ROOK ||
+            rook->color != p->color ||
+            rook->moved) {
+            return 0;
+        }
+
+        for (int c = rookCol + 1; c < sc; c++) {
+            if (!isEmpty(board, sr, c)) {
+                return 0;
+            }
+        }
+
+        return 1;
+    }
+}
 
 int pawnCanMove(Board* board, Piece *p, int sr, int sc, int er, int ec) 
 {
@@ -320,13 +382,13 @@ int pawnCanMove(Board* board, Piece *p, int sr, int sc, int er, int ec)
     }
 
     if (ec == sc && er == sr + 2 * mr){
-        if (p->color == WHITE && sr == 1 &&
+        if (p->color == BLACK && sr == 1 &&
             isEmpty(board, sr + mr, sc) &&
             isEmpty(board, er, ec)) {
             return 1;
         }
 
-        if (p->color == BLACK && sr == 6 &&
+        if (p->color == WHITE && sr == 6 &&
             isEmpty(board, sr + mr, sc) &&
             isEmpty(board, er, ec)) {
             return 1;
@@ -337,7 +399,7 @@ int pawnCanMove(Board* board, Piece *p, int sr, int sc, int er, int ec)
 }
 
 
-int pawnCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec, Move *lastMove) 
+int pawnCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec) 
 {
     int mr;
 
@@ -355,11 +417,6 @@ int pawnCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec, Move 
             return 1;
         }
     }
-
-    if (pawnCanEnPassant(board, p, sr, sc, er, ec, lastMove)) {
-        return ;
-    }
-
 
     return 0;
 }
@@ -468,56 +525,7 @@ int anteaterCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec)
 
 
 
-int kingCanCastle(Board* board, Piece *p, int sr, int sc, int er, int ec)
-{
-    if (p->type != KING || p->moved) {
-        return 0;
-    }
 
-    // same row, moved two columns
-    if (sr != er || abs(ec - sc) != 2) {
-        return 0;
-    }
-
-    // check for empty
-    if (!isEmpty(board, er, ec)) {
-        return 0;
-    }
-
-    if (ec > sc) {
-        // kingside rook
-        int rookCol = BOARD_WIDTH - 1;
-
-        if (board->board[sr][rookCol]->type != ROOK ||
-            board->board[sr][rookCol]->color != p->color ||
-            board->board[sr][rookCol]->moved) {
-            return 0;
-        }
-
-        for (int c = sc + 1; c < rookCol; c++) {
-            if (!isEmpty(board, sr, c)) {
-                return 0;
-            }
-        }
-        return 1;
-    } else {
-        // queenside rook
-        int rookCol = 0;
-
-        if (board->board[sr][rookCol]->type != ROOK ||
-            board->board[sr][rookCol]->color != p->color ||
-            board->board[sr][rookCol]->moved) {
-            return 0;
-        }
-
-        for (int c = rookCol + 1; c < sc; c++) {
-            if (!isEmpty(board, sr, c)) {
-                return 0;
-            }
-        }
-        return 1;
-    }
-}
 
 // virtual Tables
 static PieceVTable rookTable = {rookCanMove, rookCanCapture};
