@@ -2,8 +2,10 @@
 #define BOARD_H
 
 #include "pieces.h"
+#include "render.h"
 
 typedef struct Board_State Board_State; 
+typedef struct Board_Bundle Board_Bundle; 
 
 
 extern const int NUMBER_OF_FLAGS; 
@@ -28,8 +30,6 @@ Icon* getBlackImagePiece(Icon** images, Rank rank);
 
 
 Piece* createPiecePtr(Icon* img, Color color, Rank rank, Pos pos);
-
-void promotion(Board *board, Pos pos, Rank newRank);
 
 void createPieces( Board* mBoard, Icon** images, Color color);
 void createWhitePieces(Board* mBoard, Icon** images); 
@@ -56,5 +56,6 @@ Piece* deletePiece(Board* board, Pos pos); //sets the piece* to null at pos
 void addPiece(Board* board, Piece* piece, Pos pos);
 void movePiece(Board *board, Board_State* boardState, Piece* piece, Pos newPos);
 void capturePiece(Board* board, Board_State* boardState, Piece* piece, Pos capturePos);
+void promotePiece(Board_Bundle* boardData, Pos pos, Rank newRank); 
 
 #endif 

@@ -1,5 +1,6 @@
 #include "board.h"
 #include "board_state.h"
+#include "board_bundle.h"
 
 const int NUMBER_OF_FLAGS = 10;
 const int BLACK_ANT_ROW = 1;
@@ -210,8 +211,17 @@ void capturePiece(Board *board, Board_State *boardState, Piece *piece, Pos captu
     free(deleted);
 }
 
-void promotion(Board *board, Pos pos, Rank newRank)
+void promotePiece(Board_Bundle* boardData, Pos pos, Rank newRank)
 {
-    Piece *piece = getSquare(board, pos.row, pos.col);
-    piece->type = newRank; // change --> img too
+    Board* board = getBoard(boardData); 
+    Piece* piece = getSquare(board, pos.row, pos.col);
+    Color color = getColor(piece);
+    setType(piece, newRank); 
+    piece->vtable = getVtable(newRank); 
+    Icon** images = getImages(boardData);
+    
+    if(images == NULL) 
+        printf("ERROR: IMAGES NULL\n"); 
+
+    piece->img = (color == WHITE) ? getWhiteImagePiece(images, newRank) : getBlackImagePiece(images, newRank); 
 }

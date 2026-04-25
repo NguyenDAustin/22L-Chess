@@ -51,7 +51,6 @@ GtkWidget* createMainGrid(){
   return createGrid(GRID_COLUMN_SPACING); 
 }
 
-
 void createBoard(GtkWidget* board, Board_Bundle* boardData){ 
   gtk_drawing_area_set_content_width (GTK_DRAWING_AREA (board), SQUARE_SIZE * BOARD_WIDTH);
   gtk_drawing_area_set_content_height (GTK_DRAWING_AREA (board), SQUARE_SIZE * BOARD_HEIGHT);
@@ -82,29 +81,28 @@ void createLog(GtkWidget* logScroller, GtkWidget* log){
 //i draw if things have changed 
 
 
-void createPopUp(const Board_Bundle* boardData){ 
+void createBlackButtons(Board_Bundle* boardData, GtkWidget** buttons){ 
+  const char* blackImages[NUMBER_OF_PROMOTION_BUTTONS] = {PIECE_RESOURCES[BLACK_QUEEN], PIECE_RESOURCES[BLACK_ROOK], PIECE_RESOURCES[BLACK_BISHOP], PIECE_RESOURCES[BLACK_KNIGHT], PIECE_RESOURCES[BLACK_ANTEATER]};
+  initializePromotionButtonArr(boardData, buttons, blackImages); 
+}
+
+void createWhiteButtons(Board_Bundle* boardData, GtkWidget** buttons){ 
+  const char* whiteImages[NUMBER_OF_PROMOTION_BUTTONS] = {PIECE_RESOURCES[WHITE_QUEEN], PIECE_RESOURCES[WHITE_ROOK], PIECE_RESOURCES[WHITE_BISHOP], PIECE_RESOURCES[WHITE_KNIGHT], PIECE_RESOURCES[WHITE_ANTEATER]};
+  initializePromotionButtonArr(boardData, buttons, whiteImages); 
+}
+
+void createPopUp(Board_Bundle* boardData){ 
   Board_State* boardState = boardData->boardState; 
   Piece* promoting = boardState->clickedPiece; 
   Color pieceColor = getColor(promoting); 
   GtkWidget* popUp = boardData->promotionPopUp; 
   GtkWidget* promotionGrid; 
 
-  printf("creating pop up\n");
+  GtkWidget* buttons[NUMBER_OF_PROMOTION_BUTTONS]; 
+  (pieceColor == WHITE) ? createWhiteButtons(boardData, buttons) : createBlackButtons(boardData, buttons); 
+  (pieceColor == WHITE) ? gtk_popover_set_position(GTK_POPOVER(popUp), GTK_POS_TOP) : gtk_popover_set_position(GTK_POPOVER(popUp), GTK_POS_BOTTOM); 
   
-  if(popUp == NULL) 
-      printf("ERROR: POP UP IS NULL\n");
-
-  if(pieceColor == WHITE){ 
-    printf("here white\n");
-    promotionGrid = boardData->whitePromotionGrid;  
-    gtk_popover_set_position(GTK_POPOVER(popUp), GTK_POS_TOP);
-  }
-  else{
-    printf("here black\n");
-    promotionGrid = boardData->blackPromotionGrid;  
-    gtk_popover_set_position(GTK_POPOVER(popUp), GTK_POS_BOTTOM); 
-  }
-
+  promotionGrid = createPromotionGrid(buttons);
   gtk_popover_set_child(GTK_POPOVER(popUp), promotionGrid); 
   gtk_popover_popup(GTK_POPOVER(popUp)); 
 }
@@ -133,19 +131,31 @@ void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer
   if(isPromotion(boardState)){
     printf("is promotion\n");  
     createPopUp(boardData); 
-
-
-    //gtk_popover_set_child(GTK_POPOVER(boardData->promotionPopUp), popGrid);  
-    //gtk_popover_popup(GTK_POPOVER(boardData->promotionPopUp));
   }
     
 }
 
-GtkWidget* createPromotionButton(const char *imagePath) {
+
+void onPromotionClicked(GtkButton *button, gpointer user_data) {
+    Rank promoteTo = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "promoteRank"));
+    Board_Bundle* boardData = user_data; 
+    Board_State* boardState = getBoardState(boardData); 
+    Pos clickPiecePos = getPos(boardState->clickedPiece); 
+    GtkWidget* popUp = boardData->promotionPopUp; 
+
+   // printf("Promote to rank: %d\n", promoteTo);
+
+    promotePiece(boardData, clickPiecePos, promoteTo);
+    gtk_popover_popdown(GTK_POPOVER(popUp));
+}
+
+GtkWidget* createPromotionButton(Board_Bundle* boardData, const char *imagePath, Rank type) {
     GtkWidget *button = gtk_button_new();
     GtkWidget *picture = gtk_picture_new_for_filename(imagePath);
     gtk_widget_set_size_request(picture, PROMOTION_BUTTON_SIZE, PROMOTION_BUTTON_SIZE);
     gtk_button_set_child(GTK_BUTTON(button), picture);
+    g_object_set_data(G_OBJECT(button), "promoteRank", GINT_TO_POINTER(type)); 
+    g_signal_connect(button, "clicked", G_CALLBACK(onPromotionClicked), boardData); 
     return button;
 }
 
@@ -171,9 +181,10 @@ void gridAttacher(GtkWidget* grid, GtkWidget** attachments, int size){
   }
 }
 
-void initializePromotionButtonArr(GtkWidget** buttons, const char** images){
+void initializePromotionButtonArr(Board_Bundle* boardData, GtkWidget** buttons, const char** images){
+  Rank type[NUMBER_OF_PROMOTION_BUTTONS] = {QUEEN, ROOK, BISHOP, KNIGHT, ANTEATER}; 
   for(int i = 0; i < NUMBER_OF_PROMOTION_BUTTONS; i++){ 
-    buttons[i] = createPromotionButton(images[i]); 
+    buttons[i] = createPromotionButton(boardData, images[i], type[i]); 
   } 
 }
 
@@ -186,25 +197,14 @@ static void activate (GtkApplication *app, gpointer user_data)
   GtkWidget* log = gtk_text_view_new();
   GtkTextBuffer* buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(log)); 
 
-
-  //white buttons 
-  const char* whiteImages[NUMBER_OF_PROMOTION_BUTTONS] = {PIECE_RESOURCES[WHITE_QUEEN], PIECE_RESOURCES[WHITE_ROOK], PIECE_RESOURCES[WHITE_BISHOP], PIECE_RESOURCES[WHITE_KNIGHT], PIECE_RESOURCES[WHITE_ANTEATER]}; 
-  GtkWidget* whiteButtons[NUMBER_OF_PROMOTION_BUTTONS]; 
-  initializePromotionButtonArr(whiteButtons, whiteImages); 
-
-  //black buttons
-  const char* blackImages[NUMBER_OF_PROMOTION_BUTTONS] = {PIECE_RESOURCES[BLACK_QUEEN], PIECE_RESOURCES[BLACK_ROOK], PIECE_RESOURCES[BLACK_BISHOP], PIECE_RESOURCES[BLACK_KNIGHT], PIECE_RESOURCES[BLACK_ANTEATER]}; 
-  GtkWidget* blackButtons[NUMBER_OF_PROMOTION_BUTTONS]; 
-  initializePromotionButtonArr(blackButtons, blackImages);  
-
-
-  GtkWidget* whitePromotionGrid = createPromotionGrid(whiteButtons); 
-  GtkWidget* blackPromotionGrid = createPromotionGrid(blackButtons);  
   GtkWidget* promotionPop = gtk_popover_new(); 
   gtk_widget_set_parent(promotionPop, board); //promotion Pop needs to be handle memory
 
-  Board_Bundle* boardData = malloc(sizeof(Board_Bundle)); 
-  initializeBoardBundle(boardData, user_data, board, promotionPop, whitePromotionGrid, blackPromotionGrid, GTK_TEXT_VIEW(log), buffer); 
+  Board_Bundle* boardData = user_data;  
+  setBoardWidget(boardData, board); 
+  setLogTextView(boardData, GTK_TEXT_VIEW(log)); 
+  setLogBuffer(boardData, buffer); 
+  setPromotionPop(boardData, promotionPop); 
 
   //setting background
   GdkDisplay *display = gdk_display_get_default();
@@ -232,7 +232,6 @@ static void activate (GtkApplication *app, gpointer user_data)
   gtk_grid_attach(GTK_GRID(grid), board,  0, 0, 1, 1); //col row colspan rowspan
   gtk_grid_attach(GTK_GRID(grid), logScroller,  1, 0, 1, 1);
   gtk_window_present (GTK_WINDOW (window));
-
 }
 
 int main (int argc, char **argv)
@@ -242,14 +241,32 @@ int main (int argc, char **argv)
 
   int numOfImages = 14; 
 
+  Board_Bundle boardData;  
   Board board; 
+
+  //set images
   cairo_surface_t* images[numOfImages]; 
-  createImages(images, numOfImages); 
+  createImages(images, numOfImages);
+  setImages(&boardData, images); 
+  
+  
+  //set board
   defaultInitializeBoard(&board); 
   initializeBoard(&board, images); 
+  setBoard(&boardData, &board); 
+
+
+  //set board state 
+  Board_State boardState; 
+  initializeBoardState(&boardState);
+  setBoardState(&boardData, &boardState); 
+
+  
+  //initializeBoardBundle(boardData, board, images, NULL, NULL, NULL, NULL); 
+
 
   app = gtk_application_new ("org.gtk.example", G_APPLICATION_DEFAULT_FLAGS);
-  g_signal_connect (app, "activate", G_CALLBACK (activate), &board);
+  g_signal_connect (app, "activate", G_CALLBACK (activate), &boardData);
   status = g_application_run (G_APPLICATION (app), argc, argv);
   g_object_unref (app);
 
