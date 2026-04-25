@@ -10,6 +10,7 @@ const char* CSS_CLASS = "chess-bg";
 const int MIN_LOG_WIDTH = 300; 
 const int MIN_LOG_HEIGHT = 500;
 const int GRID_COLUMN_SPACING = 50;  
+const int GRID_ROW_SPACING = 10;
 const int LOG_SPACING = 10; 
 
 void whichSquare(float x, float y){ //just for debug purposes
@@ -34,9 +35,26 @@ GtkWidget* createWindow(GtkApplication* app, const char* title, const char* cssC
 GtkWidget* createGrid(){
   GtkWidget* grid = gtk_grid_new(); 
   gtk_grid_set_column_spacing(GTK_GRID(grid), GRID_COLUMN_SPACING);
+  gtk_grid_set_row_spacing(GTK_GRID(grid), GRID_ROW_SPACING);
   gtk_widget_set_halign(grid, GTK_ALIGN_CENTER);
   gtk_widget_set_valign(grid, GTK_ALIGN_CENTER);
   return grid; 
+}
+
+GtkWidget* createTimerBox(GtkWidget* whiteTimer, GtkWidget* blackTimer){
+  GtkWidget* timerBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, LOG_SPACING);
+  gtk_widget_add_css_class(timerBox, "timer-box");
+  gtk_widget_add_css_class(whiteTimer, "timer-label");
+  gtk_widget_add_css_class(blackTimer, "timer-label");
+  gtk_widget_set_halign(timerBox, GTK_ALIGN_CENTER);
+  gtk_widget_set_hexpand(timerBox, TRUE);
+  gtk_widget_set_hexpand(whiteTimer, TRUE);
+  gtk_widget_set_hexpand(blackTimer, TRUE);
+  gtk_label_set_xalign(GTK_LABEL(whiteTimer), 0.5);
+  gtk_label_set_xalign(GTK_LABEL(blackTimer), 0.5);
+  gtk_box_append(GTK_BOX(timerBox), whiteTimer);
+  gtk_box_append(GTK_BOX(timerBox), blackTimer);
+  return timerBox;
 }
 
 void createBoard(GtkWidget* board, Board_Bundle* boardData){ 
@@ -46,6 +64,43 @@ void createBoard(GtkWidget* board, Board_Bundle* boardData){
   gtk_widget_set_hexpand(board, FALSE); 
   gtk_widget_set_halign(board, GTK_ALIGN_CENTER); 
   gtk_widget_set_valign(board, GTK_ALIGN_CENTER); 
+}
+
+void updateTimerLabels(Board_Bundle* boardData){
+  int whiteMinutes = boardData->whiteSeconds / 60;
+  int whiteSeconds = boardData->whiteSeconds % 60;
+  int blackMinutes = boardData->blackSeconds / 60;
+  int blackSeconds = boardData->blackSeconds % 60;
+  bool whiteTurn = getMovesMade(boardData->boardState) % 2 == 0;
+  char whiteText[32];
+  char blackText[32];
+
+  snprintf(whiteText, sizeof(whiteText), "White: %02d:%02d", whiteMinutes, whiteSeconds);
+  snprintf(blackText, sizeof(blackText), "Black: %02d:%02d", blackMinutes, blackSeconds);
+
+  gtk_label_set_text(boardData->whiteTimerLabel, whiteText);
+  gtk_label_set_text(boardData->blackTimerLabel, blackText);
+
+  if(whiteTurn){
+    gtk_widget_add_css_class(GTK_WIDGET(boardData->whiteTimerLabel), "timer-active");
+    gtk_widget_remove_css_class(GTK_WIDGET(boardData->blackTimerLabel), "timer-active");
+  }
+  else {
+    gtk_widget_remove_css_class(GTK_WIDGET(boardData->whiteTimerLabel), "timer-active");
+    gtk_widget_add_css_class(GTK_WIDGET(boardData->blackTimerLabel), "timer-active");
+  }
+}
+
+gboolean onTimerTick(gpointer user_data){
+  Board_Bundle* boardData = user_data;
+
+  if(getMovesMade(boardData->boardState) % 2 == 0)
+    boardData->whiteSeconds++;
+  else
+    boardData->blackSeconds++;
+
+  updateTimerLabels(boardData);
+  return G_SOURCE_CONTINUE;
 }
 
 
@@ -86,8 +141,10 @@ void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer
   if(hasUpdate(boardState))
      gtk_widget_queue_draw(boardWidget); 
 
-  if(moveSucces(boardState)) 
+  if(moveSucces(boardState)){
+    updateTimerLabels(boardData);
     appendToLogUI(boardData); 
+  }
    
 }
 
@@ -114,10 +171,15 @@ static void activate (GtkApplication *app, gpointer user_data)
   GtkWidget* board = gtk_drawing_area_new(); 
   GtkWidget* logScroller = gtk_scrolled_window_new(); 
   GtkWidget* log = gtk_text_view_new();
+  GtkWidget* whiteTimer = gtk_label_new(NULL);
+  GtkWidget* blackTimer = gtk_label_new(NULL);
+  GtkWidget* timerBox = createTimerBox(whiteTimer, blackTimer);
   GtkTextBuffer* buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(log)); 
  
   Board_Bundle* boardData = malloc(sizeof(Board_Bundle)); 
-  initializeBoardBundle(boardData, user_data, board, GTK_TEXT_VIEW(log), buffer); 
+  initializeBoardBundle(boardData, user_data, board, GTK_TEXT_VIEW(log), buffer, GTK_LABEL(whiteTimer), GTK_LABEL(blackTimer)); 
+  updateTimerLabels(boardData);
+  boardData->timerSourceId = g_timeout_add_seconds(1, onTimerTick, boardData);
 
   //setting background
   GdkDisplay *display = gdk_display_get_default();
@@ -142,8 +204,9 @@ static void activate (GtkApplication *app, gpointer user_data)
   g_object_unref(provider);
 
   gtk_window_set_child(GTK_WINDOW(window), grid);
-  gtk_grid_attach(GTK_GRID(grid), board,  0, 0, 1, 1); //col row colspan rowspan
-  gtk_grid_attach(GTK_GRID(grid), logScroller,  1, 0, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), board,  0, 0, 1, 2); //col row colspan rowspan
+  gtk_grid_attach(GTK_GRID(grid), timerBox,  1, 0, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), logScroller,  1, 1, 1, 1);
   gtk_window_present (GTK_WINDOW (window));
 
 }

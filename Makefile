@@ -42,6 +42,10 @@ ASCII_MODULES = \
 # board state, and render.c + color_gui.c for drawing.
 GUI_MODULES = \
     $(SRC_DIR)/board.c  \
+    $(SRC_DIR)/board_bundle.c \
+    $(SRC_DIR)/board_state.c \
+    $(SRC_DIR)/game_controller.c \
+    $(SRC_DIR)/move.c \
     $(SRC_DIR)/pieces.c
 
 GUI_SRCS = \

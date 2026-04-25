@@ -10,10 +10,15 @@ typedef struct {
   GtkWidget* boardWidget; 
   GtkTextView* log; 
   GtkTextBuffer* logBuffer; 
+  GtkLabel* whiteTimerLabel;
+  GtkLabel* blackTimerLabel;
+  guint timerSourceId;
+  int whiteSeconds;
+  int blackSeconds;
   char* move;
 } Board_Bundle; 
 
 
-void initializeBoardBundle(Board_Bundle* boardData, Board* board, GtkWidget* boardWidget, GtkTextView* log, GtkTextBuffer* buffer);
+void initializeBoardBundle(Board_Bundle* boardData, Board* board, GtkWidget* boardWidget, GtkTextView* log, GtkTextBuffer* buffer, GtkLabel* whiteTimerLabel, GtkLabel* blackTimerLabel);
 
 #endif 
