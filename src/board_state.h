@@ -3,6 +3,8 @@
 
 #include "pieces.h"
 #include "board.h"
+#include "move.h"
+
 
 extern const int MAX_LEGAL_MOVES; 
 
@@ -21,7 +23,7 @@ typedef struct Board_State {
   Pos legalMoves[BOARD_HEIGHT * BOARD_WIDTH];
   int legalMoveCount;
   int movesMade; 
-
+  Move lastMove;
   //FLAG flags[NUMBER_OF_FLAGS]; //do certain things in array depending on what flag has been set
 } Board_State; 
 
@@ -57,6 +59,6 @@ void resetLegalMoveCount(Board_State* boardState);
 
 //BOARD STATE - LEGAL MOVE FUNCTIONS 
 void addLegalMove(Board_State* boardState, Pos pos);
-void generateLegalMoves(Board_State* boardState, Board* board, Piece* piece, Pos start); 
+void generateLegalMoves(Board_State* boardState, Board* board, Piece* piece, Pos start, Move *lastMove); 
 
 #endif 

@@ -20,7 +20,7 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
     if (hasPiece(board, row, col) && !isLegalMoveSquare(boardState, clickPos)) {
         printf("new piece was clicked\n"); 
         setClickedPiece(boardState, clicked);
-        generateLegalMoves(boardState, board, clicked, getPos(clicked));
+        generateLegalMoves(boardState, board, clicked, getPos(clicked), &boardState->lastMove);
         setUpdate(boardState, true);
     }
 
@@ -38,16 +38,8 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
         move.enPassant = 0;
         move.castle = 0;
 
-        Move lastMove;
-        lastMove.startRow = -1;
-        lastMove.startCol = -1;
-        lastMove.endRow = -1;
-        lastMove.endCol = -1;
-        lastMove.capture = 0;
-        lastMove.enPassant = 0;
-        lastMove.castle = 0;
-
-        executeMove(board, &move, lastMove);
+        executeMove(board, &move, boardState->lastMove);
+        boardState->lastMove = move;
 
         incrementMovesMade(boardState);
 
