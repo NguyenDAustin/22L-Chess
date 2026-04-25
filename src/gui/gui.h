@@ -28,7 +28,6 @@ GtkWidget* createWindow(GtkApplication* app, const char* title, const char* cssC
 GtkWidget* createGrid(int columnSpacing);
 GtkWidget* createPromotionButton(Board_Bundle* boardData, const char *imagePath, Rank type);  
 GtkWidget* createPromotionGrid(GtkWidget** buttons); 
-GtkWidget* createGrid();
 GtkWidget* createTimerBox(GtkWidget* whiteTimer, GtkWidget* blackTimer);
 
 void createBoard(GtkWidget* board, Board_Bundle* boardData);

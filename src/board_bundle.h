@@ -13,10 +13,17 @@ typedef struct Board_Bundle {
   GtkWidget* promotionPopUp; 
   Icon** images; 
   char* move; //move string that needs to be appended to UI
+
+  //Timer data
+  GtkLabel* whiteTimerLabel;
+  GtkLabel* blackTimerLabel;
+  guint timerSourceId;
+  int whiteSeconds;
+  int blackSeconds;
 } Board_Bundle; 
 
 
-void initializeBoardBundle(Board_Bundle* boardData, Board* board, Icon** images, GtkWidget* boardWidget, GtkWidget* promotionPopUp, GtkTextView* log, GtkTextBuffer* buffer);
+void initializeBoardBundle(Board_Bundle* boardData, Board* board, Icon** images, GtkWidget* boardWidget, GtkWidget* promotionPopUp, GtkTextView* log, GtkTextBuffer* buffer, GtkLabel* whiteTimerLabel, GtkLabel* blackTimerLabel);
 
 //getters + setters 
 void setBoard(Board_Bundle* boardData, Board* board);  
@@ -26,6 +33,10 @@ void setPromotionPop(Board_Bundle* boardData, GtkWidget* popUp);
 void setLogTextView(Board_Bundle* boardData, GtkTextView* logText); 
 void setLogBuffer(Board_Bundle* boardData, GtkTextBuffer* buffer); 
 void setBoardState(Board_Bundle* boardData, Board_State* boardState); 
+void setWhiteTimerLabel(Board_Bundle* boardData, GtkLabel* whiteTimerLabel); 
+void setBlackTimerLabel(Board_Bundle* boardData, GtkLabel* blackTimerLabel);
+void setWhiteSeconds(Board_Bundle* boardData, int seconds);
+void setBlackSeconds(Board_Bundle* boardData, int seconds); 
 
 Board* getBoard(const Board_Bundle* boardData); 
 Icon** getImages(const Board_Bundle* boardData); 
@@ -34,16 +45,9 @@ GtkWidget* getPromotionPop(const Board_Bundle* boardData);
 GtkTextView* getLogTextView(const Board_Bundle* boardData); 
 GtkTextBuffer* getLogBuffer(const Board_Bundle* boardData); 
 Board_State* getBoardState(const Board_Bundle* boardData); 
-
-  GtkLabel* whiteTimerLabel;
-  GtkLabel* blackTimerLabel;
-  guint timerSourceId;
-  int whiteSeconds;
-  int blackSeconds;
-  char* move;
-} Board_Bundle; 
-
-
-void initializeBoardBundle(Board_Bundle* boardData, Board* board, GtkWidget* boardWidget, GtkTextView* log, GtkTextBuffer* buffer, GtkLabel* whiteTimerLabel, GtkLabel* blackTimerLabel);
+GtkLabel* getWhiteTimerLabel(const Board_Bundle* boardData); 
+GtkLabel* getBlackTImerLabel(const Board_Bundle* boardData);
+int getWhiteSeconds(const Board_Bundle* boardData); 
+int getBlackSeconds(const Board_Bundle* boardData); 
 
 #endif 

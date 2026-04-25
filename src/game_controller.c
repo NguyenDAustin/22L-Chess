@@ -1,6 +1,6 @@
 #include "game_controller.h"
 
-
+/*
 void sendInput(Board_Bundle* boardData, Pos clickPos)
 {
     Board* board = boardData->board; 
@@ -23,7 +23,6 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
         generateLegalMoves(boardState, board, clicked, getPos(clicked), &boardState->lastMove);
         setUpdate(boardState, true);
     }
-
     else if (aPieceWasClicked(boardState) && isLegalMoveSquare(boardState, clickPos)) {
         printf("executing move\n");
 
@@ -64,4 +63,55 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
         resetLegalMoveCount(boardState); 
         setUpdate(boardState, true);
     }
+}
+    */
+
+
+
+void sendInput(Board_Bundle* boardData, Pos clickPos)
+{
+    Board* board = boardData->board; 
+    Board_State* boardState = boardData->boardState; 
+    boardState->moveSuccess = false; 
+    
+    if (!isPosValid(clickPos))
+    {
+        printf("invalid pos! -> row: %d col: %d\n", clickPos.row, clickPos.col);
+        return;
+    } // making sure input is valid
+
+    int row = clickPos.row, col = clickPos.col;
+
+    Piece *clicked = getSquare(board, row, col);
+
+    if(hasPiece(board, row, col) && !isLegalMoveSquare(boardState, clickPos)){ //if square has piece and we havent clicked a piece before --> a newPiece was clicked
+        printf("new piece was clicked\n"); 
+        setClickedPiece(boardState, clicked);
+        generateLegalMoves(boardState, board, clicked, getPos(clicked));  //highlight
+        setUpdate(boardState, true);
+    }
+    else if(hasPiece(board, row, col) && aPieceWasClicked(boardState) && isLegalMoveSquare(boardState, clickPos)){ //we clicked a piece before and its legal to move there
+        printf("capture\n");
+        capturePiece(board, boardState, getClickedPiece(boardState), getPos(clicked));
+        boardData->move = "capture was made\n";  
+        boardState->moveSuccess = true; 
+        //addCapture(log function)
+        setUpdate(boardState, true);
+    }
+    else if(aPieceWasClicked(boardState) && isLegalMoveSquare(boardState, clickPos)){
+        printf("moving\n"); 
+        Piece *clickedPiece = getClickedPiece(boardState);
+        movePiece(board, boardState, clickedPiece, clickPos); 
+        incrementMovesMade(boardState);  
+        boardData->move = "move was made\n"; 
+        boardState->moveSuccess = true; 
+        //addMove(LOG_FILE, getMovesMade(boardState), "color - pro", "piece - pro", "fr", "to"); 
+        setUpdate(boardState, true);
+    } 
+    else{
+        resetClickedPiece(boardState); 
+        resetLegalMoveCount(boardState); 
+        setUpdate(boardState, true); //cancel move
+    }
+    //if not legal move --> just cancel move --> reset clicked piece
 }
