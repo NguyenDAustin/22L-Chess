@@ -15,6 +15,9 @@ typedef struct {
   guint timerSourceId;
   int whiteSeconds;
   int blackSeconds;
+  Color userColor;
+  Color cpuColor;
+  bool userStarts;
   char* move;
 } Board_Bundle; 
 
