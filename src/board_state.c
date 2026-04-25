@@ -12,6 +12,14 @@ void initializeBoardState(Board_State* boardState){
   boardState->legalMoveCount = 0; 
   boardState->movesMade = 0; 
 
+  boardState->lastMove.startRow = -1;
+  boardState->lastMove.startCol = -1;
+  boardState->lastMove.endRow = -1; 
+  boardState->lastMove.endCol = -1;
+  boardState->lastMove.capture = 0;
+  boardState->lastMove.enPassant = 0;
+  boardState->lastMove.castle = 0;
+
 }
 
 //BOARD STATE - boolean state functions 
@@ -128,7 +136,7 @@ bool canPieceGoTo(Board* board, Piece* piece, Pos start, Pos end) {
 }
 
 //given a piece and its position --> generate all the legal moves that piece can make
-void generateLegalMoves(Board_State* boardState, Board* board, Piece* piece, Pos start){ //might change to make more efficient in future
+void generateLegalMoves(Board_State* boardState, Board* board, Piece* piece, Pos start, Move *lastMove){ //might change to make more efficient in future
     resetLegalMoveCount(boardState); 
 
     Pos end; 
@@ -139,7 +147,9 @@ void generateLegalMoves(Board_State* boardState, Board* board, Piece* piece, Pos
                 //printf("legalMove: [%d][%d]\n", end.row, end.col);
                 addLegalMove(boardState, end); 
             }
-              
+            else if(piece->type == PAWN && pawnCanEnPassant(board, piece, start.row, start.col, end.row, end.col, lastMove)) {
+                addLegalMove(boardState, end);
+            }
         }
     }
 }

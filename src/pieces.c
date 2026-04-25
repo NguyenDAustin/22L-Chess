@@ -423,35 +423,33 @@ int pawnCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec)
 
 int pawnCanEnPassant(Board* board, Piece *p, int sr, int sc, int er, int ec, Move *lastMove)
 {
-    if (!lastMove) {return 0;}
-    int mr = (p->color == WHITE) ? 1 : -1;
+    if (!lastMove) return 0;
 
+    int mr = (p->color == WHITE) ? -1 : 1;
 
-    if (er != sr + mr || abs(ec - sc) != 1) { //move diagonally
+    // must move diagonally 1
+    if (er != sr + mr || abs(ec - sc) != 1)
         return 0;
-    }
 
-    if (!isEmpty(board, er, ec)) {
+    // target square must be empty
+    if (!isEmpty(board, er, ec))
         return 0;
-    }
+    
+    // get last moved piece
+    Piece* lastPiece = board->board[lastMove->endRow][lastMove->endCol];
+    if (!lastPiece) return 0;
 
-    Piece* lastPiece = board->board[lastMove->endRow][lastMove->endCol]; //pawn has to move two squares
-
-    if (lastPiece->type != PAWN) {
+    // must be enemy pawn
+    if (lastPiece->type != PAWN || lastPiece->color == p->color)
         return 0;
-    }
 
-    if (lastPiece->color == p->color) {
+    // must have moved 2 squares
+    if (abs(lastMove->endRow - lastMove->startRow) != 2)
         return 0;
-    }
 
-    if (abs(lastMove->endRow - lastMove->startRow) != 2) {
+    // must be adjacent
+    if (lastMove->endRow != sr || lastMove->endCol != ec)
         return 0;
-    }
-
-    if (lastMove->endRow != sr || lastMove->endCol != ec) {     //pawn must be next to other pawn
-        return 0;
-    }
 
     return 1;
 }
