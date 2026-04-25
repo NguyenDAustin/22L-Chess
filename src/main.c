@@ -127,16 +127,6 @@ int main(void)
                     continue;
                 }
 
-<<<<<<< HEAD
-=======
-                if (getTimeRemaining() <= 0)
-                {
-                    printf("%s wins! %s ran out of time. \n", colorName((currentTurn == WHITE) ? BLACK : WHITE), colorName(currentTurn));
-                    running = 0;
-                    continue;
-                }
-
->>>>>>> a6adb5723f847994783f2624c0bc2ebc71500f20
                 list rec;
                 rec.moveNUm = moveNumber;
                 rec.move = move;

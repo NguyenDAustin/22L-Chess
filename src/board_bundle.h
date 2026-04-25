@@ -35,5 +35,15 @@ GtkTextView* getLogTextView(const Board_Bundle* boardData);
 GtkTextBuffer* getLogBuffer(const Board_Bundle* boardData); 
 Board_State* getBoardState(const Board_Bundle* boardData); 
 
+  GtkLabel* whiteTimerLabel;
+  GtkLabel* blackTimerLabel;
+  guint timerSourceId;
+  int whiteSeconds;
+  int blackSeconds;
+  char* move;
+} Board_Bundle; 
+
+
+void initializeBoardBundle(Board_Bundle* boardData, Board* board, GtkWidget* boardWidget, GtkTextView* log, GtkTextBuffer* buffer, GtkLabel* whiteTimerLabel, GtkLabel* blackTimerLabel);
 
 #endif 

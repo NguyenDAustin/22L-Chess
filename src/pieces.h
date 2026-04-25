@@ -73,12 +73,12 @@ int anteaterCanMove(Board *board, Piece *p, int sr, int sc, int er, int ec);
 int anteaterCanCapture(Board *board, Piece *p, int sr, int sc, int er, int ec);
 
 // special moves
-int pawnCanEnPassant(Board *board, Piece *p, int sr, int sc, int er, int ec, Move *lastMove);
+int pawnCanEnPassant(Board* board, Piece *p, int sr, int sc, int er, int ec, Move *lastMove);
 int kingCanCastle(Board *board, Piece *p, int sr, int sc, int er, int ec);
 
 // check check
-Pos findKing(Board *board, Color color);
-int attackSquare(Board *board, int row, int col, Color attColor);
-int kingCheck(Board *board, Color kingColor);
+//Pos findKing(Board *board, Color color);
+//int attackSquare(Board *board, int row, int col, Color attColor);
+//int kingCheck(Board *board, Color kingColor);
 
 #endif

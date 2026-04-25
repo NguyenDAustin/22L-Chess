@@ -3,7 +3,7 @@
 
 #include "board_bundle.h"
 #include "log.h"
-
+#include "move.h"
 
 /*
 typedef enum{  
