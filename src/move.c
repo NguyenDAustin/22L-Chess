@@ -24,6 +24,11 @@ void executeMove(Board *board, Move *move, Move lastMove)
         return;
     }
 
+    if (board->board[move->endRow][move->endCol] != NULL &&
+        board->board[move->endRow][move->endCol]->type == KING) {
+        return;
+    }
+
     move->capture = 0;
     move->enPassant = 0;
     move->castle = 0;

@@ -16,6 +16,7 @@ typedef struct Board_State {
   Piece* clickedPiece; 
   bool hasUpdate; 
   bool moveSuccess; 
+  bool gameOver;
 
 
   Pos clickPos; 
@@ -36,6 +37,7 @@ bool aPieceWasClicked(const Board_State* boardState);
 bool newPieceWasClicked(const Board_State* boardState, Piece* clickedPiece);
 bool hasUpdate(const Board_State* boardState);
 bool moveSucces(const Board_State* boardState);
+bool isGameOver(const Board_State* boardState);
 bool canPieceGoTo(Board* board, Piece* piece, Pos start, Pos end);
 bool isLegalMoveSquare(const Board_State* boardState, Pos pos);
 bool isPromotion(const Board_State* boardState); 
@@ -46,6 +48,7 @@ void incrementMovesMade(Board_State* boardState);
 
 //BOARD STATE - GETTERS + SETTERS
 void setUpdate(Board_State* boardState, bool update);
+void setGameOver(Board_State* boardState, bool gameOver);
 Piece* getClickedPiece(const Board_State* boardState);
 void setClickedPiece(Board_State* boardState, Piece* piece);
 void resetClickedPiece(Board_State* boardState);

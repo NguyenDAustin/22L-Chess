@@ -23,6 +23,7 @@ static void placePiece(Piece board[8][10], int r, int c, Color color, Rank type)
 #define DEBUG_MODE 1// set it to 1 to force a board setup to for testing
 
 static Color chooseHumanColor(void);
+static AIDifficulty chooseDifficulty(void);
 static const char *colorName(Color c);
 static Move makeMoveFromInput(Pos start, Pos end);
 static void printPrompt(Color turn, int isHumanTurn);
@@ -40,6 +41,7 @@ int main(void)
     Color humanColor;
     Color cpuColor;
     Color currentTurn;
+    AIDifficulty difficulty;
     int moveNumber = 1;
     int running = 1;
     Move lastMove = {0};
@@ -54,6 +56,7 @@ int main(void)
 
     humanColor = chooseHumanColor();
     cpuColor = (humanColor == WHITE) ? BLACK : WHITE;
+    difficulty = chooseDifficulty();
     currentTurn = WHITE;
 
     printf("\nAnteater Chess started.\n");
@@ -181,7 +184,7 @@ int main(void)
 
             printPrompt(currentTurn, 0);
 
-            if (!aiSelectMove(board, currentTurn, &cpuMove))
+            if (!aiSelectMoveAtDifficulty(board, currentTurn, difficulty, &cpuMove))
             {
                 printf("CPU has no legal move.\n");
                 break;
@@ -283,6 +286,30 @@ static Color chooseHumanColor(void)
         }
 
         printf("Please enter W or B.\n");
+    }
+}
+
+static AIDifficulty chooseDifficulty(void)
+{
+    char line[32];
+
+    while (1)
+    {
+        printf("Choose CPU difficulty (E=Easy, M=Medium, H=Hard): ");
+
+        if (!fgets(line, sizeof(line), stdin))
+        {
+            return AI_MEDIUM;
+        }
+
+        switch (toupper((unsigned char)line[0]))
+        {
+        case 'E': return AI_EASY;
+        case 'M': return AI_MEDIUM;
+        case 'H': return AI_HARD;
+        }
+
+        printf("Please enter E, M, or H.\n");
     }
 }
 

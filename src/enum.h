@@ -50,4 +50,11 @@ enum { //for the board (by Queency)
 
 typedef cairo_surface_t Icon;
 
+typedef enum
+{
+    AI_EASY,
+    AI_MEDIUM,
+    AI_HARD
+} AIDifficulty;
+
 #endif

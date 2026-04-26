@@ -6,24 +6,19 @@
 #include "ai.h"
 #include "board.h"
 #include "pieces.h"
-<<<<<<< HEAD
-=======
-#include "move.h"
->>>>>>> 162f63c1ea3de2f0975d79e2f8eff2231c3a6d09
 
 #define MAX_MOVES 512
-#define HARD_SEARCH_DEPTH 3
+#define HARD_SEARCH_DEPTH 2
 #define CHECK_BONUS 75
 
-<<<<<<< HEAD
 static void seedRandomOnce(void);
 static void rebuildBoardView(Piece state[8][10], Board *view);
 static void copyState(Piece dest[8][10], Piece src[8][10]);
 static void clearSquare(Piece *piece, int row, int col);
 static int pieceValue(Rank type);
-static int isCandidateMove(Piece state[8][10], Color player, int sr, int sc, int er, int ec);
+static int isCandidateMoveInView(Board *view, Color player, int sr, int sc, int er, int ec);
 static void applyMoveToState(Piece state[8][10], Move move);
-static int isMoveLegal(Piece state[8][10], Color player, Move move);
+static int isMoveLegalInView(Piece state[8][10], Board *view, Color player, Move move);
 static int generateAiLegalMoves(Piece state[8][10], Color player, Move out[], int maxMoves);
 static int evaluateBoard(Piece state[8][10], Color player);
 static int scoreMoveHeuristically(Piece state[8][10], Color player, Move move);
@@ -31,9 +26,6 @@ static int selectRandomMove(Move moves[], int count, Move *out);
 static int selectBestImmediateMove(Piece state[8][10], Color player, Move moves[], int count, Move *out);
 static int minimax(Piece state[8][10], Color rootPlayer, Color sideToMove, int depth, int alpha, int beta);
 static int selectBestMinimaxMove(Piece state[8][10], Color player, Move moves[], int count, Move *out);
-static int positionalBonus(Rank type, Color color, int row, int col);
-static int moveOrderScore(Piece state[8][10], Move move);
-static void sortMoves(Piece state[8][10], Move moves[], int count);
 
 static void seedRandomOnce(void)
 {
@@ -117,9 +109,8 @@ static int pieceValue(Rank type)
     }
 }
 
-static int isCandidateMove(Piece state[8][10], Color player, int sr, int sc, int er, int ec)
+static int isCandidateMoveInView(Board *view, Color player, int sr, int sc, int er, int ec)
 {
-    Board view;
     Piece *moving;
     Piece *target;
 
@@ -128,26 +119,30 @@ static int isCandidateMove(Piece state[8][10], Color player, int sr, int sc, int
         return 0;
     }
 
-    rebuildBoardView(state, &view);
-    moving = view.board[sr][sc];
-    target = view.board[er][ec];
+    moving = view->board[sr][sc];
+    target = view->board[er][ec];
 
     if (moving == NULL || moving->type == EMPTY || moving->color != player || moving->vtable == NULL)
     {
         return 0;
     }
 
-    if (moving->type == KING && kingCanCastle(&view, moving, sr, sc, er, ec))
+    if (target != NULL && target->type == KING)
+    {
+        return 0;
+    }
+
+    if (moving->type == KING && kingCanCastle(view, moving, sr, sc, er, ec))
     {
         return 1;
     }
 
     if (target != NULL)
     {
-        return moving->vtable->canCapture(&view, moving, sr, sc, er, ec);
+        return moving->vtable->canCapture(view, moving, sr, sc, er, ec);
     }
 
-    return moving->vtable->canMove(&view, moving, sr, sc, er, ec);
+    return moving->vtable->canMove(view, moving, sr, sc, er, ec);
 }
 
 static void applyMoveToState(Piece state[8][10], Move move)
@@ -210,12 +205,12 @@ static void applyMoveToState(Piece state[8][10], Move move)
     }
 }
 
-static int isMoveLegal(Piece state[8][10], Color player, Move move)
+static int isMoveLegalInView(Piece state[8][10], Board *view, Color player, Move move)
 {
     Piece nextState[8][10];
     Board nextView;
 
-    if (!isCandidateMove(state, player, move.startRow, move.startCol, move.endRow, move.endCol))
+    if (!isCandidateMoveInView(view, player, move.startRow, move.startCol, move.endRow, move.endCol))
     {
         return 0;
     }
@@ -234,6 +229,9 @@ static int generateAiLegalMoves(Piece state[8][10], Color player, Move out[], in
     int sc;
     int er;
     int ec;
+    Board view;
+
+    rebuildBoardView(state, &view);
 
     for (sr = 0; sr < BOARD_HEIGHT && count < maxMoves; sr++)
     {
@@ -258,124 +256,16 @@ static int generateAiLegalMoves(Piece state[8][10], Color player, Move out[], in
                     move.enPassant = 0;
                     move.castle = 0;
 
-                    if (isMoveLegal(state, player, move))
+                    if (isMoveLegalInView(state, &view, player, move))
                     {
                         out[count++] = move;
                     }
-=======
-static Difficulty currentDifficulty = EASY;
-
-/* Simulate the move on a copy; return 1 if it does NOT leave `player` in check. */
-static int moveIsSafe(Board *board, Color player, int sr, int sc, int er, int ec)
-{
-    Piece saved_start = board->board[sr][sc];
-    Piece saved_end = board->board[er][ec];
-
-    board->board[er][ec] = saved_start;
-    board->board[er][ec].pos.row = er;
-    board->board[er][ec].pos.col = ec;
-    board->board[sr][sc].type = EMPTY;
-    board->board[sr][sc].vtable = NULL;
-    board->board[sr][sc].img = NULL;
-
-    int safe = !kingCheck(board, player);
-
-    board->board[sr][sc] = saved_start;
-    board->board[er][ec] = saved_end;
-    return safe;
-}
-
-static int generateLegalMoves(Board *board, Color player, Move out[], int maxMoves)
-{
-    int count = 0;
-    for (int sr = 0; sr < 8 && count < maxMoves; sr++)
-    {
-        for (int sc = 0; sc < 10 && count < maxMoves; sc++)
-        {
-            Piece *p = &board[sr][sc];
-            if (p->type == EMPTY || p->color != player || p->vtable == NULL)
-                continue;
-
-            for (int er = 0; er < 8 && count < maxMoves; er++)
-            {
-                for (int ec = 0; ec < 10 && count < maxMoves; ec++)
-                {
-                    if (sr == er && sc == ec)
-                        continue;
-                    Move m = {sr, sc, er, ec, 0, 0, 0};
-                    Move noLast = {0};
-                    if (!legalMove(board, &m, player, noLast))
-                        continue;
-                    if (!moveIsSafe(board, player, sr, sc, er, ec))
-                        continue;
-                    out[count++] = m;
->>>>>>> 162f63c1ea3de2f0975d79e2f8eff2231c3a6d09
                 }
             }
         }
     }
 
     return count;
-}
-
-<<<<<<< HEAD
-static int positionalBonus(Rank type, Color color, int row, int col)
-{
-    /* adjRow: 0 = own back rank, 7 = opponent's back rank */
-    int adjRow = (color == WHITE) ? row : (BOARD_HEIGHT - 1 - row);
-    int colCenter = BOARD_WIDTH / 2 - 1;
-    int colDist = abs(col - colCenter);
-
-    switch (type)
-    {
-    case PAWN:
-        return adjRow * 6 + (colDist <= 2 ? 4 : 0);
-    case KNIGHT:
-        return (4 - abs(adjRow - 3)) * 4 + (5 - colDist) * 3;
-    case BISHOP:
-        return (5 - colDist) * 3;
-    case ROOK:
-        return (adjRow == BOARD_HEIGHT - 1) ? 15 : 0;
-    case QUEEN:
-        return (5 - colDist) * 2 + adjRow * 2;
-    case KING:
-        /* prefer back rank and corners over center */
-        return (BOARD_HEIGHT - 1 - adjRow) * 8 + colDist * 4;
-    default:
-        return 0;
-    }
-}
-
-static int moveOrderScore(Piece state[8][10], Move move)
-{
-    Rank victim = state[move.endRow][move.endCol].type;
-    Rank attacker = state[move.startRow][move.startCol].type;
-
-    if (victim != EMPTY)
-    {
-        /* MVV-LVA: capture high-value pieces with low-value attackers first */
-        return pieceValue(victim) * 10 - pieceValue(attacker);
-    }
-    return 0;
-}
-
-static void sortMoves(Piece state[8][10], Move moves[], int count)
-{
-    int i;
-    int j;
-
-    for (i = 1; i < count; i++)
-    {
-        Move key = moves[i];
-        int keyScore = moveOrderScore(state, key);
-        j = i - 1;
-        while (j >= 0 && moveOrderScore(state, moves[j]) < keyScore)
-        {
-            moves[j + 1] = moves[j];
-            j--;
-        }
-        moves[j + 1] = key;
-    }
 }
 
 static int evaluateBoard(Piece state[8][10], Color player)
@@ -385,7 +275,6 @@ static int evaluateBoard(Piece state[8][10], Color player)
     int r;
     int c;
     Color enemy = (player == WHITE) ? BLACK : WHITE;
-    Move moves[MAX_MOVES];
 
     rebuildBoardView(state, &view);
 
@@ -402,12 +291,10 @@ static int evaluateBoard(Piece state[8][10], Color player)
             if (piece->color == player)
             {
                 score += pieceValue(piece->type);
-                score += positionalBonus(piece->type, piece->color, r, c);
             }
             else
             {
                 score -= pieceValue(piece->type);
-                score -= positionalBonus(piece->type, piece->color, r, c);
             }
         }
     }
@@ -420,9 +307,6 @@ static int evaluateBoard(Piece state[8][10], Color player)
     {
         score -= CHECK_BONUS;
     }
-
-    score += generateAiLegalMoves(state, player, moves, MAX_MOVES);
-    score -= generateAiLegalMoves(state, enemy, moves, MAX_MOVES);
 
     return score;
 }
@@ -501,7 +385,6 @@ static int minimax(Piece state[8][10], Color rootPlayer, Color sideToMove, int d
     }
 
     moveCount = generateAiLegalMoves(state, sideToMove, moves, MAX_MOVES);
-    sortMoves(state, moves, moveCount);
     if (moveCount == 0)
     {
         Board view;
@@ -532,120 +415,6 @@ static int minimax(Piece state[8][10], Color rootPlayer, Color sideToMove, int d
             if (score > alpha)
             {
                 alpha = score;
-=======
-void setDifficulty(Difficulty d)
-{
-    currentDifficulty = d;
-}
-
-int easySelectMove(Board *board, Color player, Move *out)
-{
-    Move moves[MAX_MOVES];
-    int n = generateLegalMoves(board, player, moves, MAX_MOVES);
-    if (n <= 0)
-    {
-        return 0;
-    }
-    *out = moves[rand() % n];
-    return 1;
-}
-
-int mediumSelectMove(Board *board, Color player, Move *out)
-{
-    Move moves[MAX_MOVES];
-    int n = generateLegalMoves(board, player, moves, MAX_MOVES);
-    if (n <= 0)
-    {
-        return 0;
-    }
-
-    int bestVal = -1, bestIndex = -1;
-    for (int i = 0; i < n; i++)
-    {
-        Piece *target = &board->board[moves[i].er][moves[i].ec];
-        if (target->type != EMPTY && target->color != player)
-        {
-            int val = target->value;
-            if (val > bestVal)
-            {
-                bestVal = val;
-                bestIndex = i;
-            }
-        }
-    }
-
-    *out = (bestIndex >= 0) ? moves[bestIndex] : moves[rand() % n];
-    return 1;
-}
-
-static Piece applyMove(Board *board, Move *m)
-{
-    Piece displaced = board->board[m->er][m->ec];
-
-    board->board[m->er][m->ec] = board->board[m->sr][m->sc];
-    board->board[m->er][m->ec].pos.row = m->er;
-    board->board[m->er][m->ec].pos.col = m->ec;
-    board->board[m->sr][m->sc].type = EMPTY;
-    board->board[m->sr][m->sc].vtable = NULL;
-    board->board[m->sr][m->sc].img = NULL;
-
-    return displaced;
-}
-
-static void undoMove(Board *board, Move *m, Piece displaced)
-{
-    board->board[m->sr][m->sc] = board->board[m->er][m->ec];
-    board->board[m->sr][m->sc].pos.row = m->sr;
-    board->board[m->sr][m->sc].pos.col = m->sc;
-    board->board[m->er][m->ec] = displaced;
-}
-
-static int evalBoard(Board *board, Color aiColor)
-{
-    int score = 0;
-    for (int r = 0; r < 8; r++)
-        for (int c = 0; c < 10; c++)
-        {
-            Piece *p = &board->board[r][c];
-            if (p->type == EMPTY)
-                continue;
-            int val = p->value;
-            score += (p->color == aiColor) ? val : -val;
-        }
-    return score;
-}
-
-static int minimax(Board *board, Color aiColor, int depth, int alpha, int beta, int maximizing)
-{
-    if (depth == 0)
-    {
-        return evalBoard(board, aiColor);
-    }
-
-    Color current = maximizing ? aiColor : (1 - aiColor);
-    Move moves[MAX_MOVES];
-    int n = generateLegalMoves(board, current, moves, MAX_MOVES);
-    if (n <= 0)
-    {
-        return evalBoard(board, aiColor);
-    }
-
-    if (maximizing)
-    {
-        int best = -9999;
-        for (int i = 0; i < n; i++)
-        {
-            Piece displaced = applyMove(board, &moves[i]);
-            int val = minimax(board, aiColor, depth - 1, alpha, beta, 0);
-            undoMove(board, &moves[i], displaced);
-            if (val > best)
-            {
-                best = val;
-            }
-            if (val > alpha)
-            {
-                alpha = val;
->>>>>>> 162f63c1ea3de2f0975d79e2f8eff2231c3a6d09
             }
             if (beta <= alpha)
             {
@@ -654,7 +423,6 @@ static int minimax(Board *board, Color aiColor, int depth, int alpha, int beta, 
         }
         return best;
     }
-<<<<<<< HEAD
 
     {
         int best = INT_MAX;
@@ -673,23 +441,6 @@ static int minimax(Board *board, Color aiColor, int depth, int alpha, int beta, 
             if (score < beta)
             {
                 beta = score;
-=======
-    else
-    {
-        int best = 9999;
-        for (int i = 0; i < n; i++)
-        {
-            Piece displaced = applyMove(board, &moves[i]);
-            int val = minimax(board, aiColor, depth - 1, alpha, beta, 1);
-            undoMove(board, &moves[i], displaced);
-            if (val < best)
-            {
-                best = val;
-            }
-            if (val < beta)
-            {
-                beta = val;
->>>>>>> 162f63c1ea3de2f0975d79e2f8eff2231c3a6d09
             }
             if (beta <= alpha)
             {
@@ -700,7 +451,6 @@ static int minimax(Board *board, Color aiColor, int depth, int alpha, int beta, 
     }
 }
 
-<<<<<<< HEAD
 static int selectBestMinimaxMove(Piece state[8][10], Color player, Move moves[], int count, Move *out)
 {
     int i;
@@ -710,18 +460,10 @@ static int selectBestMinimaxMove(Piece state[8][10], Color player, Move moves[],
     Color enemy = (player == WHITE) ? BLACK : WHITE;
 
     if (count <= 0)
-=======
-int hardSelectMove(Board *board, Color player, Move *out)
-{
-    Move moves[MAX_MOVES];
-    int n = generateLegalMoves(board, player, moves, MAX_MOVES);
-    if (n <= 0)
->>>>>>> 162f63c1ea3de2f0975d79e2f8eff2231c3a6d09
     {
         return 0;
     }
 
-<<<<<<< HEAD
     for (i = 0; i < count; i++)
     {
         Piece nextState[8][10];
@@ -775,50 +517,4 @@ int aiSelectMoveAtDifficulty(Piece board[8][10], Color player, AIDifficulty diff
 int aiSelectMove(Piece board[8][10], Color player, Move *out)
 {
     return aiSelectMoveAtDifficulty(board, player, AI_MEDIUM, out);
-=======
-    int bestVal = -9999, bestIndex = -1;
-    for (int i = 0; i < n; i++)
-    {
-        Piece displaced = applyMove(board, &moves[i]);
-        int val = minimax(board, player, 3, -9999, 9999, 0, player);
-        undoMove(board, &moves[i], displaced);
-        if (val > bestVal)
-        {
-            bestVal = val;
-            bestIndex = i;
-        }
-    }
-    *out = moves[bestIndex];
-    return 1;
-}
-
-int aiSelectMove(Piece board[8][10], Color player, Move *out)
-{
-    static int seeded = 0;
-    if (!seeded)
-    {
-        srand((unsigned)time(NULL));
-        seeded = 1;
-    }
-
-    switch (currentDifficulty)
-    {
-    case EASY:
-    {
-        return easySelectMove(board, player, out);
-    }
-    case MEDIUM:
-    {
-        return mediumSelectMove(board, player, out);
-    }
-    case HARD:
-    {
-        return hardSelectMove(board, player, out);
-    }
-    default:
-    {
-        return easySelectMove(board, player, out);
-    }
-    }
->>>>>>> 162f63c1ea3de2f0975d79e2f8eff2231c3a6d09
 }

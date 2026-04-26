@@ -1,107 +1,11 @@
 #include "game_controller.h"
-#include <stdio.h>
-#include <string.h>
-
-static Color currentTurn(const Board_State* boardState)
-{
-    return getMovesMade(boardState) % 2 == 0 ? WHITE : BLACK;
-}
-
-static void setMoveMessage(Board_Bundle* boardData, const char* message)
-{
-    snprintf(boardData->moveText, sizeof(boardData->moveText), "%s", message);
-    boardData->move = boardData->moveText;
-}
-
-static void appendMoveMessage(Board_Bundle* boardData, const char* message)
-{
-    size_t used = strlen(boardData->moveText);
-
-    if(used >= sizeof(boardData->moveText) - 1)
-        return;
-
-    snprintf(boardData->moveText + used, sizeof(boardData->moveText) - used, "%s", message);
-    boardData->move = boardData->moveText;
-}
-
-static bool isUsersTurn(const Board_Bundle* boardData)
-{
-    return currentTurn(boardData->boardState) == boardData->userColor;
-}
-
-static void clearPiece(Piece* piece, int row, int col)
-{
-    piece->img = NULL;
-    piece->color = WHITE;
-    piece->type = EMPTY;
-    piece->vtable = NULL;
-    piece->value = 0;
-    piece->pos.row = row;
-    piece->pos.col = col;
-    piece->moved = 0;
-}
-
-static void copyBoardForAi(const Board* board, Piece aiBoard[BOARD_HEIGHT][BOARD_WIDTH])
-{
-    for(int row = 0; row < BOARD_HEIGHT; row++){
-        for(int col = 0; col < BOARD_WIDTH; col++){
-            Piece* piece = board->board[row][col];
-
-            if(piece){
-                aiBoard[row][col] = *piece;
-                aiBoard[row][col].pos.row = row;
-                aiBoard[row][col].pos.col = col;
-            }
-            else {
-                clearPiece(&aiBoard[row][col], row, col);
-            }
-        }
-    }
-}
-
-bool makeCpuMove(Board_Bundle* boardData)
-{
-    Board* board = boardData->board;
-    Board_State* boardState = boardData->boardState;
-    Piece aiBoard[BOARD_HEIGHT][BOARD_WIDTH];
-    Move move;
-
-    if(currentTurn(boardState) != boardData->cpuColor)
-        return false;
-
-    copyBoardForAi(board, aiBoard);
-
-    if(!aiSelectMoveAtDifficulty(aiBoard, boardData->cpuColor, boardData->cpuDifficulty, &move)){
-        appendMoveMessage(boardData, "CPU has no legal move.\n");
-        boardState->moveSuccess = true;
-        return false;
-    }
-
-    executeMove(board, &move, boardState->lastMove);
-    boardState->lastMove = move;
-    incrementMovesMade(boardState);
-    resetClickedPiece(boardState);
-    resetLegalMoveCount(boardState);
-    setUpdate(boardState, true);
-
-    appendMoveMessage(boardData, "CPU move was made\n");
-    boardState->moveSuccess = true;
-
-    return true;
-}
 
 void sendInput(Board_Bundle* boardData, Pos clickPos)
 {
     Board* board = boardData->board; 
     Board_State* boardState = boardData->boardState; 
+    Color turn = (getMovesMade(boardState) % 2 == 0) ? WHITE : BLACK;
     boardState->moveSuccess = false; 
-    boardData->move = NULL;
-
-    if (!isUsersTurn(boardData))
-    {
-        printf("It is the CPU's turn.\n");
-        return;
-    }
     
     if (!isPosValid(clickPos))
     {
@@ -113,7 +17,14 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
 
     Piece *clicked = getSquare(board, row, col);
 
-    if (hasPiece(board, row, col) && getColor(clicked) == boardData->userColor && !isLegalMoveSquare(boardState, clickPos)) {
+    if (hasPiece(board, row, col) && !isLegalMoveSquare(boardState, clickPos)) {
+        if (clicked == NULL || clicked->color != turn) {
+            resetClickedPiece(boardState);
+            resetLegalMoveCount(boardState);
+            setUpdate(boardState, true);
+            return;
+        }
+
         printf("new piece was clicked\n"); 
         setClickedPiece(boardState, clicked);
         generateLegalMoves(boardState, board, clicked, getPos(clicked), &boardState->lastMove);
@@ -122,10 +33,7 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
     else if (aPieceWasClicked(boardState) && isLegalMoveSquare(boardState, clickPos)) {
         printf("executing move\n");
 
-        //Undo_Record rec; 
         Piece *clickedPiece = getClickedPiece(boardState);
-        Pos start = getPos(clickedPiece); 
-        Pos end = clickPos; 
 
         Move move;
         move.startRow = clickedPiece->pos.row;
@@ -142,19 +50,13 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
         incrementMovesMade(boardState);
 
         if (move.capture) {
-<<<<<<< HEAD
-           // Piece* captured = getSquare(board, clickPos.row, clickPos.col); 
-            boardData->move = "capture was made\n";  
-           // pushCapture(rec, start, end, clickedPiece, captured); 
-=======
-            setMoveMessage(boardData, "capture was made\n");
->>>>>>> b9ea7cdd6eff4443ccfd3d2275fcdb546093a57e
+            boardData->move = "capture was made\n";
         }
         else if (move.castle) {
-            setMoveMessage(boardData, "castle was made\n");
+            boardData->move = "castle was made\n";
         }
         else {
-            setMoveMessage(boardData, "move was made\n");
+            boardData->move = "move was made\n";
         }
 
         boardState->moveSuccess = true;
@@ -162,10 +64,6 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
         resetClickedPiece(boardState);
         resetLegalMoveCount(boardState);
         setUpdate(boardState, true);
-
-        if(currentTurn(boardState) == boardData->cpuColor){
-            makeCpuMove(boardData);
-        }
     } 
     else {
         resetClickedPiece(boardState); 

@@ -9,6 +9,7 @@ void initializeBoardState(Board_State* boardState){
   boardState->clickedPiece = NULL; 
   boardState->hasUpdate = false; 
   boardState->moveSuccess = false; 
+  boardState->gameOver = false;
   boardState->legalMoveCount = 0; 
   boardState->movesMade = 0; 
 
@@ -42,6 +43,10 @@ bool moveSucces(const Board_State* boardState){
     return boardState->moveSuccess; 
 }
 
+bool isGameOver(const Board_State* boardState){
+    return boardState->gameOver;
+}
+
 bool isLegalMoveSquare(const Board_State* boardState, Pos pos){
     const Pos* legalMoves = boardState->legalMoves; 
     int size = boardState->legalMoveCount; 
@@ -73,6 +78,10 @@ void incrementMovesMade(Board_State* boardState){
 
 void setUpdate(Board_State *boardState, bool update){ //sets update flag. is true if board has changed
     boardState->hasUpdate = update;
+}
+
+void setGameOver(Board_State *boardState, bool gameOver){
+    boardState->gameOver = gameOver;
 }
 
 Piece *getClickedPiece(const Board_State *boardState){
@@ -141,6 +150,9 @@ bool canPieceGoTo(Board* board, Piece* piece, Pos start, Pos end) {
     
 
     Piece* target = getSquare(board, end.row, end.col); //square we want to go to
+    if (target != NULL && target->type == KING) {
+        return false;
+    }
 
     return target ? piece->vtable->canCapture(board, piece, start.row, start.col, end.row, end.col) 
                   : piece->vtable->canMove(board, piece, start.row, start.col, end.row, end.col); 
@@ -164,4 +176,3 @@ void generateLegalMoves(Board_State* boardState, Board* board, Piece* piece, Pos
         }
     }
 }
-
