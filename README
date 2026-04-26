@@ -1,0 +1,274 @@
+================================================================
+                    ANTEATER CHESS - ALPHA RELEASE
+================================================================
+
+Authors:   Team 21
+           - Naveen Khan
+           - Mia Ness
+           - Austin Nguyen
+           - Queency Tan
+           - Aman Macwan
+           - Gurvin Dhanjal
+
+Version:   0.1 (Alpha)
+Date:      April 19, 2026
+Course:    EECS 22L - Software Engineering Project in C
+           Prof. Rainer Doemer, Spring 2026
+
+
+----------------------------------------------------------------
+1. ABOUT THE PROGRAM
+----------------------------------------------------------------
+
+Anteater Chess is a variant of classical chess played on an
+8 x 10 board that introduces a new piece: the anteater. The
+anteater moves one square in any direction (like a king) but
+cannot threaten the enemy king. Instead, it feeds on ants
+(pawns) and can capture a row of adjacent ants in a single move.
+
+This program allows a human user to play interactive Anteater
+Chess against a computer opponent through a graphical user
+interface (GTK). The user chooses their side (white or black),
+and the computer plays the opposing side. All moves are
+recorded to a human-readable log file.
+
+
+----------------------------------------------------------------
+2. FEATURES (ALPHA)
+----------------------------------------------------------------
+
+Required features:
+  * Full Anteater Chess rule set (including anteater and ants)
+  * Graphical user interface (GTK-based board and pieces)
+  * Human vs. computer gameplay
+  * Player color selection (white or black)
+  * Human-readable move log (chess_game.log)
+  * Computer moves completed in reasonable time
+
+Bonus features implemented:
+  * Undo function (withdraw previous moves)
+
+Known limitations (alpha):
+  * Some illegal move checks may be incomplete
+  * AI plays at a single difficulty level
+  * Occasional instability in special-move handling
+
+
+----------------------------------------------------------------
+3. BUILD AND RUN
+----------------------------------------------------------------
+
+See the INSTALL file for detailed installation steps.
+
+Quick start:
+    $ make
+    $ ./bin/chess
+
+For gameplay instructions, rules, and controls, see:
+    doc/Chess_UserManual.pdf
+
+For software architecture details, see:
+    doc/Chess_SoftwareSpec.pdf
+
+
+----------------------------------------------------------------
+4. SOURCE FILE OVERVIEW
+----------------------------------------------------------------
+
+The source code is organized into modules. Each module consists
+of a header file (.h) that declares the public API and a source
+file (.c) that provides the implementation.
+
+--- Core entry point ---
+
+main.c
+    Program entry point. Prompts the user to choose a color,
+    initializes the board, and runs the main game loop. Each
+    iteration displays the board, accepts a move from the
+    current player (human input or AI call), executes the move,
+    checks for checkmate/stalemate, and switches turns.
+
+--- Data types and constants ---
+
+enum.h
+    Shared enumerations and constants used across every module:
+      - Rank (KING, QUEEN, ANTEATER, BISHOP, KNIGHT, ROOK, ANT)
+      - Color (BLACK, WHITE)
+      - Piece_Type (color + rank combined)
+      - Board dimensions: BOARD_HEIGHT = 8, BOARD_WIDTH = 10
+      - Window/square pixel sizes for the GUI
+    Acts as the single source of truth for cross-module types.
+
+pieces.h / pieces.c
+    Defines the Piece struct (image, color, rank, value, and a
+    vtable of function pointers) and the Pos struct (row, col).
+    Provides per-piece movement and capture logic:
+      - rookCanMove, bishopCanMove, knightCanMove, queenCanMove,
+        kingCanMove, pawnCanMove, anteaterCanMove
+      - pawnCanCapture, anteaterCanCapture
+    Each function takes the board plus start/end coordinates
+    and returns whether that piece can legally make that move.
+    This is the "chess rules" module.
+
+board.h / board.c
+    Defines the Board struct (2D array of Piece pointers) and
+    a Board_State struct that tracks the currently clicked
+    piece and update flags (used for GUI interaction).
+    Provides:
+      - Board setup: createPieces, createAnts,
+        initializeBoard, defaultInitializeBoard
+      - Lookup/mutation: getSquare, setSquare, hasPiece,
+        addPiece, deletePiece, movePiece
+      - Board state: aPieceWasClicked, newPieceWasClicked,
+        sendInput (handles click-to-move logic)
+    This is the central data structure for the whole program.
+
+move.h / move.c
+    Defines the Move struct (start row/col, end row/col, capture
+    flag) and execution functions:
+      - executeMove       (basic move)
+      - executeCapture    (generic capture)
+      - executePawnCapture (sideways pawn capture)
+      - executeAnteaterCapture (chain-capture of ants)
+      - recordMove       (append to the move log)
+    Called by main after a move has been validated by pieces.c.
+
+--- User input ---
+
+input.h / input.c
+    Parses and classifies user input from the textual command
+    line (used in debug mode and before the GUI is active):
+      - inputHasMove, inputIsCastleKingSide,
+        inputIsCastleQueenSide, inputIsUndo, inputIsQuit
+      - inputGetStartPos, inputGetEndPos
+    Also provides isValid for input sanity-checking. Designed
+    so main can dispatch on the type of input without knowing
+    the string format.
+
+--- Computer opponent ---
+
+ai.h / ai.c
+    Implements the computer player. The public entry point is
+    aiSelectMove(player, out), which fills in a Move struct
+    with the AI's chosen move. Internally scans all pieces of
+    the given color, generates legal candidate moves using the
+    rules from pieces.c, and picks a move based on a simple
+    evaluation heuristic (piece values, captures).
+
+--- Move history and undo ---
+
+log.h / log.c
+    Maintains a human-readable text log of the game. Functions:
+      - newLog        (start a fresh log file)
+      - addMove       (append a standard move)
+      - addCapture    (append a capture)
+      - addCastle     (append a castling move)
+    The log file is named chess_game.log and is written after
+    every executed move, satisfying the "human readable log"
+    requirement from the project spec.
+
+undo.h / undo.c
+    Implements the undo feature (bonus requirement). Maintains
+    an internal stack of executed moves:
+      - undoSet    (initialize the stack)
+      - undoPush   (record a move after it executes)
+      - undoPop    (remove the most recent move)
+      - undo       (restore the board to the previous state)
+    Called from main when the user issues an undo command.
+
+--- Graphical user interface (gui/) ---
+
+gui/gui.h / gui/gui.c
+    GTK application entry point. Creates the main window,
+    installs the CSS styling, builds the board widget, and
+    wires up click events:
+      - createWindow, createBoard, setBackground
+      - onClick       (translates a pixel click into a board
+                       position via whichSquare / pixToIndex)
+      - activate      (GTK application activation callback)
+    Bridges user clicks to board/board-state updates.
+
+gui/render.h / gui/render.c
+    Responsible for drawing the board and pieces on screen
+    using Cairo. Provides:
+      - drawSquare, drawPiece, drawBoard
+      - scale         (scales a piece image to the target size)
+      - createImages  (loads piece textures from resources/)
+      - pixToIndex / indexToPix (pixel <-> board-index math)
+    Defines Board_Bundle, which ties together the Board, the
+    Board_State, and the GtkWidget so callbacks can access all
+    three at once.
+
+gui/color_gui.h / gui/color_gui.c
+    Color scheme and CSS helpers for the GUI:
+      - BLACK_SQUARE, WHITE_SQUARE (board square colors)
+      - colorCtor, RGBtoGTK (RGBA construction helpers)
+      - CHESS_BG    (CSS class name for the window background)
+
+gui/resources/
+    PNG images for each of the 14 piece types (white/black x
+    king/queen/anteater/bishop/knight/rook/pawn) loaded at
+    startup by render.c.
+
+
+----------------------------------------------------------------
+5. MODULE INTERACTION
+----------------------------------------------------------------
+
+  user input ----> input.c --+
+                             |
+                             v
+  gui/ (clicks) ----> main.c ----> pieces.c (rule check)
+                             |         |
+                             |         v
+                             +----> move.c (execute)
+                             |         |
+                             |         +----> board.c (mutate)
+                             |         |
+                             |         +----> log.c (record)
+                             |         |
+                             |         +----> undo.c (push)
+                             |
+                             +----> ai.c (computer's move)
+                             |         ^
+                             |         +----> pieces.c
+                             |
+                             +----> gui/render.c (redraw)
+
+
+----------------------------------------------------------------
+6. DIRECTORY LAYOUT
+----------------------------------------------------------------
+
+    chess/
+    |-- README                     This file
+    |-- COPYRIGHT                  Copyright notice
+    |-- INSTALL                    Installation instructions
+    |-- Makefile                   Build rules (make/test/clean/tar)
+    |-- main.c                     Program entry point
+    |-- enum.h                     Shared enums and constants
+    |-- pieces.{c,h}               Piece data and rule checks
+    |-- board.{c,h}                Board data and operations
+    |-- move.{c,h}                 Move struct and execution
+    |-- input.{c,h}                User input parsing
+    |-- ai.{c,h}                   Computer opponent
+    |-- log.{c,h}                  Move logging
+    |-- undo.{c,h}                 Undo functionality
+    |-- gui/
+    |   |-- gui.{c,h}              GTK app and window
+    |   |-- render.{c,h}           Cairo drawing
+    |   |-- color_gui.{c,h}        Color scheme
+    |   `-- resources/             Piece images
+    |-- bin/                       Built executable (after make)
+    `-- doc/
+        |-- Chess_UserManual.pdf   Application specification
+        `-- Chess_SoftwareSpec.pdf Software architecture spec
+
+
+----------------------------------------------------------------
+7. FEEDBACK AND SUPPORT
+----------------------------------------------------------------
+
+This is an alpha release; please report bugs, unexpected
+crashes, or rule violations to the development team. The final
+release (V1.0) is scheduled for April 27, 2026.
