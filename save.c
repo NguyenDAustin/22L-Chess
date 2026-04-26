@@ -139,7 +139,3 @@ int loadGame(const char *saveName, Board *board, Board_State *boardState, Board_
     return 1;
 }
 
-
-
-
-
