@@ -275,21 +275,25 @@ GtkWidget* createGrid(int colSpacing){
   return grid; 
 }
 
-GtkWidget* createTimerBox(GtkWidget* whiteTimer, GtkWidget* blackTimer){
-  GtkWidget* timerBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, LOG_SPACING);
+
+GtkWidget *createTimerBox(GtkWidget *whiteTimer, GtkWidget *blackTimer)
+{
+  GtkWidget *timerBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, LOG_SPACING);
   gtk_widget_add_css_class(timerBox, "timer-box");
   gtk_widget_add_css_class(whiteTimer, "timer-label");
   gtk_widget_add_css_class(blackTimer, "timer-label");
-  gtk_widget_set_halign(timerBox, GTK_ALIGN_CENTER);
-  gtk_widget_set_hexpand(timerBox, TRUE);
-  gtk_widget_set_hexpand(whiteTimer, TRUE);
-  gtk_widget_set_hexpand(blackTimer, TRUE);
+
+  gtk_widget_set_vexpand(timerBox, FALSE);
+  gtk_widget_set_valign(timerBox, GTK_ALIGN_START); //changed 
+  gtk_widget_set_halign(timerBox, GTK_ALIGN_CENTER); //changed
+
   gtk_label_set_xalign(GTK_LABEL(whiteTimer), 0.5);
   gtk_label_set_xalign(GTK_LABEL(blackTimer), 0.5);
   gtk_box_append(GTK_BOX(timerBox), whiteTimer);
   gtk_box_append(GTK_BOX(timerBox), blackTimer);
   return timerBox;
 }
+
 
 void createBoard(GtkWidget* board, Board_Bundle* boardData){ 
   gtk_drawing_area_set_content_width (GTK_DRAWING_AREA (board), SQUARE_SIZE * BOARD_WIDTH);
@@ -300,7 +304,8 @@ void createBoard(GtkWidget* board, Board_Bundle* boardData){
   gtk_widget_set_valign(board, GTK_ALIGN_CENTER); 
 }
 
-void updateTimerLabels(Board_Bundle* boardData){
+void updateTimerLabels(Board_Bundle *boardData)
+{
   int whiteMinutes = boardData->whiteSeconds / 60;
   int whiteSeconds = boardData->whiteSeconds % 60;
   int blackMinutes = boardData->blackSeconds / 60;
@@ -315,16 +320,17 @@ void updateTimerLabels(Board_Bundle* boardData){
   gtk_label_set_text(boardData->whiteTimerLabel, whiteText);
   gtk_label_set_text(boardData->blackTimerLabel, blackText);
 
-  if(whiteTurn){
+  if (whiteTurn)
+  {
     gtk_widget_add_css_class(GTK_WIDGET(boardData->whiteTimerLabel), "timer-active");
     gtk_widget_remove_css_class(GTK_WIDGET(boardData->blackTimerLabel), "timer-active");
   }
-  else {
+  else
+  {
     gtk_widget_remove_css_class(GTK_WIDGET(boardData->whiteTimerLabel), "timer-active");
     gtk_widget_add_css_class(GTK_WIDGET(boardData->blackTimerLabel), "timer-active");
   }
 }
-
 gboolean onTimerTick(gpointer user_data){
   Board_Bundle* boardData = user_data;
 
@@ -464,6 +470,10 @@ void onPromotionClicked(GtkButton *button, gpointer user_data) {
     gtk_popover_popdown(GTK_POPOVER(popUp));
 }
 
+void onUndoClicked(GtkButton* button, gpointer user_data){
+  printf("undo was clicked\n"); 
+}
+
 
 GtkWidget* createPromotionButton(Board_Bundle* boardData, const char *imagePath, Rank type) {
     GtkWidget *button = gtk_button_new();
@@ -542,13 +552,14 @@ static void activate (GtkApplication *app, gpointer user_data)
   createLog(logScroller, log);
 
   //create undo button 
-  /*GtkWidget *undoButton = gtk_button_new();
-  GtkWidget *picture = gtk_picture_new_for_filename();
-  gtk_widget_set_size_request(picture, PROMOTION_BUTTON_SIZE, PROMOTION_BUTTON_SIZE);
-  gtk_button_set_child(GTK_BUTTON(button), picture);
-  g_object_set_data(G_OBJECT(button), "promoteRank", GINT_TO_POINTER(type)); 
-  g_signal_connect(button, "clicked", G_CALLBACK(onPromotionClicked), boardData); 
-  */
+  GtkWidget *undoButton = gtk_button_new();
+  GtkWidget *picture = gtk_picture_new_for_filename("src/gui/resources/undo.png");
+  gtk_widget_set_size_request(picture, 20, 20);
+  gtk_button_set_child(GTK_BUTTON(undoButton), picture);
+  g_signal_connect(undoButton, "clicked", G_CALLBACK(onUndoClicked), boardData); 
+  gtk_widget_set_halign(undoButton, GTK_ALIGN_END);
+  gtk_widget_set_valign(undoButton, GTK_ALIGN_START);
+
 
   //event controller
   GtkGesture *click = gtk_gesture_click_new(); 
@@ -559,9 +570,10 @@ static void activate (GtkApplication *app, gpointer user_data)
   g_object_unref(provider);
 
   gtk_window_set_child(GTK_WINDOW(window), grid);
-  gtk_grid_attach(GTK_GRID(grid), board,  0, 0, 1, 2); //col row colspan rowspan
-  gtk_grid_attach(GTK_GRID(grid), timerBox,  1, 0, 1, 1);
-  gtk_grid_attach(GTK_GRID(grid), logScroller,  1, 1, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), board,  0, 0, 1, 1); //col row colspan rowspan
+  gtk_grid_attach(GTK_GRID(grid), timerBox,  0, 1, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), logScroller,  1, 0, 1, 1); 
+  gtk_grid_attach(GTK_GRID(grid), undoButton, 1, 1, 1, 1);
   gtk_window_present (GTK_WINDOW (window));
   showStartupDialog(GTK_WINDOW(window), boardData);
 }
