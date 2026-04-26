@@ -17,6 +17,7 @@ typedef struct
 {
   Board_Bundle *boardData;
   GtkComboBoxText *colorCombo;
+  GtkComboBoxText *difficultyCombo;
 } StartupDialogData;
 
 void whichSquare(float x, float y)
@@ -51,17 +52,25 @@ static void onStartupDialogResponse(GtkDialog *dialog, int responseId, gpointer 
   if (responseId == GTK_RESPONSE_ACCEPT)
   {
     int colorIndex = gtk_combo_box_get_active(GTK_COMBO_BOX(dialogData->colorCombo));
+    int difficultyIndex = gtk_combo_box_get_active(GTK_COMBO_BOX(dialogData->difficultyCombo));
 
     boardData->userColor = colorIndex == 0 ? WHITE : BLACK;
     boardData->cpuColor = boardData->userColor == WHITE ? BLACK : WHITE;
     boardData->userStarts = boardData->userColor == WHITE;
+    boardData->difficulty = difficultyIndex;
 
-    setMovesMade(boardData->boardState, 0);
+    if (boardData->userColor == WHITE)
+    {
+      setMovesMade(boardData->boardState, 0);
+    }
+    else
+    {
+      setMovesMade(boardData->boardState, 1);
+    }
     updateTimerLabels(boardData);
 
     char message[160];
-    snprintf(message, sizeof(message), "Game setup: %s starts. You are %s, CPU is %s.\n",
-             boardData->userStarts ? "User" : "CPU",
+    snprintf(message, sizeof(message), "Game setup: White starts. You are %s, CPU is %s.\n",
              colorLabel(boardData->userColor),
              colorLabel(boardData->cpuColor));
     appendTextToLogUI(boardData, message);
@@ -87,17 +96,31 @@ static void showStartupDialog(GtkWindow *parent, Board_Bundle *boardData)
   gtk_window_set_title(GTK_WINDOW(dialog), "Game Setup");
   gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
   gtk_window_set_transient_for(GTK_WINDOW(dialog), parent);
+  gtk_window_set_default_size(GTK_WINDOW(dialog), 250, 150);
+
   gtk_dialog_add_button(GTK_DIALOG(dialog), "Start Game", GTK_RESPONSE_ACCEPT);
 
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, LOG_SPACING);
-  GtkWidget *colorLabelWidget = gtk_label_new("Your color");
+  GtkWidget *colorLabelWidget = gtk_label_new("Pick your color:");
   GtkWidget *colorCombo = gtk_combo_box_text_new();
+
+  GtkWidget *difficultyLabelWidget = gtk_label_new("Select difficulty:");
+  GtkWidget *difficultyCombo = gtk_combo_box_text_new();
 
   gtk_widget_set_margin_top(box, LOG_SPACING);
   gtk_widget_set_margin_bottom(box, LOG_SPACING);
   gtk_widget_set_margin_start(box, LOG_SPACING);
   gtk_widget_set_margin_end(box, LOG_SPACING);
+
+  gtk_widget_set_margin_top(content, LOG_SPACING);
+  gtk_widget_set_margin_bottom(content, LOG_SPACING);
+  gtk_widget_set_margin_start(content, LOG_SPACING);
+  gtk_widget_set_margin_end(content, LOG_SPACING);
+
+  GtkWidget *button = gtk_dialog_get_widget_for_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
+  gtk_widget_set_hexpand(button, TRUE);
+  gtk_widget_set_halign(button, GTK_ALIGN_FILL);
 
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(colorCombo), "White");
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(colorCombo), "Black");
@@ -105,10 +128,20 @@ static void showStartupDialog(GtkWindow *parent, Board_Bundle *boardData)
 
   gtk_box_append(GTK_BOX(box), colorLabelWidget);
   gtk_box_append(GTK_BOX(box), colorCombo);
+
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(difficultyCombo), "Easy");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(difficultyCombo), "Medium");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(difficultyCombo), "Hard");
+  gtk_combo_box_set_active(GTK_COMBO_BOX(difficultyCombo), 1);
+
+  gtk_box_append(GTK_BOX(box), difficultyLabelWidget);
+  gtk_box_append(GTK_BOX(box), difficultyCombo);
   gtk_box_append(GTK_BOX(content), box);
 
   StartupDialogData *dialogData = g_new0(StartupDialogData, 1);
   dialogData->boardData = boardData;
+  dialogData->colorCombo = GTK_COMBO_BOX_TEXT(colorCombo);
+  dialogData->difficultyCombo = GTK_COMBO_BOX_TEXT(difficultyCombo);
 
   g_signal_connect(dialog, "response", G_CALLBACK(onStartupDialogResponse), dialogData);
   gtk_window_present(GTK_WINDOW(dialog));
