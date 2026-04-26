@@ -3,6 +3,18 @@
 #include "board.h"
 #include "pieces.h"
 
+static void promoteOnBoard(Board *board, Pos pos, Rank newRank)
+{
+    Piece *piece = board->board[pos.row][pos.col];
+
+    if (piece == NULL) {
+        return;
+    }
+
+    setType(piece, newRank);
+    piece->vtable = getVtable(newRank);
+}
+
 void executeMove(Board *board, Move *move, Move lastMove)
 {
     Piece *moving = board->board[move->startRow][move->startCol];
@@ -75,7 +87,7 @@ void executeMove(Board *board, Move *move, Move lastMove)
         if (moving->type == PAWN) {
             if ((moving->color == WHITE && move->endRow == 7) ||
                 (moving->color == BLACK && move->endRow == 0)) {
-                promotion(board, (Pos){move->endRow, move->endCol}, QUEEN);
+                promoteOnBoard(board, (Pos){move->endRow, move->endCol}, QUEEN);
             }
         }
 

@@ -11,6 +11,8 @@ const int MIN_LOG_WIDTH = 300;
 const int MIN_LOG_HEIGHT = 500;
 const int GRID_COLUMN_SPACING = 50;  
 const int GRID_ROW_SPACING = 10;
+const int PROMOTION_COLUMN_SPACING = 10;
+const int PROMOTION_BUTTON_SIZE = 72;
 const int LOG_SPACING = 10; 
 
 typedef struct {
@@ -246,16 +248,29 @@ void createWhiteButtons(Board_Bundle* boardData, GtkWidget** buttons){
 void createPopUp(Board_Bundle* boardData){ 
   Board_State* boardState = boardData->boardState; 
   Piece* promoting = boardState->clickedPiece; 
+  GtkWidget* boardWidget = boardData->boardWidget;
   Color pieceColor = getColor(promoting); 
   GtkWidget* popUp = boardData->promotionPopUp; 
   GtkWidget* promotionGrid; 
+  Pos promotingPos;
+  GdkRectangle rect;
+
+  if(promoting == NULL)
+    return;
+
+  promotingPos = getPos(promoting);
+  rect.x = indexToPix(promotingPos.col);
+  rect.y = indexToPix(promotingPos.row);
+  rect.width = SQUARE_SIZE;
+  rect.height = SQUARE_SIZE;
 
   GtkWidget* buttons[NUMBER_OF_PROMOTION_BUTTONS]; 
   (pieceColor == WHITE) ? createWhiteButtons(boardData, buttons) : createBlackButtons(boardData, buttons); 
   (pieceColor == WHITE) ? gtk_popover_set_position(GTK_POPOVER(popUp), GTK_POS_TOP) : gtk_popover_set_position(GTK_POPOVER(popUp), GTK_POS_BOTTOM); 
-  
+  gtk_popover_set_pointing_to(GTK_POPOVER(popUp), &rect);
   promotionGrid = createPromotionGrid(buttons);
   gtk_popover_set_child(GTK_POPOVER(popUp), promotionGrid); 
+  gtk_widget_set_sensitive(boardWidget, TRUE);
   gtk_popover_popup(GTK_POPOVER(popUp)); 
 }
 
@@ -300,6 +315,8 @@ void onPromotionClicked(GtkButton *button, gpointer user_data) {
    // printf("Promote to rank: %d\n", promoteTo);
 
     promotePiece(boardData, clickPiecePos, promoteTo);
+    resetClickedPiece(boardState);
+    gtk_widget_queue_draw(boardData->boardWidget);
     gtk_popover_popdown(GTK_POPOVER(popUp));
 }
 
@@ -365,8 +382,6 @@ static void activate (GtkApplication *app, gpointer user_data)
   setWhiteSeconds(boardData, 0); 
   updateTimerLabels(boardData);
 
-  boardData->timerSourceId = g_timeout_add_seconds(1, onTimerTick, boardData);
-
   //setting background
   GdkDisplay *display = gdk_display_get_default();
   GtkCssProvider *provider = gtk_css_provider_new();
@@ -394,6 +409,7 @@ static void activate (GtkApplication *app, gpointer user_data)
   gtk_grid_attach(GTK_GRID(grid), timerBox,  1, 0, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), logScroller,  1, 1, 1, 1);
   gtk_window_present (GTK_WINDOW (window));
+  showStartupDialog(GTK_WINDOW(window), boardData);
 }
 
 int main (int argc, char **argv)
@@ -403,8 +419,9 @@ int main (int argc, char **argv)
 
   int numOfImages = 14; 
 
-  Board_Bundle boardData;  
-  Board board; 
+  Board_Bundle boardData;
+  Board board;
+  boardData.timerSourceId = 0;
 
   //set images
   cairo_surface_t* images[numOfImages]; 

@@ -92,7 +92,10 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
     }
     else if(hasPiece(board, row, col) && aPieceWasClicked(boardState) && isLegalMoveSquare(boardState, clickPos)){ //we clicked a piece before and its legal to move there
         printf("capture\n");
-        capturePiece(board, boardState, getClickedPiece(boardState), getPos(clicked));
+        Piece *movingPiece = getClickedPiece(boardState);
+        capturePiece(board, boardState, movingPiece, getPos(clicked));
+        if(getType(movingPiece) == PAWN && isRowEdge(clickPos.row))
+            setClickedPiece(boardState, movingPiece);
         boardData->move = "capture was made\n";  
         boardState->moveSuccess = true; 
         //addCapture(log function)
@@ -102,6 +105,8 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
         printf("moving\n"); 
         Piece *clickedPiece = getClickedPiece(boardState);
         movePiece(board, boardState, clickedPiece, clickPos); 
+        if(getType(clickedPiece) == PAWN && isRowEdge(clickPos.row))
+            setClickedPiece(boardState, clickedPiece);
         incrementMovesMade(boardState);  
         boardData->move = "move was made\n"; 
         boardState->moveSuccess = true; 
