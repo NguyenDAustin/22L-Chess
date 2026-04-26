@@ -55,6 +55,9 @@ bool isLegalMoveSquare(const Board_State* boardState, Pos pos){
 
 bool isPromotion(const Board_State* boardState){ 
     Piece* clickedPiece = boardState->clickedPiece; 
+    if(clickedPiece == NULL)
+        return false;
+
     Rank type = getType(clickedPiece); 
     return (isRowEdge(getPosRow(clickedPiece)) && type == PAWN); 
 }

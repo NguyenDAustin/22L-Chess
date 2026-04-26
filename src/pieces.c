@@ -446,6 +446,9 @@ int pawnCanEnPassant(Board* board, Piece *p, int sr, int sc, int er, int ec, Mov
         return 0;
     
     // get last move
+    if (lastMove->endRow < 0 || lastMove->endRow >= BOARD_HEIGHT ||
+        lastMove->endCol < 0 || lastMove->endCol >= BOARD_WIDTH)
+        return 0;
     Piece* lastPiece = board->board[lastMove->endRow][lastMove->endCol];
     if (!lastPiece) return 0;
 
@@ -577,7 +580,7 @@ Pos findKing(Board* board, Color color)
 
     for (int r = 0; r < BOARD_HEIGHT; r++){
         for (int c = 0; c < BOARD_WIDTH; c++){
-            if (board->board[r][c]->type == KING && board->board[r][c]->color == color){
+            if (board->board[r][c] && board->board[r][c]->type == KING && board->board[r][c]->color == color){
                 k.row = r;
                 k.col = c;
                 return k;
@@ -593,7 +596,7 @@ int attackSquare(Board* board, int row, int col, Color attColor)
         for (int c = 0; c < BOARD_WIDTH; c++){
             Piece *p = board->board[r][c];
 
-            if (p->type == EMPTY || p->color != attColor || p->vtable == NULL){
+            if (!p || p->type == EMPTY || p->color != attColor || p->vtable == NULL){
                 continue;
             }
 
