@@ -6,7 +6,7 @@
 #include <string.h>
 #include <time.h>
 /*creates or opens log file*/
-void newLog(const char *filename){
+const char newLog(const char *filename){
 	FILE *f = fopen(filename, "a");
 	if (!f){
 		fprintf(stderr, "Log file '%s' could not be opened\n", filename);
@@ -24,7 +24,7 @@ void newLog(const char *filename){
 }
 
 /*add a move to the log*/
-void addMove(const char *filename, int moveNum, const char *color, const char *piece, const char *from, const char *to){
+const char addMove(const char *filename, int moveNum, const char *color, const char *piece, const char *from, const char *to){
 	FILE *f = fopen(filename, "a");
 	if (!f) return;
 	fprintf(f,"%-2d %-6s %-20s {%s, %s}\n", moveNum, color, piece, from, to);
@@ -32,14 +32,14 @@ void addMove(const char *filename, int moveNum, const char *color, const char *p
 }
 
 /*add a capture to the log*/
-void addCapture (const char *filename, int moveNum, const char *color, const char *attacker, const char *from, const char *captured, const char *at){
+const char addCapture (const char *filename, int moveNum, const char *color, const char *attacker, const char *from, const char *captured, const char *at){
 	FILE *f = fopen(filename, "a");
 	if (!f) return;
 	fprintf(f, "%-2d %-6s %-20s %s captures %s {%s, %s}\n", moveNum, color, "Capture", attacker, captured, at, from);
         fclose(f);
 }
 /*add castle move to the log*/
-void addCastle (const char *filename, int moveNum, const char *color, int sideNum){
+const char addCastle (const char *filename, int moveNum, const char *color, int sideNum){
 	FILE *f = fopen(filename, "a");
 	if (!f) return;
 	const char *side = (sideNum == 0) ? "King" : "Queen";
@@ -47,28 +47,28 @@ void addCastle (const char *filename, int moveNum, const char *color, int sideNu
         fclose(f);
 }
 /*add en passant to the log*/
-void logEnPassant(const char *filename, int moveNum, const char *color, const char *capturedPlace, const char *from, const char *to){
+const char logEnPassant(const char *filename, int moveNum, const char *color, const char *capturedPlace, const char *from, const char *to){
 	FILE *f = fopen(filename, "a");
 	if (!f) return;
 	fprintf(f, "%-6d %-6s %-20s pawn captured on %s {%s, %s}\n", moveNum, color, "En Passant", capturedPlace, from, to);
 	fclose(f);
 }
 /*add promotion to the log*/
-void logPromotion(const char *filename, int moveNum, const char *color, const char *promotion, const char *from, const char *to){
+const char logPromotion(const char *filename, int moveNum, const char *color, const char *promotion, const char *from, const char *to){
 	FILE *f = fopen(filename, "a");
 	if (!f) return;
 	fprintf(f, "%-6d %-6s %-20s Pawn promoted to %s {%s, %s}\n", moveNum, color, "Promotion", promotion, from, to);
 	fclose(f);
 }
 /*add check to the log*/
-void logCheck(const char *filename, int moveNum, const char *color){
+const char logCheck(const char *filename, int moveNum, const char *color){
 	FILE *f = fopen(filename, "a");
 	if (!f) return;
 	fprintf(f, "%-6d %-6s %-20s %s is in check\n", moveNum, color, "Check", color);
 	fclose(f);
 }
 /*add checkmate to the log*/
-void logCheckmate(const char *filename, int moveNum, const char *winner, const char *loser){
+const char logCheckmate(const char *filename, int moveNum, const char *winner, const char *loser){
 	FILE *f = fopen(filename, "a");
 	if (!f) return;
 	fprintf(f, "%-6d %-6s %-20s %s puts %s in checkmate\n", moveNum, winner, "Checkmate", winner, loser);
@@ -76,7 +76,7 @@ void logCheckmate(const char *filename, int moveNum, const char *winner, const c
 	fclose(f);
 }
 /*add draw to the log*/
-void logDraw(const char *filename, int moveNum){
+const char logDraw(const char *filename, int moveNum){
 	FILE *f = fopen(filename, "a");
 	if (!f) return;
 	fprintf(f, "%-6d %-6s %-20s\n", moveNum, "Draw", "Draw");
@@ -84,7 +84,7 @@ void logDraw(const char *filename, int moveNum){
 	fclose(f);
 }
 /*add a player quitting to the log*/
-void logQuit(const char *filename, int moveNum, const char *color){
+const char logQuit(const char *filename, int moveNum, const char *color){
 	FILE *f = fopen(filename, "a");
 	if (!f) return;
 	fprintf(f, "%-6d %-6s %-20s %s quits\n", moveNum, color, "Quit", color);
