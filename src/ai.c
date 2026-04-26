@@ -12,26 +12,26 @@
 static Difficulty currentDifficulty = EASY;
 
 /* Simulate the move on a copy; return 1 if it does NOT leave `player` in check. */
-static int moveIsSafe(Piece board[8][10], Color player, int sr, int sc, int er, int ec)
+static int moveIsSafe(Board *board, Color player, int sr, int sc, int er, int ec)
 {
-    Piece saved_start = board[sr][sc];
-    Piece saved_end = board[er][ec];
+    Piece saved_start = board->board[sr][sc];
+    Piece saved_end = board->board[er][ec];
 
-    board[er][ec] = saved_start;
-    board[er][ec].pos.row = er;
-    board[er][ec].pos.col = ec;
-    board[sr][sc].type = EMPTY;
-    board[sr][sc].vtable = NULL;
-    board[sr][sc].img = NULL;
+    board->board[er][ec] = saved_start;
+    board->board[er][ec].pos.row = er;
+    board->board[er][ec].pos.col = ec;
+    board->board[sr][sc].type = EMPTY;
+    board->board[sr][sc].vtable = NULL;
+    board->board[sr][sc].img = NULL;
 
     int safe = !kingCheck(board, player);
 
-    board[sr][sc] = saved_start;
-    board[er][ec] = saved_end;
+    board->board[sr][sc] = saved_start;
+    board->board[er][ec] = saved_end;
     return safe;
 }
 
-static int generateLegalMoves(Piece board[8][10], Color player, Move out[], int maxMoves)
+static int generateLegalMoves(Board *board, Color player, Move out[], int maxMoves)
 {
     int count = 0;
     for (int sr = 0; sr < 8 && count < maxMoves; sr++)
@@ -113,7 +113,23 @@ int mediumSelectMove(Board *board, Color player, Move *out)
         return 0;
     }
 
-    return easySelectMove(board, player, out); // placeholder
+    int bestVal = -1, bestIndex = -1;
+    for (int i = 0; i < n; i++)
+    {
+        Piece *target = &board->board[moves[i].er][moves[i].ec];
+        if (target->type != EMPTY && target->color != player)
+        {
+            int val = target->value;
+            if (val > bestVal)
+            {
+                bestVal = val;
+                bestIndex = i;
+            }
+        }
+    }
+
+    *out = (bestIndex >= 0) ? moves[bestIndex] : moves[rand() % n];
+    return 1;
 }
 
 int hardSelectMove(Board *board, Color player, Move *out)
@@ -125,5 +141,118 @@ int hardSelectMove(Board *board, Color player, Move *out)
         return 0;
     }
 
-    return easySelectMove(board, player, out); // placeholder
+    int bestVal = -9999, bestIndex = -1;
+    for (int i = 0; i < n; i++)
+    {
+        Piece displaced = applyMove(board, &moves[i]);
+        int val = minimax(board, player, 3, -9999, 9999, 0, player);
+        undoMove(board, &moves[i], displaced);
+        if (val > bestVal)
+        {
+            bestVal = val;
+            bestIndex = i;
+        }
+    }
+    *out = moves[bestIndex];
+    return 1;
+}
+
+static Piece applyMove(Board *board, Move *m)
+{
+    Piece displaced = board->board[m->er][m->ec];
+
+    board->board[m->er][m->ec] = board->board[m->sr][m->sc];
+    board->board[m->er][m->ec].pos.row = m->er;
+    board->board[m->er][m->ec].pos.col = m->ec;
+    board->board[m->sr][m->sc].type = EMPTY;
+    board->board[m->sr][m->sc].vtable = NULL;
+    board->board[m->sr][m->sc].img = NULL;
+
+    return displaced;
+}
+
+static void undoMove(Board *board, Move *m, Piece displaced)
+{
+    board->board[m->sr][m->sc] = board->board[m->er][m->ec];
+    board->board[m->sr][m->sc].pos.row = m->sr;
+    board->board[m->sr][m->sc].pos.col = m->sc;
+    board->board[m->er][m->ec] = displaced;
+}
+
+static int evalBoard(Board *board, Color aiColor)
+{
+    int score = 0;
+    for (int r = 0; r < 8; r++)
+        for (int c = 0; c < 10; c++)
+        {
+            Piece *p = &board->board[r][c];
+            if (p->type == EMPTY)
+                continue;
+            int val = p->value;
+            score += (p->color == aiColor) ? val : -val;
+        }
+    return score;
+}
+
+static int minimax(Board *board, Color aiColor, int depth, int alpha, int beta, int maximizing)
+{
+    if (depth == 0)
+    {
+        return evalBoard(board, aiColor);
+    }
+
+    Color current = maximizing ? aiColor : (1 - aiColor);
+    Move moves[MAX_MOVES];
+    int n = generateLegalMoves(board, current, moves, MAX_MOVES);
+    if (n <= 0)
+    {
+        return evalBoard(board, aiColor);
+    }
+
+    if (maximizing)
+    {
+        int best = -9999;
+        for (int i = 0; i < n; i++)
+        {
+            Piece displaced = applyMove(board, &moves[i]);
+            int val = minimax(board, aiColor, depth - 1, alpha, beta, 0);
+            undoMove(board, &moves[i], displaced);
+            if (val > best)
+            {
+                best = val;
+            }
+            if (val > alpha)
+            {
+                alpha = val;
+            }
+            if (beta <= alpha)
+            {
+                break;
+            }
+        }
+        return best;
+    }
+    else
+    {
+        int best = 9999;
+        for (int i = 0; i < n; i++)
+        {
+            Piece displaced = applyMove(board, &moves[i]);
+            int val = minimax(board, aiColor, depth - 1, alpha, beta, 1);
+            undoMove(board, &moves[i], displaced);
+            if (val < best)
+            {
+                best = val;
+            }
+            if (val < beta)
+            {
+                beta = val;
+            }
+            if (beta <= alpha)
+            {
+                break;
+            }
+        }
+        return best;
+    }
 }
