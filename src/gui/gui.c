@@ -524,7 +524,7 @@ void onUndoClicked(GtkButton* button, gpointer user_data){
   Board* board = getBoard(boardData); 
   printf("undo was clicked\n"); 
   Undo_Record undoMove; 
-  undo(undoMove, board);  //pop from undo stack 
+  undo(&undoMove, board);  //pop from undo stack 
 
   //undo move
 }

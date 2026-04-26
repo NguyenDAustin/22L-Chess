@@ -3,6 +3,7 @@
 //undo.c
 
 #include "undo.h"
+#include "board.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -21,7 +22,7 @@ void undoRecordCtor(Undo_Record* rec, Pos from, Pos to, Piece* moved, Piece* cap
 
 //pushes a move onto our undo stack
 void pushMove(Undo_Record* rec, Pos from, Pos to, Piece* moved){
-	undoRecordCtor(rec, from, to, NULL); 
+	undoRecordCtor(rec, from, to, moved, NULL); 
 	undoPush(rec); 
 }
 
@@ -58,7 +59,7 @@ int undoPop(Undo_Record* pop){
 
 int undo(Undo_Record* rec, Board* board){
 	if (!rec) return 0;
-	board[rec->move.startRow][rec->move.startCol] = rec->movPiece;
-	board[rec->move.endRow][rec->move.endCol] = rec->capturedPiece;
+	board->board[rec->from.row][rec->from.col] = rec->movedPiece;
+	board->board[rec->to.row][rec->to.col] = rec->capturedPiece;
 	return 1;
 }

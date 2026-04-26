@@ -34,7 +34,7 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
         printf("executing move\n");
 
         Piece *clickedPiece = getClickedPiece(boardState);
-
+        Undo_Record rec;
 
         Move move;
         move.startRow = clickedPiece->pos.row;
@@ -72,7 +72,7 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
             boardData->move = "capture was made\n";
             Pos old = getPos(clickedPiece); 
             Piece* captured = getSquare(board, clickPos.row, clickPos.col); 
-            pushCapture(rec, old, clickPos, clickedPiece, captured); 
+            pushCapture(&rec, old, clickPos, clickedPiece, captured); 
         }
         else if (move.castle) {
             boardData->move = "castle was made\n";
@@ -80,7 +80,7 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
         else {
             boardData->move = "move was made\n";
             Pos old = getPos(clickedPiece); 
-            pushMove(rec, old, clickPos, clickedPiece);  
+            pushMove(&rec, old, clickPos, clickedPiece);  
         }
 
 
