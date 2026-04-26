@@ -4,6 +4,7 @@
 #include "board_bundle.h"
 #include "log.h"
 #include "move.h"
+#include "undo.h"
 
 /*
 typedef enum{  

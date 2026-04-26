@@ -104,8 +104,15 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
     else if(aPieceWasClicked(boardState) && isLegalMoveSquare(boardState, clickPos)){
         printf("moving\n"); 
         Piece *clickedPiece = getClickedPiece(boardState);
+
+        //new experimental undo code
+        //Pos oldPos = getPos(clickedPiece); 
+        //Undo_Record rec; 
+        //pushMove(&rec, oldPos, clickPos, clickedPiece); 
+        ///
+
         movePiece(board, boardState, clickedPiece, clickPos); 
-        if(getType(clickedPiece) == PAWN && isRowEdge(clickPos.row))
+        if(getType(clickedPiece) == PAWN && isRowEdge(clickPos.row)) // ? - what is this line for ?
             setClickedPiece(boardState, clickedPiece);
         incrementMovesMade(boardState);  
         boardData->move = "move was made\n"; 

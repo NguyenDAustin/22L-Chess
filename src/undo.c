@@ -6,8 +6,31 @@
 #include <stdio.h>
 #include <string.h>
 
-static list stack[512];
+
+static Undo_Record stack[512];
 static int top=-1;
+
+
+
+void undoRecordCtor(Undo_Record* rec, Pos from, Pos to, Piece* moved, Piece* captured){
+	rec->from = from; 
+	rec->to = to; 
+	rec->movedPiece = moved; 
+	rec->capturedPiece = captured; 
+}
+
+//pushes a move onto our undo stack
+void pushMove(Undo_Record* rec, Pos from, Pos to, Piece* moved){
+	undoRecordCtor(rec, from, to, NULL); 
+	undoPush(rec); 
+}
+
+//pushes a capture onto our undo stack
+void pushCapture(Undo_Record* rec, Pos from, Pos to, Piece* moved, Piece* captured){ 
+	undoRecordCtor(rec, from, to, moved, captured); 
+	undoPus(rec); 
+}
+
 
 /*reset stack*/
 void undoSet(void){
@@ -15,7 +38,7 @@ void undoSet(void){
 }
 
 
-int undoPush(const list *record){
+int undoPush(const Undo_Record *record){
 	if (top>=511){
 		fprintf(stderr, "Undo list is full\n");
 		return 0;
@@ -24,7 +47,7 @@ int undoPush(const list *record){
 	return 1;
 }
 
-int undoPop(list *pop){
+int undoPop(Undo_Record* pop){
 	if (top<0){
 		fprintf(stderr, "No moves to undo\n");
 		return 0;
@@ -33,9 +56,9 @@ int undoPop(list *pop){
 	return 1;
 }
 
-int undo(list *l, Piece board[8][10]){
-	if (!l) return 0;
-	board[l->move.startRow][l->move.startCol] = l->movPiece;
-	board[l->move.endRow][l->move.endCol] = l->capturedPiece;
+int undo(Undo_Record* rec, Board* board){
+	if (!rec) return 0;
+	board[rec->move.startRow][rec->move.startCol] = rec->movPiece;
+	board[rec->move.endRow][rec->move.endCol] = rec->capturedPiece;
 	return 1;
 }
