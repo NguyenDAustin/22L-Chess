@@ -41,6 +41,7 @@ ASCII_MODULES = \
 # GUI build: gui.c has its own main(); pulls in board.c + pieces.c for
 # board state, and render.c + color_gui.c for drawing.
 GUI_MODULES = \
+    $(SRC_DIR)/ai.c \
     $(SRC_DIR)/board.c  \
     $(SRC_DIR)/board_bundle.c \
     $(SRC_DIR)/board_state.c \

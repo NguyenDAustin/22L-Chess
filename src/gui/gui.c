@@ -1,37 +1,78 @@
 
 #include "gui.h"
 
-
-
-//global variables 
-const char FILES[10] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'}; 
-const char* TITLE = "CHESS APP"; 
-const char* CSS_CLASS = "chess-bg"; 
-const int MIN_LOG_WIDTH = 300; 
+// global variables
+const char FILES[10] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
+const char *TITLE = "CHESS APP";
+const char *CSS_CLASS = "chess-bg";
+const int MIN_LOG_WIDTH = 300;
 const int MIN_LOG_HEIGHT = 500;
-const int GRID_COLUMN_SPACING = 50;  
+const int GRID_COLUMN_SPACING = 50;
 const int GRID_ROW_SPACING = 10;
 const int PROMOTION_COLUMN_SPACING = 10;
 const int PROMOTION_BUTTON_SIZE = 72;
-const int LOG_SPACING = 10; 
+const int LOG_SPACING = 10;
 
+<<<<<<< HEAD
 typedef struct {
   Board_Bundle* boardData;
-  GtkComboBoxText* firstMoveCombo;
   GtkComboBoxText* colorCombo;
+  GtkComboBoxText* difficultyCombo;
 } StartupDialogData;
+=======
+typedef struct
+{
+  Board_Bundle *boardData;
+  GtkComboBoxText *colorCombo;
+  GtkComboBoxText *difficultyCombo;
+} StartupDialogData;
+>>>>>>> 162f63c1ea3de2f0975d79e2f8eff2231c3a6d09
 
-void whichSquare(float x, float y){ //just for debug purposes
-  int file = x / SQUARE_SIZE; 
-  int rank =  y / SQUARE_SIZE; 
-  printf("square: %c%d\n", FILES[file], rank); 
+void whichSquare(float x, float y)
+{ // just for debug purposes
+  int file = x / SQUARE_SIZE;
+  int rank = y / SQUARE_SIZE;
+  printf("square: %c%d\n", FILES[file], rank);
 }
 
+<<<<<<< HEAD
 static const char* colorLabel(Color color){
   return color == WHITE ? "White" : "Black";
 }
 
+static const char* difficultyLabel(AIDifficulty difficulty){
+  switch(difficulty){
+    case AI_MEDIUM:
+      return "Medium";
+    case AI_HARD:
+      return "Hard";
+    case AI_EASY:
+    default:
+      return "Easy";
+  }
+}
+
+static AIDifficulty difficultyFromIndex(int difficultyIndex){
+  switch(difficultyIndex){
+    case 1:
+      return AI_MEDIUM;
+    case 2:
+      return AI_HARD;
+    default:
+      return AI_EASY;
+  }
+}
+
 static void appendTextToLogUI(Board_Bundle* boardData, const char* text){
+=======
+static const char *colorLabel(Color color)
+{
+  return color == WHITE ? "White" : "Black";
+}
+
+static void appendTextToLogUI(Board_Bundle *boardData, const char *text)
+{
+>>>>>>> 162f63c1ea3de2f0975d79e2f8eff2231c3a6d09
   GtkTextIter end;
   gtk_text_buffer_get_end_iter(boardData->logBuffer, &end);
   gtk_text_buffer_insert(boardData->logBuffer, &end, text, -1);
@@ -42,35 +83,79 @@ static void appendTextToLogUI(Board_Bundle* boardData, const char* text){
   gtk_text_buffer_delete_mark(boardData->logBuffer, mark);
 }
 
+<<<<<<< HEAD
 static void onStartupDialogResponse(GtkDialog* dialog, int responseId, gpointer user_data){
   StartupDialogData* dialogData = user_data;
   Board_Bundle* boardData = dialogData->boardData;
 
   if(responseId == GTK_RESPONSE_ACCEPT){
-    int firstMoveIndex = gtk_combo_box_get_active(GTK_COMBO_BOX(dialogData->firstMoveCombo));
     int colorIndex = gtk_combo_box_get_active(GTK_COMBO_BOX(dialogData->colorCombo));
+    int difficultyIndex = gtk_combo_box_get_active(GTK_COMBO_BOX(dialogData->difficultyCombo));
 
-    boardData->userStarts = firstMoveIndex == 0;
     boardData->userColor = colorIndex == 0 ? WHITE : BLACK;
     boardData->cpuColor = boardData->userColor == WHITE ? BLACK : WHITE;
+    boardData->userStarts = boardData->userColor == WHITE;
+    boardData->cpuDifficulty = difficultyFromIndex(difficultyIndex);
 
-    Color firstColor = boardData->userStarts ? boardData->userColor : boardData->cpuColor;
-    setMovesMade(boardData->boardState, firstColor == WHITE ? 0 : 1);
+    setMovesMade(boardData->boardState, 0);
     updateTimerLabels(boardData);
 
     char message[160];
-    snprintf(message, sizeof(message), "Game setup: %s starts. You are %s, CPU is %s.\n",
+    snprintf(message, sizeof(message), "Game setup: %s starts. You are %s, CPU is %s. CPU difficulty: %s.\n",
              boardData->userStarts ? "User" : "CPU",
+             colorLabel(boardData->userColor),
+             colorLabel(boardData->cpuColor),
+             difficultyLabel(boardData->cpuDifficulty));
+    appendTextToLogUI(boardData, message);
+
+    if(!boardData->userStarts){
+      makeCpuMove(boardData);
+      updateTimerLabels(boardData);
+      gtk_widget_queue_draw(boardData->boardWidget);
+      appendToLogUI(boardData);
+    }
+  }
+=======
+static void onStartupDialogResponse(GtkDialog *dialog, int responseId, gpointer user_data)
+{
+  StartupDialogData *dialogData = user_data;
+  Board_Bundle *boardData = dialogData->boardData;
+
+  if (responseId == GTK_RESPONSE_ACCEPT)
+  {
+    int colorIndex = gtk_combo_box_get_active(GTK_COMBO_BOX(dialogData->colorCombo));
+    int difficultyIndex = gtk_combo_box_get_active(GTK_COMBO_BOX(dialogData->difficultyCombo));
+
+    boardData->userColor = colorIndex == 0 ? WHITE : BLACK;
+    boardData->cpuColor = boardData->userColor == WHITE ? BLACK : WHITE;
+    boardData->userStarts = boardData->userColor == WHITE;
+    boardData->difficulty = difficultyIndex;
+
+    if (boardData->userColor == WHITE)
+    {
+      setMovesMade(boardData->boardState, 0);
+    }
+    else
+    {
+      setMovesMade(boardData->boardState, 1);
+    }
+    updateTimerLabels(boardData);
+
+    char message[160];
+    snprintf(message, sizeof(message), "Game setup: White starts. You are %s, CPU is %s.\n",
              colorLabel(boardData->userColor),
              colorLabel(boardData->cpuColor));
     appendTextToLogUI(boardData, message);
 
-    if(!boardData->userStarts){
+    if (!boardData->userStarts)
+    {
       appendTextToLogUI(boardData, "CPU start selected. CPU moves are not implemented in the GUI yet.\n");
     }
   }
+>>>>>>> 162f63c1ea3de2f0975d79e2f8eff2231c3a6d09
 
-  if(boardData->timerSourceId == 0){
+  if (boardData->timerSourceId == 0)
+  {
     boardData->timerSourceId = g_timeout_add_seconds(1, onTimerTick, boardData);
   }
 
@@ -78,82 +163,139 @@ static void onStartupDialogResponse(GtkDialog* dialog, int responseId, gpointer 
   g_free(dialogData);
 }
 
+<<<<<<< HEAD
 static void showStartupDialog(GtkWindow* parent, Board_Bundle* boardData){
   GtkWidget* dialog = gtk_dialog_new();
+=======
+static void showStartupDialog(GtkWindow *parent, Board_Bundle *boardData)
+{
+  GtkWidget *dialog = gtk_dialog_new();
+>>>>>>> 162f63c1ea3de2f0975d79e2f8eff2231c3a6d09
   gtk_window_set_title(GTK_WINDOW(dialog), "Game Setup");
   gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
   gtk_window_set_transient_for(GTK_WINDOW(dialog), parent);
+  gtk_window_set_default_size(GTK_WINDOW(dialog), 250, 150);
+
   gtk_dialog_add_button(GTK_DIALOG(dialog), "Start Game", GTK_RESPONSE_ACCEPT);
 
+<<<<<<< HEAD
   GtkWidget* content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
   GtkWidget* box = gtk_box_new(GTK_ORIENTATION_VERTICAL, LOG_SPACING);
-  GtkWidget* firstMoveLabel = gtk_label_new("Who starts?");
-  GtkWidget* firstMoveCombo = gtk_combo_box_text_new();
   GtkWidget* colorLabelWidget = gtk_label_new("Your color");
   GtkWidget* colorCombo = gtk_combo_box_text_new();
+  GtkWidget* difficultyLabelWidget = gtk_label_new("CPU difficulty");
+  GtkWidget* difficultyCombo = gtk_combo_box_text_new();
+=======
+  GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, LOG_SPACING);
+  GtkWidget *colorLabelWidget = gtk_label_new("Pick your color:");
+  GtkWidget *colorCombo = gtk_combo_box_text_new();
+
+  GtkWidget *difficultyLabelWidget = gtk_label_new("Select difficulty:");
+  GtkWidget *difficultyCombo = gtk_combo_box_text_new();
+>>>>>>> 162f63c1ea3de2f0975d79e2f8eff2231c3a6d09
 
   gtk_widget_set_margin_top(box, LOG_SPACING);
   gtk_widget_set_margin_bottom(box, LOG_SPACING);
   gtk_widget_set_margin_start(box, LOG_SPACING);
   gtk_widget_set_margin_end(box, LOG_SPACING);
 
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(firstMoveCombo), "User starts");
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(firstMoveCombo), "CPU starts");
-  gtk_combo_box_set_active(GTK_COMBO_BOX(firstMoveCombo), 0);
+<<<<<<< HEAD
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(colorCombo), "White");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(colorCombo), "Black");
+  gtk_combo_box_set_active(GTK_COMBO_BOX(colorCombo), 0);
+
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(difficultyCombo), "Easy");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(difficultyCombo), "Medium");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(difficultyCombo), "Hard");
+  gtk_combo_box_set_active(GTK_COMBO_BOX(difficultyCombo), 0);
+
+  gtk_box_append(GTK_BOX(box), colorLabelWidget);
+  gtk_box_append(GTK_BOX(box), colorCombo);
+  gtk_box_append(GTK_BOX(box), difficultyLabelWidget);
+  gtk_box_append(GTK_BOX(box), difficultyCombo);
+  gtk_box_append(GTK_BOX(content), box);
+
+  StartupDialogData* dialogData = g_new0(StartupDialogData, 1);
+  dialogData->boardData = boardData;
+  dialogData->colorCombo = GTK_COMBO_BOX_TEXT(colorCombo);
+  dialogData->difficultyCombo = GTK_COMBO_BOX_TEXT(difficultyCombo);
+=======
+  gtk_widget_set_margin_top(content, LOG_SPACING);
+  gtk_widget_set_margin_bottom(content, LOG_SPACING);
+  gtk_widget_set_margin_start(content, LOG_SPACING);
+  gtk_widget_set_margin_end(content, LOG_SPACING);
+
+  GtkWidget *button = gtk_dialog_get_widget_for_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
+  gtk_widget_set_hexpand(button, TRUE);
+  gtk_widget_set_halign(button, GTK_ALIGN_FILL);
 
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(colorCombo), "White");
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(colorCombo), "Black");
   gtk_combo_box_set_active(GTK_COMBO_BOX(colorCombo), 0);
 
-  gtk_box_append(GTK_BOX(box), firstMoveLabel);
-  gtk_box_append(GTK_BOX(box), firstMoveCombo);
   gtk_box_append(GTK_BOX(box), colorLabelWidget);
   gtk_box_append(GTK_BOX(box), colorCombo);
+
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(difficultyCombo), "Easy");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(difficultyCombo), "Medium");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(difficultyCombo), "Hard");
+  gtk_combo_box_set_active(GTK_COMBO_BOX(difficultyCombo), 1);
+
+  gtk_box_append(GTK_BOX(box), difficultyLabelWidget);
+  gtk_box_append(GTK_BOX(box), difficultyCombo);
   gtk_box_append(GTK_BOX(content), box);
 
-  StartupDialogData* dialogData = g_new0(StartupDialogData, 1);
+  StartupDialogData *dialogData = g_new0(StartupDialogData, 1);
   dialogData->boardData = boardData;
-  dialogData->firstMoveCombo = GTK_COMBO_BOX_TEXT(firstMoveCombo);
   dialogData->colorCombo = GTK_COMBO_BOX_TEXT(colorCombo);
+  dialogData->difficultyCombo = GTK_COMBO_BOX_TEXT(difficultyCombo);
+>>>>>>> 162f63c1ea3de2f0975d79e2f8eff2231c3a6d09
 
   g_signal_connect(dialog, "response", G_CALLBACK(onStartupDialogResponse), dialogData);
   gtk_window_present(GTK_WINDOW(dialog));
 }
 
-void setBackground(GdkDisplay* display, GtkCssProvider* provider, const char* BG_CSS){ 
+void setBackground(GdkDisplay *display, GtkCssProvider *provider, const char *BG_CSS)
+{
   gtk_css_provider_load_from_string(provider, BG_CSS);
   gtk_style_context_add_provider_for_display(display, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 }
 
-GtkWidget* createWindow(GtkApplication* app, const char* title, const char* cssClass){ 
-  GtkWidget* window = gtk_application_window_new(app);
-  gtk_window_set_title (GTK_WINDOW (window), title);
-  gtk_window_set_default_size (GTK_WINDOW (window), WINDOW_HEIGHT, WINDOW_WIDTH);
-  gtk_widget_add_css_class(window, cssClass); 
-  return window; 
+GtkWidget *createWindow(GtkApplication *app, const char *title, const char *cssClass)
+{
+  GtkWidget *window = gtk_application_window_new(app);
+  gtk_window_set_title(GTK_WINDOW(window), title);
+  gtk_window_set_default_size(GTK_WINDOW(window), WINDOW_HEIGHT, WINDOW_WIDTH);
+  gtk_widget_add_css_class(window, cssClass);
+  return window;
 }
 
-GtkWidget* createPromotionGrid(GtkWidget** buttons){ 
-  GtkWidget* grid = createGrid(PROMOTION_COLUMN_SPACING);  
-  gridAttacher(grid, buttons, NUMBER_OF_PROMOTION_BUTTONS); 
-  return grid; 
+GtkWidget *createPromotionGrid(GtkWidget **buttons)
+{
+  GtkWidget *grid = createGrid(PROMOTION_COLUMN_SPACING);
+  gridAttacher(grid, buttons, NUMBER_OF_PROMOTION_BUTTONS);
+  return grid;
 }
 
-GtkWidget* createMainGrid(){ 
-  return createGrid(GRID_COLUMN_SPACING); 
+GtkWidget *createMainGrid()
+{
+  return createGrid(GRID_COLUMN_SPACING);
 }
 
-GtkWidget* createGrid(int colSpacing){
-  GtkWidget* grid = gtk_grid_new(); 
+GtkWidget *createGrid(int colSpacing)
+{
+  GtkWidget *grid = gtk_grid_new();
   gtk_grid_set_column_spacing(GTK_GRID(grid), colSpacing);
   gtk_grid_set_row_spacing(GTK_GRID(grid), GRID_ROW_SPACING);
   gtk_widget_set_halign(grid, GTK_ALIGN_CENTER);
   gtk_widget_set_valign(grid, GTK_ALIGN_CENTER);
-  return grid; 
+  return grid;
 }
 
-GtkWidget* createTimerBox(GtkWidget* whiteTimer, GtkWidget* blackTimer){
-  GtkWidget* timerBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, LOG_SPACING);
+GtkWidget *createTimerBox(GtkWidget *whiteTimer, GtkWidget *blackTimer)
+{
+  GtkWidget *timerBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, LOG_SPACING);
   gtk_widget_add_css_class(timerBox, "timer-box");
   gtk_widget_add_css_class(whiteTimer, "timer-label");
   gtk_widget_add_css_class(blackTimer, "timer-label");
@@ -169,16 +311,18 @@ GtkWidget* createTimerBox(GtkWidget* whiteTimer, GtkWidget* blackTimer){
   return timerBox;
 }
 
-void createBoard(GtkWidget* board, Board_Bundle* boardData){ 
-  gtk_drawing_area_set_content_width (GTK_DRAWING_AREA (board), SQUARE_SIZE * BOARD_WIDTH);
-  gtk_drawing_area_set_content_height (GTK_DRAWING_AREA (board), SQUARE_SIZE * BOARD_HEIGHT);
-  gtk_drawing_area_set_draw_func (GTK_DRAWING_AREA (board), drawBoard, boardData, NULL);
-  gtk_widget_set_hexpand(board, FALSE); 
-  gtk_widget_set_halign(board, GTK_ALIGN_CENTER); 
-  gtk_widget_set_valign(board, GTK_ALIGN_CENTER); 
+void createBoard(GtkWidget *board, Board_Bundle *boardData)
+{
+  gtk_drawing_area_set_content_width(GTK_DRAWING_AREA(board), SQUARE_SIZE * BOARD_WIDTH);
+  gtk_drawing_area_set_content_height(GTK_DRAWING_AREA(board), SQUARE_SIZE * BOARD_HEIGHT);
+  gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(board), drawBoard, boardData, NULL);
+  gtk_widget_set_hexpand(board, FALSE);
+  gtk_widget_set_halign(board, GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(board, GTK_ALIGN_CENTER);
 }
 
-void updateTimerLabels(Board_Bundle* boardData){
+void updateTimerLabels(Board_Bundle *boardData)
+{
   int whiteMinutes = boardData->whiteSeconds / 60;
   int whiteSeconds = boardData->whiteSeconds % 60;
   int blackMinutes = boardData->blackSeconds / 60;
@@ -193,20 +337,23 @@ void updateTimerLabels(Board_Bundle* boardData){
   gtk_label_set_text(boardData->whiteTimerLabel, whiteText);
   gtk_label_set_text(boardData->blackTimerLabel, blackText);
 
-  if(whiteTurn){
+  if (whiteTurn)
+  {
     gtk_widget_add_css_class(GTK_WIDGET(boardData->whiteTimerLabel), "timer-active");
     gtk_widget_remove_css_class(GTK_WIDGET(boardData->blackTimerLabel), "timer-active");
   }
-  else {
+  else
+  {
     gtk_widget_remove_css_class(GTK_WIDGET(boardData->whiteTimerLabel), "timer-active");
     gtk_widget_add_css_class(GTK_WIDGET(boardData->blackTimerLabel), "timer-active");
   }
 }
 
-gboolean onTimerTick(gpointer user_data){
-  Board_Bundle* boardData = user_data;
+gboolean onTimerTick(gpointer user_data)
+{
+  Board_Bundle *boardData = user_data;
 
-  if(getMovesMade(boardData->boardState) % 2 == 0)
+  if (getMovesMade(boardData->boardState) % 2 == 0)
     boardData->whiteSeconds++;
   else
     boardData->blackSeconds++;
@@ -215,12 +362,13 @@ gboolean onTimerTick(gpointer user_data){
   return G_SOURCE_CONTINUE;
 }
 
-
-void createLogScroller(GtkWidget* logScroller){
+void createLogScroller(GtkWidget *logScroller)
+{
   gtk_widget_set_size_request(logScroller, MIN_LOG_WIDTH, -1);
 }
 
-void createLog(GtkWidget* logScroller, GtkWidget* log){ 
+void createLog(GtkWidget *logScroller, GtkWidget *log)
+{
   gtk_text_view_set_left_margin(GTK_TEXT_VIEW(log), LOG_SPACING);
   gtk_text_view_set_right_margin(GTK_TEXT_VIEW(log), LOG_SPACING);
   gtk_text_view_set_top_margin(GTK_TEXT_VIEW(log), LOG_SPACING);
@@ -230,33 +378,35 @@ void createLog(GtkWidget* logScroller, GtkWidget* log){
   gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(logScroller), log);
 }
 
-//get user click 
-//send click data to board 
-//board will update  
-//i draw if things have changed 
+// get user click
+// send click data to board
+// board will update
+// i draw if things have changed
 
-
-void createBlackButtons(Board_Bundle* boardData, GtkWidget** buttons){ 
-  const char* blackImages[NUMBER_OF_PROMOTION_BUTTONS] = {PIECE_RESOURCES[BLACK_QUEEN], PIECE_RESOURCES[BLACK_ROOK], PIECE_RESOURCES[BLACK_BISHOP], PIECE_RESOURCES[BLACK_KNIGHT], PIECE_RESOURCES[BLACK_ANTEATER]};
-  initializePromotionButtonArr(boardData, buttons, blackImages); 
+void createBlackButtons(Board_Bundle *boardData, GtkWidget **buttons)
+{
+  const char *blackImages[NUMBER_OF_PROMOTION_BUTTONS] = {PIECE_RESOURCES[BLACK_QUEEN], PIECE_RESOURCES[BLACK_ROOK], PIECE_RESOURCES[BLACK_BISHOP], PIECE_RESOURCES[BLACK_KNIGHT], PIECE_RESOURCES[BLACK_ANTEATER]};
+  initializePromotionButtonArr(boardData, buttons, blackImages);
 }
 
-void createWhiteButtons(Board_Bundle* boardData, GtkWidget** buttons){ 
-  const char* whiteImages[NUMBER_OF_PROMOTION_BUTTONS] = {PIECE_RESOURCES[WHITE_QUEEN], PIECE_RESOURCES[WHITE_ROOK], PIECE_RESOURCES[WHITE_BISHOP], PIECE_RESOURCES[WHITE_KNIGHT], PIECE_RESOURCES[WHITE_ANTEATER]};
-  initializePromotionButtonArr(boardData, buttons, whiteImages); 
+void createWhiteButtons(Board_Bundle *boardData, GtkWidget **buttons)
+{
+  const char *whiteImages[NUMBER_OF_PROMOTION_BUTTONS] = {PIECE_RESOURCES[WHITE_QUEEN], PIECE_RESOURCES[WHITE_ROOK], PIECE_RESOURCES[WHITE_BISHOP], PIECE_RESOURCES[WHITE_KNIGHT], PIECE_RESOURCES[WHITE_ANTEATER]};
+  initializePromotionButtonArr(boardData, buttons, whiteImages);
 }
 
-void createPopUp(Board_Bundle* boardData){ 
-  Board_State* boardState = boardData->boardState; 
-  Piece* promoting = boardState->clickedPiece; 
-  GtkWidget* boardWidget = boardData->boardWidget;
-  Color pieceColor = getColor(promoting); 
-  GtkWidget* popUp = boardData->promotionPopUp; 
-  GtkWidget* promotionGrid; 
+void createPopUp(Board_Bundle *boardData)
+{
+  Board_State *boardState = boardData->boardState;
+  Piece *promoting = boardState->clickedPiece;
+  GtkWidget *boardWidget = boardData->boardWidget;
+  Color pieceColor = getColor(promoting);
+  GtkWidget *popUp = boardData->promotionPopUp;
+  GtkWidget *promotionGrid;
   Pos promotingPos;
   GdkRectangle rect;
 
-  if(promoting == NULL)
+  if (promoting == NULL)
     return;
 
   promotingPos = getPos(promoting);
@@ -265,144 +415,156 @@ void createPopUp(Board_Bundle* boardData){
   rect.width = SQUARE_SIZE;
   rect.height = SQUARE_SIZE;
 
-  GtkWidget* buttons[NUMBER_OF_PROMOTION_BUTTONS]; 
-  (pieceColor == WHITE) ? createWhiteButtons(boardData, buttons) : createBlackButtons(boardData, buttons); 
-  (pieceColor == WHITE) ? gtk_popover_set_position(GTK_POPOVER(popUp), GTK_POS_TOP) : gtk_popover_set_position(GTK_POPOVER(popUp), GTK_POS_BOTTOM); 
+  GtkWidget *buttons[NUMBER_OF_PROMOTION_BUTTONS];
+  (pieceColor == WHITE) ? createWhiteButtons(boardData, buttons) : createBlackButtons(boardData, buttons);
+  (pieceColor == WHITE) ? gtk_popover_set_position(GTK_POPOVER(popUp), GTK_POS_TOP) : gtk_popover_set_position(GTK_POPOVER(popUp), GTK_POS_BOTTOM);
   gtk_popover_set_pointing_to(GTK_POPOVER(popUp), &rect);
   promotionGrid = createPromotionGrid(buttons);
-  gtk_popover_set_child(GTK_POPOVER(popUp), promotionGrid); 
+  gtk_popover_set_child(GTK_POPOVER(popUp), promotionGrid);
   gtk_widget_set_sensitive(boardWidget, TRUE);
-  gtk_popover_popup(GTK_POPOVER(popUp)); 
+  gtk_popover_popup(GTK_POPOVER(popUp));
 }
 
-void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data){  
-  Board_Bundle* boardData = user_data; 
-  GtkWidget* boardWidget = boardData->boardWidget; 
-  Board_State* boardState = boardData->boardState; 
+void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data)
+{
+  Board_Bundle *boardData = user_data;
+  GtkWidget *boardWidget = boardData->boardWidget;
+  Board_State *boardState = boardData->boardState;
 
-  whichSquare(x,y); //just for debug purposes 
+  whichSquare(x, y); // just for debug purposes
 
-  int row = pixToIndex(y); 
-  int col = pixToIndex(x); 
+  int row = pixToIndex(y);
+  int col = pixToIndex(x);
 
-  Pos clickPos;  
-  posCtor(&clickPos, row, col);  
+  Pos clickPos;
+  posCtor(&clickPos, row, col);
 
-  sendInput(boardData, clickPos); 
+  sendInput(boardData, clickPos);
 
-  if(hasUpdate(boardState))
-     gtk_widget_queue_draw(boardWidget); 
+  if (hasUpdate(boardState))
+    gtk_widget_queue_draw(boardWidget);
 
-  if(moveSucces(boardState)){
+  if (moveSucces(boardState))
+  {
     updateTimerLabels(boardData);
-    appendToLogUI(boardData);  
+    appendToLogUI(boardData);
   }
 
-  if(isPromotion(boardState)){
-    printf("is promotion\n");  
-    createPopUp(boardData); 
+  if (isPromotion(boardState))
+  {
+    printf("is promotion\n");
+    createPopUp(boardData);
   }
-    
 }
 
+void onPromotionClicked(GtkButton *button, gpointer user_data)
+{
+  Rank promoteTo = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "promoteRank"));
+  Board_Bundle *boardData = user_data;
+  Board_State *boardState = getBoardState(boardData);
+  Pos clickPiecePos = getPos(boardState->clickedPiece);
+  GtkWidget *popUp = boardData->promotionPopUp;
 
-void onPromotionClicked(GtkButton *button, gpointer user_data) {
-    Rank promoteTo = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "promoteRank"));
-    Board_Bundle* boardData = user_data; 
-    Board_State* boardState = getBoardState(boardData); 
-    Pos clickPiecePos = getPos(boardState->clickedPiece); 
-    GtkWidget* popUp = boardData->promotionPopUp; 
+  // printf("Promote to rank: %d\n", promoteTo);
 
-   // printf("Promote to rank: %d\n", promoteTo);
-
-    promotePiece(boardData, clickPiecePos, promoteTo);
-    resetClickedPiece(boardState);
-    gtk_widget_queue_draw(boardData->boardWidget);
-    gtk_popover_popdown(GTK_POPOVER(popUp));
+  promotePiece(boardData, clickPiecePos, promoteTo);
+  resetClickedPiece(boardState);
+  gtk_widget_queue_draw(boardData->boardWidget);
+  gtk_popover_popdown(GTK_POPOVER(popUp));
 }
 
-
-GtkWidget* createPromotionButton(Board_Bundle* boardData, const char *imagePath, Rank type) {
-    GtkWidget *button = gtk_button_new();
-    GtkWidget *picture = gtk_picture_new_for_filename(imagePath);
-    gtk_widget_set_size_request(picture, PROMOTION_BUTTON_SIZE, PROMOTION_BUTTON_SIZE);
-    gtk_button_set_child(GTK_BUTTON(button), picture);
-    g_object_set_data(G_OBJECT(button), "promoteRank", GINT_TO_POINTER(type)); 
-    g_signal_connect(button, "clicked", G_CALLBACK(onPromotionClicked), boardData); 
-    return button;
+GtkWidget *createPromotionButton(Board_Bundle *boardData, const char *imagePath, Rank type)
+{
+  GtkWidget *button = gtk_button_new();
+  GtkWidget *picture = gtk_picture_new_for_filename(imagePath);
+  gtk_widget_set_size_request(picture, PROMOTION_BUTTON_SIZE, PROMOTION_BUTTON_SIZE);
+  gtk_button_set_child(GTK_BUTTON(button), picture);
+  g_object_set_data(G_OBJECT(button), "promoteRank", GINT_TO_POINTER(type));
+  g_signal_connect(button, "clicked", G_CALLBACK(onPromotionClicked), boardData);
+  return button;
 }
 
-void appendToLogUI(Board_Bundle* boardData) {
-  char* text = boardData->move; 
+void appendToLogUI(Board_Bundle *boardData)
+{
+  char *text = boardData->move;
 
-  if(text){
+  if (text)
+  {
     appendTextToLogUI(boardData, text);
   }
 }
 
-void gridAttacher(GtkWidget* grid, GtkWidget** attachments, int size){
-  int row = 0; 
-  for(int col = 0; col < size; col++){
-    gtk_grid_attach(GTK_GRID(grid), attachments[col], col, row, 1, 1); 
+void gridAttacher(GtkWidget *grid, GtkWidget **attachments, int size)
+{
+  int row = 0;
+  for (int col = 0; col < size; col++)
+  {
+    gtk_grid_attach(GTK_GRID(grid), attachments[col], col, row, 1, 1);
   }
 }
 
-void initializePromotionButtonArr(Board_Bundle* boardData, GtkWidget** buttons, const char** images){
-  Rank type[NUMBER_OF_PROMOTION_BUTTONS] = {QUEEN, ROOK, BISHOP, KNIGHT, ANTEATER}; 
-  for(int i = 0; i < NUMBER_OF_PROMOTION_BUTTONS; i++){ 
-    buttons[i] = createPromotionButton(boardData, images[i], type[i]); 
-  } 
+void initializePromotionButtonArr(Board_Bundle *boardData, GtkWidget **buttons, const char **images)
+{
+  Rank type[NUMBER_OF_PROMOTION_BUTTONS] = {QUEEN, ROOK, BISHOP, KNIGHT, ANTEATER};
+  for (int i = 0; i < NUMBER_OF_PROMOTION_BUTTONS; i++)
+  {
+    buttons[i] = createPromotionButton(boardData, images[i], type[i]);
+  }
 }
 
+<<<<<<< HEAD
 
 void onUndoClicked(GtkButton* button, gpointer user_data){
   printf("undo was clicked\n"); 
 }
 
 static void activate (GtkApplication *app, gpointer user_data)
+=======
+static void activate(GtkApplication *app, gpointer user_data)
+>>>>>>> b9ea7cdd6eff4443ccfd3d2275fcdb546093a57e
 {
-  GtkWidget* grid = createMainGrid(); 
-  GtkWidget* window = createWindow(app, TITLE, CSS_CLASS); 
-  GtkWidget* board = gtk_drawing_area_new(); 
-  GtkWidget* logScroller = gtk_scrolled_window_new(); 
-  GtkWidget* log = gtk_text_view_new();
-  GtkTextBuffer* buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(log)); 
+  GtkWidget *grid = createMainGrid();
+  GtkWidget *window = createWindow(app, TITLE, CSS_CLASS);
+  GtkWidget *board = gtk_drawing_area_new();
+  GtkWidget *logScroller = gtk_scrolled_window_new();
+  GtkWidget *log = gtk_text_view_new();
+  GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(log));
 
-  GtkWidget* promotionPop = gtk_popover_new(); 
-  gtk_widget_set_parent(promotionPop, board); //promotion Pop needs to be handle memory
+  GtkWidget *promotionPop = gtk_popover_new();
+  gtk_widget_set_parent(promotionPop, board); // promotion Pop needs to be handle memory
 
-  Board_Bundle* boardData = user_data;  
-  setBoardWidget(boardData, board); 
-  setLogTextView(boardData, GTK_TEXT_VIEW(log)); 
-  setLogBuffer(boardData, buffer); 
-  setPromotionPop(boardData, promotionPop); 
+  Board_Bundle *boardData = user_data;
+  setBoardWidget(boardData, board);
+  setLogTextView(boardData, GTK_TEXT_VIEW(log));
+  setLogBuffer(boardData, buffer);
+  setPromotionPop(boardData, promotionPop);
 
+  // creation of timer
+  GtkWidget *whiteTimer = gtk_label_new(NULL);
+  GtkWidget *blackTimer = gtk_label_new(NULL);
+  GtkWidget *timerBox = createTimerBox(whiteTimer, blackTimer);
 
-  //creation of timer
-  GtkWidget* whiteTimer = gtk_label_new(NULL);
-  GtkWidget* blackTimer = gtk_label_new(NULL);
-  GtkWidget* timerBox = createTimerBox(whiteTimer, blackTimer);
-
-  setWhiteTimerLabel(boardData, GTK_LABEL(whiteTimer)); 
-  setBlackTimerLabel(boardData, GTK_LABEL(blackTimer)); 
-  setBlackSeconds(boardData, 0); 
-  setWhiteSeconds(boardData, 0); 
+  setWhiteTimerLabel(boardData, GTK_LABEL(whiteTimer));
+  setBlackTimerLabel(boardData, GTK_LABEL(blackTimer));
+  setBlackSeconds(boardData, 0);
+  setWhiteSeconds(boardData, 0);
   updateTimerLabels(boardData);
 
-  //setting background
+  // setting background
   GdkDisplay *display = gdk_display_get_default();
   GtkCssProvider *provider = gtk_css_provider_new();
-  setBackground(display, provider, CHESS_BG);  
+  setBackground(display, provider, CHESS_BG);
 
-  //creating board
-  createBoard(board, boardData); 
+  // creating board
+  createBoard(board, boardData);
 
-  //creating log scroller container 
-  createLogScroller(logScroller); 
+  // creating log scroller container
+  createLogScroller(logScroller);
 
-  //creating log 
+  // creating log
   createLog(logScroller, log);
 
+<<<<<<< HEAD
   //create undo button 
   GtkWidget *undoButton = gtk_button_new();
   GtkWidget *picture = gtk_picture_new_for_filename("src/gui/resources/undo.png");
@@ -412,57 +574,85 @@ static void activate (GtkApplication *app, gpointer user_data)
   gtk_widget_set_halign(undoButton, GTK_ALIGN_END);
   gtk_widget_set_valign(undoButton, GTK_ALIGN_START);
 
+=======
+  // create undo button
+  /*GtkWidget *undoButton = gtk_button_new();
+  GtkWidget *picture = gtk_picture_new_for_filename();
+  gtk_widget_set_size_request(picture, PROMOTION_BUTTON_SIZE, PROMOTION_BUTTON_SIZE);
+  gtk_button_set_child(GTK_BUTTON(button), picture);
+  g_object_set_data(G_OBJECT(button), "promoteRank", GINT_TO_POINTER(type));
+  g_signal_connect(button, "clicked", G_CALLBACK(onPromotionClicked), boardData);
+  */
+>>>>>>> b9ea7cdd6eff4443ccfd3d2275fcdb546093a57e
 
-  //event controller
-  GtkGesture *click = gtk_gesture_click_new(); 
-  gtk_widget_add_controller(board, GTK_EVENT_CONTROLLER(click)); 
-  g_signal_connect(click, "pressed", G_CALLBACK(onClick), boardData); 
-
+  // event controller
+  GtkGesture *click = gtk_gesture_click_new();
+  gtk_widget_add_controller(board, GTK_EVENT_CONTROLLER(click));
+  g_signal_connect(click, "pressed", G_CALLBACK(onClick), boardData);
 
   g_object_unref(provider);
 
   gtk_window_set_child(GTK_WINDOW(window), grid);
+<<<<<<< HEAD
   gtk_grid_attach(GTK_GRID(grid), board,  0, 0, 1, 1); //col row colspan rowspan
   gtk_grid_attach(GTK_GRID(grid), timerBox,  0, 1, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), logScroller,  1, 0, 1, 1); 
   gtk_grid_attach(GTK_GRID(grid), undoButton, 1, 1, 1, 1);
   gtk_window_present (GTK_WINDOW (window));
+=======
+  gtk_grid_attach(GTK_GRID(grid), board, 0, 0, 1, 2); // col row colspan rowspan
+  gtk_grid_attach(GTK_GRID(grid), timerBox, 1, 0, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), logScroller, 1, 1, 1, 1);
+  gtk_window_present(GTK_WINDOW(window));
+>>>>>>> b9ea7cdd6eff4443ccfd3d2275fcdb546093a57e
   showStartupDialog(GTK_WINDOW(window), boardData);
 }
 
-int main (int argc, char **argv)
+int main(int argc, char **argv)
 {
   GtkApplication *app;
   int status;
 
-  int numOfImages = 14; 
+  int numOfImages = 14;
 
+<<<<<<< HEAD
+  Board_Bundle boardData;
+  Board board;
+  boardData.timerSourceId = 0;
+  boardData.moveText[0] = '\0';
+  boardData.move = NULL;
+  boardData.userColor = WHITE;
+  boardData.cpuColor = BLACK;
+  boardData.userStarts = true;
+  boardData.cpuDifficulty = AI_EASY;
+
+  //set images
+  cairo_surface_t* images[numOfImages]; 
+=======
   Board_Bundle boardData;
   Board board;
   boardData.timerSourceId = 0;
 
-  //set images
-  cairo_surface_t* images[numOfImages]; 
+  // set images
+  cairo_surface_t *images[numOfImages];
+>>>>>>> 162f63c1ea3de2f0975d79e2f8eff2231c3a6d09
   createImages(images, numOfImages);
-  setImages(&boardData, images); 
-  
-  
-  //set board
-  defaultInitializeBoard(&board); 
-  initializeBoard(&board, images); 
-  setBoard(&boardData, &board); 
+  setImages(&boardData, images);
 
+  // set board
+  defaultInitializeBoard(&board);
+  initializeBoard(&board, images);
+  setBoard(&boardData, &board);
 
-  //set board state 
-  Board_State boardState; 
+  // set board state
+  Board_State boardState;
   initializeBoardState(&boardState);
-  setBoardState(&boardData, &boardState); 
+  setBoardState(&boardData, &boardState);
 
-
-  app = gtk_application_new ("org.gtk.example", G_APPLICATION_DEFAULT_FLAGS);
-  g_signal_connect (app, "activate", G_CALLBACK (activate), &boardData);
-  status = g_application_run (G_APPLICATION (app), argc, argv);
-  g_object_unref (app);
+  app = gtk_application_new("org.gtk.example", G_APPLICATION_DEFAULT_FLAGS);
+  g_signal_connect(app, "activate", G_CALLBACK(activate), &boardData);
+  status = g_application_run(G_APPLICATION(app), argc, argv);
+  g_object_unref(app);
 
   return status;
 }
