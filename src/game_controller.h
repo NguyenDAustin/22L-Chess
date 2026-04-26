@@ -19,5 +19,6 @@ typedef enum{
 
 
 void sendInput(Board_Bundle* boardData, Pos clickPos); 
+bool makeCpuMove(Board_Bundle* boardData);
 
 #endif

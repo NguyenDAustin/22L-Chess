@@ -3,6 +3,7 @@
 
 #include "board.h"
 #include "board_state.h"
+#include "ai.h"
 
 typedef struct Board_Bundle {
   Board* board; 
@@ -13,6 +14,7 @@ typedef struct Board_Bundle {
   GtkWidget* promotionPopUp; 
   Icon** images; 
   char* move; //move string that needs to be appended to UI
+  char moveText[256];
 
   //Timer data
   GtkLabel* whiteTimerLabel;
@@ -25,6 +27,7 @@ typedef struct Board_Bundle {
   Color userColor;
   Color cpuColor;
   bool userStarts;
+  AIDifficulty cpuDifficulty;
 } Board_Bundle; 
 
 

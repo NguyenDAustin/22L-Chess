@@ -19,6 +19,8 @@ void initializeBoardBundle(Board_Bundle* boardData, Board* board, Icon** images,
   boardData->userColor = WHITE;
   boardData->cpuColor = BLACK;
   boardData->userStarts = true;
+  boardData->cpuDifficulty = AI_EASY;
+  boardData->moveText[0] = '\0';
   boardData->move = NULL; 
 
   initializeBoardState(boardData->boardState); 
