@@ -62,34 +62,9 @@ static int generateLegalMoves(Board *board, Color player, Move out[], int maxMov
     return count;
 }
 
-int aiSelectMove(Piece board[8][10], Color player, Move *out)
+void setDifficulty(Difficulty d)
 {
-    static int seeded = 0;
-    if (!seeded)
-    {
-        srand((unsigned)time(NULL));
-        seeded = 1;
-    }
-
-    switch (currentDifficulty)
-    {
-    case EASY:
-    {
-        return easySelectMove(board, player, out);
-    }
-    case MEDIUM:
-    {
-        return mediumSelectMove(board, player, out);
-    }
-    case HARD:
-    {
-        return hardSelectMove(board, player, out);
-    }
-    default:
-    {
-        return easySelectMove(board, player, out);
-    }
-    }
+    currentDifficulty = d;
 }
 
 int easySelectMove(Board *board, Color player, Move *out)
@@ -129,31 +104,6 @@ int mediumSelectMove(Board *board, Color player, Move *out)
     }
 
     *out = (bestIndex >= 0) ? moves[bestIndex] : moves[rand() % n];
-    return 1;
-}
-
-int hardSelectMove(Board *board, Color player, Move *out)
-{
-    Move moves[MAX_MOVES];
-    int n = generateLegalMoves(board, player, moves, MAX_MOVES);
-    if (n <= 0)
-    {
-        return 0;
-    }
-
-    int bestVal = -9999, bestIndex = -1;
-    for (int i = 0; i < n; i++)
-    {
-        Piece displaced = applyMove(board, &moves[i]);
-        int val = minimax(board, player, 3, -9999, 9999, 0, player);
-        undoMove(board, &moves[i], displaced);
-        if (val > bestVal)
-        {
-            bestVal = val;
-            bestIndex = i;
-        }
-    }
-    *out = moves[bestIndex];
     return 1;
 }
 
@@ -254,5 +204,60 @@ static int minimax(Board *board, Color aiColor, int depth, int alpha, int beta, 
             }
         }
         return best;
+    }
+}
+
+int hardSelectMove(Board *board, Color player, Move *out)
+{
+    Move moves[MAX_MOVES];
+    int n = generateLegalMoves(board, player, moves, MAX_MOVES);
+    if (n <= 0)
+    {
+        return 0;
+    }
+
+    int bestVal = -9999, bestIndex = -1;
+    for (int i = 0; i < n; i++)
+    {
+        Piece displaced = applyMove(board, &moves[i]);
+        int val = minimax(board, player, 3, -9999, 9999, 0, player);
+        undoMove(board, &moves[i], displaced);
+        if (val > bestVal)
+        {
+            bestVal = val;
+            bestIndex = i;
+        }
+    }
+    *out = moves[bestIndex];
+    return 1;
+}
+
+int aiSelectMove(Piece board[8][10], Color player, Move *out)
+{
+    static int seeded = 0;
+    if (!seeded)
+    {
+        srand((unsigned)time(NULL));
+        seeded = 1;
+    }
+
+    switch (currentDifficulty)
+    {
+    case EASY:
+    {
+        return easySelectMove(board, player, out);
+    }
+    case MEDIUM:
+    {
+        return mediumSelectMove(board, player, out);
+    }
+    case HARD:
+    {
+        return hardSelectMove(board, player, out);
+    }
+    default:
+    {
+        return easySelectMove(board, player, out);
+    }
     }
 }
