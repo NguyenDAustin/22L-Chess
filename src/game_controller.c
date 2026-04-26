@@ -51,7 +51,7 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
 
         boardState->moveSuccess = true;
 
-        /* Anteater keeps turn if it captured and has another adjacent enemy pawn */
+        /* Anteater keeps turn if adjacent enemy pawn */
         if (movedPiece && movedPiece->type == ANTEATER && move.capture && anteaterHasAdjacentPawn(board, movedPiece))
         {
             boardData->move = "Anteater can capture again\n";
