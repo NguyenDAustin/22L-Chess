@@ -320,6 +320,7 @@ void onPromotionClicked(GtkButton *button, gpointer user_data) {
     gtk_popover_popdown(GTK_POPOVER(popUp));
 }
 
+
 GtkWidget* createPromotionButton(Board_Bundle* boardData, const char *imagePath, Rank type) {
     GtkWidget *button = gtk_button_new();
     GtkWidget *picture = gtk_picture_new_for_filename(imagePath);
@@ -395,7 +396,16 @@ static void activate (GtkApplication *app, gpointer user_data)
 
   //creating log 
   createLog(logScroller, log);
-  
+
+  //create undo button 
+  /*GtkWidget *undoButton = gtk_button_new();
+  GtkWidget *picture = gtk_picture_new_for_filename();
+  gtk_widget_set_size_request(picture, PROMOTION_BUTTON_SIZE, PROMOTION_BUTTON_SIZE);
+  gtk_button_set_child(GTK_BUTTON(button), picture);
+  g_object_set_data(G_OBJECT(button), "promoteRank", GINT_TO_POINTER(type)); 
+  g_signal_connect(button, "clicked", G_CALLBACK(onPromotionClicked), boardData); 
+  */
+
   //event controller
   GtkGesture *click = gtk_gesture_click_new(); 
   gtk_widget_add_controller(board, GTK_EVENT_CONTROLLER(click)); 
@@ -439,9 +449,6 @@ int main (int argc, char **argv)
   Board_State boardState; 
   initializeBoardState(&boardState);
   setBoardState(&boardData, &boardState); 
-
-  
-  //initializeBoardBundle(boardData, board, images, NULL, NULL, NULL, NULL); 
 
 
   app = gtk_application_new ("org.gtk.example", G_APPLICATION_DEFAULT_FLAGS);

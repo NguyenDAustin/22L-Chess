@@ -6,22 +6,35 @@
 #define UNDO_H
 
 #include "pieces.h"
-#include "move.h"
+//#include "move.h"
 
+/*
 typedef struct {
 	int moveNUm;
 	Move move;
 	Piece movPiece;
 	Piece capturedPiece;
 } list;
+ */
+
+typedef struct {
+    Pos from;
+    Pos to;
+    Piece *movedPiece;
+    Piece *capturedPiece;
+} Undo_Record;
+
+void undoRecordCtor(Undo_Record* rec, Pos from, Pos to, Piece* moved, Piece* captured);
+void pushMove(Undo_Record* rec, Pos from, Pos to, Piece* moved); 
+void pushCapture(Undo_Record* rec, Pos from, Pos to, Piece* moved, Piece* captured); 
 
 
 void undoSet(void);
 
-int undoPush(const list *record);
+int undoPush(const Undo_Record* record);
 
-int undoPop(list *pop);
+int undoPop(Undo_Record *pop);
 
-int undo(list *l, Piece board[8][10]);
+int undo(Undo_Record* rec, Board* board); //had to modify to board* style for code to run
 
 #endif

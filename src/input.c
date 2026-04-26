@@ -130,7 +130,7 @@ static bool parseCoordinateInput(const char *input) {
     return parseMoveTokens(a, b);
 }
 
-bool isValid(cons  char *input) {
+bool isValid(const  char *input) {
     char trimmed[128];
     char upper[128];
 
