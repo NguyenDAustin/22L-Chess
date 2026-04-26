@@ -2,6 +2,7 @@
 #include "move.h"
 #include "board.h"
 #include "pieces.h"
+#include "board_state.h"
 
 static void promoteOnBoard(Board *board, Pos pos, Rank newRank)
 {
@@ -198,7 +199,7 @@ void executeCastle(Board *board, Move *move)
     if (move->endCol > move->startCol) {
         // kingside
         kingEndCol = kingStartCol + 2;
-        rookStartCol = 9;      // your right rook is at far right
+        rookStartCol = 9;      // rook is at far right
         rookEndCol = kingEndCol - 1;
     }
     else {
@@ -233,11 +234,31 @@ void executeCastle(Board *board, Move *move)
     move->castle = 1;
 }
 
-void copyBoard(Board *dest, Board *src)
+int possibleMove(Board_State *boardState, Board *board, Color turn)
 {
-    for (int r = 0; r < 8; r++) {
-        for (int c = 0; c < 10; c++) {
-            dest->board[r][c] = src->board[r][c];
+    if (!boardState || !board) {
+        return 0;
+    }
+
+    for (int row = 0; row < BOARD_HEIGHT; row++) {
+        for (int col = 0; col < BOARD_WIDTH; col++) {
+
+            Piece *piece = board->board[row][col];
+
+            if (!piece || piece->type == EMPTY || piece->color != turn) {
+                continue;
+            }
+
+            Pos start;
+            posCtor(&start, row, col);
+
+            generateLegalMoves(boardState, board, piece, start);
+
+            if (boardState->legalMoveCount > 0) {
+                return 1;
+            }
         }
     }
+
+    return 0;
 }

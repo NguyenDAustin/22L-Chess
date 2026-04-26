@@ -441,15 +441,15 @@ int pawnCanEnPassant(Board* board, Piece *p, int sr, int sc, int er, int ec, Mov
     if (er != sr + mr || abs(ec - sc) != 1)
         return 0;
 
-    // target square must be empty
+    // cehck for empty square
     if (!isEmpty(board, er, ec))
         return 0;
     
-    // get last moved piece
+    // get last move
     Piece* lastPiece = board->board[lastMove->endRow][lastMove->endCol];
     if (!lastPiece) return 0;
 
-    // must be enemy pawn
+    // check enemy pawn
     if (lastPiece->type != PAWN || lastPiece->color == p->color)
         return 0;
 
@@ -571,7 +571,6 @@ PieceVTable* getVtable(Rank type){
     }
 }
 
-/*
 Pos findKing(Board* board, Color color)
 {
     Pos k = {-1, -1};
@@ -618,4 +617,3 @@ int kingCheck(Board* board, Color kingColor)
 
     return attackSquare(board, kingPos.row, kingPos.col, enemyColor);
 }
-*/

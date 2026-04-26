@@ -77,8 +77,8 @@ int pawnCanEnPassant(Board* board, Piece *p, int sr, int sc, int er, int ec, Mov
 int kingCanCastle(Board *board, Piece *p, int sr, int sc, int er, int ec);
 
 // check check
-//Pos findKing(Board *board, Color color);
-//int attackSquare(Board *board, int row, int col, Color attColor);
-//int kingCheck(Board *board, Color kingColor);
+Pos findKing(Board *board, Color color);
+int attackSquare(Board *board, int row, int col, Color attColor);
+int kingCheck(Board *board, Color kingColor);
 
 #endif

@@ -260,25 +260,6 @@ static void debugInitBoard(Piece board[8][10])
     placePiece(board, 6, 1, WHITE, PAWN);
 }
 
-<<<<<<< HEAD
-=======
-static void startTurn(void)
-{
-    clock_gettime(CLOCK_MONOTONIC, &turnStartTime);
-}
-
-static double getTimeRemaining(void)
-{
-    struct timespec now;
-    clock_gettime(CLOCK_MONOTONIC, &now);
-
-    double elapsed = (now.tv_sec - turnStartTime.tv_sec) +
-                     (now.tv_nsec - turnStartTime.tv_nsec) / 1e9;
-
-    return TURN_LIMIT_SECONDS - elapsed;
-}
-
->>>>>>> a6adb5723f847994783f2624c0bc2ebc71500f20
 static Color chooseHumanColor(void)
 {
     char line[32];
