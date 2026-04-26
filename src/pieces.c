@@ -500,6 +500,7 @@ int anteaterCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec)
         return 0;
     }
 
+    // Anteater only captures straight, not diagonal
     if (mr != 0 && mc != 0) {
         return 0;
     }
@@ -507,6 +508,7 @@ int anteaterCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec)
     if (mr != 0) {
         rowStep = (mr > 0) ? 1 : -1;
     }
+
     if (mc != 0) {
         colStep = (mc > 0) ? 1 : -1;
     }
@@ -514,20 +516,26 @@ int anteaterCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec)
     int r = sr + rowStep;
     int c = sc + colStep;
 
-    Piece* piece1 = board->board[r][c]; 
-    
-
     while (r != er || c != ec) {
-        if (getType(piece1) != PAWN || getColor(piece1) == getColor(p))  {
+        Piece *middle = board->board[r][c];
+
+        // Every square between must have an enemy pawn
+        if (middle == NULL ||
+            middle->type != PAWN ||
+            middle->color == p->color) {
             return 0;
         }
+
         r += rowStep;
         c += colStep;
     }
 
-    Piece* piece2 = board->board[er][ec];
+    Piece *target = board->board[er][ec];
 
-    if (getType(piece2) != PAWN || getColor(piece2) == getColor(p)) {
+    // End square must also be an enemy pawn
+    if (target == NULL ||
+        target->type != PAWN ||
+        target->color == p->color) {
         return 0;
     }
 
