@@ -9,25 +9,25 @@
 
 #define LOG_FILE "chess_game.log"
 
-void newLog(const char *filename);
+const char newLog(const char *filename);
 
-void addMove(const char *filename, int moveNum, Piece *piece, Pos to){
+const char addMove(const char *filename, int moveNum, Piece *piece, Pos to){
 
-void addCapture (const char *filename, int moveNum, Piece *piece, Pos from, Pos capturedAt);
+const char addCapture (const char *filename, int moveNum, Piece *piece, Pos from, Pos capturedAt);
 
-void addCastle (const char *filename, int moveNum, Piece *piece,  int sideNum);
+const char addCastle (const char *filename, int moveNum, Piece *piece,  int sideNum);
 
-void logEnPassant(const char *filename, int moveNum, Piece *piece, Pos pos);
+const char logEnPassant(const char *filename, int moveNum, Piece *piece, Pos pos);
 
-void logPromotion(const char *filename, int moveNum, Piece *piece, Pos to, Piece *newPiece);
+const char logPromotion(const char *filename, int moveNum, Piece *piece, Pos to, Piece *newPiece);
 
-void logCheck(const char *filename, int moveNum, Piece *piece);
+const char logCheck(const char *filename, int moveNum, Piece *piece);
 
-void logCheckmate(const char *filename, int moveNum, Piece *winner){
+const char logCheckmate(const char *filename, int moveNum, Piece *winner){
 
-void logDraw(const char *filename, int moveNum);
+const char logDraw(const char *filename, int moveNum);
 
-void logQuit(const char *filename, int moveNum, Piece *quitter);
+const char logQuit(const char *filename, int moveNum, Piece *quitter);
 
 
 #endif

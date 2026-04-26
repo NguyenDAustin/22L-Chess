@@ -167,6 +167,42 @@ void executeAnteaterCapture(Board *board, Move *move)
     move->capture = 1;
 }
 
+int anteaterHasAdjacentPawn(Board *board, Piece *anteater)
+{
+    if (!board || !anteater || anteater->type != ANTEATER) {
+        return 0;
+    }
+
+    int sr = anteater->pos.row;
+    int sc = anteater->pos.col;
+
+    int dirs[4][2] = {
+        {-1, 0},
+        {1, 0},
+        {0, -1},
+        {0, 1}
+    };
+
+    for (int i = 0; i < 4; i++) {
+        int r = sr + dirs[i][0];
+        int c = sc + dirs[i][1];
+
+        if (!isRowValid(r) || !isColValid(c)) {
+            continue;
+        }
+
+        Piece *target = board->board[r][c];
+
+        if (target &&
+            target->type == PAWN &&
+            target->color != anteater->color) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 void executeEnPassant(Board *board, Move *move)
 {
     Piece *moving = board->board[move->startRow][move->startCol];
