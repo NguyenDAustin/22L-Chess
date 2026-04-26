@@ -25,7 +25,10 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
     else if (aPieceWasClicked(boardState) && isLegalMoveSquare(boardState, clickPos)) {
         printf("executing move\n");
 
+        //Undo_Record rec; 
         Piece *clickedPiece = getClickedPiece(boardState);
+        Pos start = getPos(clickedPiece); 
+        Pos end = clickPos; 
 
         Move move;
         move.startRow = clickedPiece->pos.row;
@@ -42,7 +45,9 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
         incrementMovesMade(boardState);
 
         if (move.capture) {
-            boardData->move = "capture was made\n";
+           // Piece* captured = getSquare(board, clickPos.row, clickPos.col); 
+            boardData->move = "capture was made\n";  
+           // pushCapture(rec, start, end, clickedPiece, captured); 
         }
         else if (move.castle) {
             boardData->move = "castle was made\n";

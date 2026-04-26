@@ -157,10 +157,11 @@ GtkWidget* createTimerBox(GtkWidget* whiteTimer, GtkWidget* blackTimer){
   gtk_widget_add_css_class(timerBox, "timer-box");
   gtk_widget_add_css_class(whiteTimer, "timer-label");
   gtk_widget_add_css_class(blackTimer, "timer-label");
-  gtk_widget_set_halign(timerBox, GTK_ALIGN_CENTER);
-  gtk_widget_set_hexpand(timerBox, TRUE);
-  gtk_widget_set_hexpand(whiteTimer, TRUE);
-  gtk_widget_set_hexpand(blackTimer, TRUE);
+
+  gtk_widget_set_vexpand(timerBox, FALSE);
+  gtk_widget_set_valign(timerBox, GTK_ALIGN_START); //changed 
+  gtk_widget_set_halign(timerBox, GTK_ALIGN_CENTER); //changed
+
   gtk_label_set_xalign(GTK_LABEL(whiteTimer), 0.5);
   gtk_label_set_xalign(GTK_LABEL(blackTimer), 0.5);
   gtk_box_append(GTK_BOX(timerBox), whiteTimer);
@@ -353,6 +354,11 @@ void initializePromotionButtonArr(Board_Bundle* boardData, GtkWidget** buttons, 
   } 
 }
 
+
+void onUndoClicked(GtkButton* button, gpointer user_data){
+  printf("undo was clicked\n"); 
+}
+
 static void activate (GtkApplication *app, gpointer user_data)
 {
   GtkWidget* grid = createMainGrid(); 
@@ -398,13 +404,14 @@ static void activate (GtkApplication *app, gpointer user_data)
   createLog(logScroller, log);
 
   //create undo button 
-  /*GtkWidget *undoButton = gtk_button_new();
-  GtkWidget *picture = gtk_picture_new_for_filename();
-  gtk_widget_set_size_request(picture, PROMOTION_BUTTON_SIZE, PROMOTION_BUTTON_SIZE);
-  gtk_button_set_child(GTK_BUTTON(button), picture);
-  g_object_set_data(G_OBJECT(button), "promoteRank", GINT_TO_POINTER(type)); 
-  g_signal_connect(button, "clicked", G_CALLBACK(onPromotionClicked), boardData); 
-  */
+  GtkWidget *undoButton = gtk_button_new();
+  GtkWidget *picture = gtk_picture_new_for_filename("src/gui/resources/undo.png");
+  gtk_widget_set_size_request(picture, 20, 20);
+  gtk_button_set_child(GTK_BUTTON(undoButton), picture);
+  g_signal_connect(undoButton, "clicked", G_CALLBACK(onUndoClicked), boardData); 
+  gtk_widget_set_halign(undoButton, GTK_ALIGN_END);
+  gtk_widget_set_valign(undoButton, GTK_ALIGN_START);
+
 
   //event controller
   GtkGesture *click = gtk_gesture_click_new(); 
@@ -415,9 +422,10 @@ static void activate (GtkApplication *app, gpointer user_data)
   g_object_unref(provider);
 
   gtk_window_set_child(GTK_WINDOW(window), grid);
-  gtk_grid_attach(GTK_GRID(grid), board,  0, 0, 1, 2); //col row colspan rowspan
-  gtk_grid_attach(GTK_GRID(grid), timerBox,  1, 0, 1, 1);
-  gtk_grid_attach(GTK_GRID(grid), logScroller,  1, 1, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), board,  0, 0, 1, 1); //col row colspan rowspan
+  gtk_grid_attach(GTK_GRID(grid), timerBox,  0, 1, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), logScroller,  1, 0, 1, 1); 
+  gtk_grid_attach(GTK_GRID(grid), undoButton, 1, 1, 1, 1);
   gtk_window_present (GTK_WINDOW (window));
   showStartupDialog(GTK_WINDOW(window), boardData);
 }
