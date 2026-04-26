@@ -2,7 +2,7 @@
 #define MOVE_H
 
 #include "pieces.h"
-#include "board.h"
+#include "board.h" //remove
 
 struct Move
 {
@@ -16,7 +16,7 @@ struct Move
     int castle;
 };
 typedef struct Board_State Board_State;
-
+//typedef struct Board Board; add
 
 void executeMove(Board *board, Move *move, Move lastMove);
 void executeCapture(Board *board, Move *move);
@@ -37,6 +37,8 @@ int checkCheckmate(Board *board, Color turn, Move lastMove);
 int checkStalemate(Board *board, Color turn, Move lastMove);
 int legalMove(Board *board, Move *move, Color turn, Move lastMove);
 int possibleMove(Board *board, Color turn, Move lastMove);
+void recordMove(Move move, const char *filename);
+
 */
 
 #endif
