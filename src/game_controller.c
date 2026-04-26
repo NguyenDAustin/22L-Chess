@@ -35,6 +35,7 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
 
         Piece *clickedPiece = getClickedPiece(boardState);
 
+
         Move move;
         move.startRow = clickedPiece->pos.row;
         move.startCol = clickedPiece->pos.col;
@@ -51,12 +52,17 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
 
         if (move.capture) {
             boardData->move = "capture was made\n";
+            Pos old = getPos(clickedPiece); 
+            Piece* captured = getSquare(board, clickPos.row, clickPos.col); 
+            pushCapture(rec, old, clickPos, clickedPiece, captured); 
         }
         else if (move.castle) {
             boardData->move = "castle was made\n";
         }
         else {
             boardData->move = "move was made\n";
+            Pos old = getPos(clickedPiece); 
+            pushMove(rec, old, clickPos, clickedPiece);  
         }
 
         boardState->moveSuccess = true;

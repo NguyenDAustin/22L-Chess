@@ -28,7 +28,7 @@ void pushMove(Undo_Record* rec, Pos from, Pos to, Piece* moved){
 //pushes a capture onto our undo stack
 void pushCapture(Undo_Record* rec, Pos from, Pos to, Piece* moved, Piece* captured){ 
 	undoRecordCtor(rec, from, to, moved, captured); 
-	undoPus(rec); 
+	undoPush(rec); 
 }
 
 
