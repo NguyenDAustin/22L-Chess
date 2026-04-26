@@ -47,6 +47,24 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
         executeMove(board, &move, boardState->lastMove);
         boardState->lastMove = move;
 
+        Piece *movedPiece = getSquare(board, move.endRow, move.endCol);
+
+        boardState->moveSuccess = true;
+
+        /* Anteater keeps turn if it captured and has another adjacent enemy pawn */
+        if (movedPiece && movedPiece->type == ANTEATER && move.capture && anteaterHasAdjacentPawn(board, movedPiece))
+        {
+            boardData->move = "Anteater can capture again\n";
+
+            setClickedPiece(boardState, movedPiece);
+            resetLegalMoveCount(boardState);
+            generateLegalMoves(boardState, board, movedPiece, getPos(movedPiece), &boardState->lastMove);
+
+            setUpdate(boardState, true);
+            return;
+        }
+
+
         incrementMovesMade(boardState);
 
         if (move.capture) {
@@ -59,7 +77,6 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
             boardData->move = "move was made\n";
         }
 
-        boardState->moveSuccess = true;
 
         resetClickedPiece(boardState);
         resetLegalMoveCount(boardState);

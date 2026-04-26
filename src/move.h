@@ -22,6 +22,7 @@ void executeMove(Board *board, Move *move, Move lastMove);
 void executeCapture(Board *board, Move *move);
 void executePawnCapture(Board *board, Move *move);
 void executeAnteaterCapture(Board *board, Move *move);
+int anteaterHasAdjacentPawn(Board *board, Piece *anteater);
 
 // special moves
 void executeEnPassant(Board *board, Move *move);
