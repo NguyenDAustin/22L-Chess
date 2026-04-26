@@ -16,7 +16,30 @@ struct Move
     int castle;
 };
 typedef struct Board_State Board_State;
-//typedef struct Board Board; add
+
+
+/*
+#include "pieces.h"
+
+
+typedef struct Move
+{
+    int startRow; // scr
+    int startCol; // sc
+    int endRow;   // er
+    int endCol;   // ec
+    int capture;  // capture
+
+    int enPassant;
+    int castle;
+} Move;
+typedef struct Board Board;
+typedef struct Board_State Board_State;
+*/
+
+
+
+
 
 void executeMove(Board *board, Move *move, Move lastMove);
 void executeCapture(Board *board, Move *move);
