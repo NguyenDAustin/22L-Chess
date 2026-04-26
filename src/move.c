@@ -45,12 +45,16 @@ void executeMove(Board *board, Move *move, Move lastMove)
 
     // en passant
     if (moving->type == PAWN &&
-        pawnCanEnPassant(board, moving, move->startRow, move->startCol, move->endRow, move->endCol, &lastMove)) {
+        pawnCanEnPassant(board, moving,
+                         move->startRow, move->startCol,
+                         move->endRow, move->endCol, &lastMove)) {
         executeEnPassant(board, move);
         return;
     }
 
-    if (moving->vtable->canCapture(board, moving, move->startRow, move->startCol, move->endRow, move->endCol)) {
+    if (moving->vtable->canCapture(board, moving,
+                                   move->startRow, move->startCol,
+                                   move->endRow, move->endCol)) {
         if (moving->type == PAWN) {
             executePawnCapture(board, move);
         }
@@ -68,7 +72,9 @@ void executeMove(Board *board, Move *move, Move lastMove)
         return;
     }
 
-    if (moving->vtable->canMove(board, moving, move->startRow, move->startCol, move->endRow, move->endCol)) {
+    if (moving->vtable->canMove(board, moving,
+                                move->startRow, move->startCol,
+                                move->endRow, move->endCol)) {
 
         board->board[move->endRow][move->endCol] = moving;
 
@@ -246,7 +252,7 @@ int possibleMove(Board_State *boardState, Board *board, Color turn)
             Pos start;
             posCtor(&start, row, col);
 
-            generateLegalMoves(boardState, board, piece, start);
+            generateLegalMoves(boardState, board, piece, start, &boardState->lastMove);;
 
             if (boardState->legalMoveCount > 0) {
                 return 1;
