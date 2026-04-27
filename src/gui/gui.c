@@ -44,7 +44,7 @@ static Color oppositeColor(Color color)
   return color == WHITE ? BLACK : WHITE;
 }
 
-void appendTextToLogUI(Board_Bundle *boardData, const char *text) //Queency changed from static
+void appendTextToLogUI(Board_Bundle *boardData, const char *text) // Queency changed from static
 {
   GtkTextIter end;
   gtk_text_buffer_get_end_iter(boardData->logBuffer, &end);
@@ -746,10 +746,9 @@ void appendToLogUI(Board_Bundle *boardData)
            'A' + last.startCol, last.startRow + 1,
            'A' + last.endCol, last.endRow + 1,
            suffix);
-  //appendTextToLogUI(boardData, msg); //QUEENCY 
+  // appendTextToLogUI(boardData, msg); //QUEENCY
 
   appendTextToLogUI(boardData, boardData->move);
-
 }
 
 void gridAttacher(GtkWidget *grid, GtkWidget **attachments, int size)
@@ -853,16 +852,16 @@ static void activate(GtkApplication *app, gpointer user_data)
   gtk_widget_set_size_request(picture, 20, 20);
   gtk_button_set_child(GTK_BUTTON(undoButton), picture);
   g_signal_connect(undoButton, "clicked", G_CALLBACK(onUndoClicked), boardData);
-  gtk_widget_set_halign(undoButton, GTK_ALIGN_END);
-  gtk_widget_set_valign(undoButton, GTK_ALIGN_START);
+  // gtk_widget_set_halign(undoButton, GTK_ALIGN_END);
+  // gtk_widget_set_valign(undoButton, GTK_ALIGN_START);
 
   GtkWidget *quitButton = gtk_button_new();
   GtkWidget *quitPicture = gtk_picture_new_for_filename("src/gui/resources/quit.png");
   gtk_widget_set_size_request(quitPicture, 20, 20);
   gtk_button_set_child(GTK_BUTTON(quitButton), quitPicture);
   g_signal_connect(quitButton, "clicked", G_CALLBACK(onQuitClicked), boardData);
-  gtk_widget_set_halign(quitButton, GTK_ALIGN_END);
-  gtk_widget_set_valign(quitButton, GTK_ALIGN_START);
+  // gtk_widget_set_halign(quitButton, GTK_ALIGN_END);
+  // gtk_widget_set_valign(quitButton, GTK_ALIGN_START);
 
   // event controller
   GtkGesture *click = gtk_gesture_click_new();
@@ -871,12 +870,17 @@ static void activate(GtkApplication *app, gpointer user_data)
 
   g_object_unref(provider);
 
+  GtkWidget *buttonBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, LOG_SPACING);
+  gtk_widget_set_halign(buttonBox, GTK_ALIGN_END);
+  gtk_widget_set_valign(buttonBox, GTK_ALIGN_START);
+  gtk_box_append(GTK_BOX(buttonBox), undoButton);
+  gtk_box_append(GTK_BOX(buttonBox), quitButton);
+
   gtk_window_set_child(GTK_WINDOW(window), grid);
   gtk_grid_attach(GTK_GRID(grid), board, 0, 0, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), timerBox, 0, 1, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), logScroller, 1, 0, 1, 1);
-  gtk_grid_attach(GTK_GRID(grid), undoButton, 1, 1, 1, 1);
-  gtk_grid_attach(GTK_GRID(grid), quitButton, 2, 1, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), buttonBox, 1, 1, 1, 1);
 
   gtk_window_present(GTK_WINDOW(window));
   showStartupDialog(GTK_WINDOW(window), boardData);
