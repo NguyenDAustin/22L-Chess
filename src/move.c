@@ -4,6 +4,7 @@
 #include "pieces.h"
 #include "board_state.h"
 
+/*
 static void promoteOnBoard(Board *board, Pos pos, Rank newRank)
 {
     Piece *piece = board->board[pos.row][pos.col];
@@ -15,6 +16,7 @@ static void promoteOnBoard(Board *board, Pos pos, Rank newRank)
     setType(piece, newRank);
     piece->vtable = getVtable(newRank);
 }
+*/
 
 void executeMove(Board *board, Move *move, Move lastMove)
 {
@@ -84,13 +86,14 @@ void executeMove(Board *board, Move *move, Move lastMove)
         board->board[move->startRow][move->startCol] = NULL;
 
         // promotion
+        /*
         if (moving->type == PAWN) {
             if ((moving->color == WHITE && move->endRow == 7) ||
                 (moving->color == BLACK && move->endRow == 0)) {
                 promoteOnBoard(board, (Pos){move->endRow, move->endCol}, QUEEN);
             }
         }
-
+        */
         return;
     }
 }

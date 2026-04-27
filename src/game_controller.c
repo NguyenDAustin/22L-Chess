@@ -66,6 +66,11 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
             return;
         }
 
+        if (movedPiece != NULL && movedPiece->type == PAWN) {
+        if ((movedPiece->color == WHITE && move.endRow == 0) ||(movedPiece->color == BLACK && move.endRow == 7)) {
+        promotePiece(boardData, (Pos){move.endRow, move.endCol}, QUEEN);
+        }
+}
 
         incrementMovesMade(boardState);
 
