@@ -127,6 +127,15 @@ static void boardToPieceArray(Board *board, Piece state[8][10])
   }
 }
 
+static void resetTurnTimer(Board_Bundle *boardData)
+{
+  bool whiteTurnNext = getMovesMade(boardData->boardState) % 2 == 0;
+  if (whiteTurnNext)
+    boardData->whiteSeconds = 60;
+  else
+    boardData->blackSeconds = 60;
+}
+
 static void triggerCpuMove(Board_Bundle *boardData)
 {
   Board_State *boardState = boardData->boardState;
@@ -158,6 +167,7 @@ static void triggerCpuMove(Board_Bundle *boardData)
   executeMove(board, &cpuMove, boardState->lastMove);
   boardState->lastMove = cpuMove;
   incrementMovesMade(boardState);
+  resetTurnTimer(boardData);
   setUpdate(boardState, true);
 
   char msg[64];
@@ -337,15 +347,6 @@ GtkWidget *createTimerBox(GtkWidget *whiteTimer, GtkWidget *blackTimer)
   return timerBox;
 }
 
-static void resetTurnTimer(Board_Bundle *boardData)
-{
-  bool whiteTurnNext = getMovesMade(boardData->boardState) % 2 == 0;
-  if (whiteTurnNext)
-    boardData->whiteSeconds = 60;
-  else
-    boardData->blackSeconds = 60;
-}
-
 void createBoard(GtkWidget *board, Board_Bundle *boardData)
 {
   gtk_drawing_area_set_content_width(GTK_DRAWING_AREA(board), SQUARE_SIZE * BOARD_WIDTH);
@@ -512,6 +513,7 @@ void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer
 
   if (moveSucces(boardState))
   {
+    resetTurnTimer(boardData);
     updateTimerLabels(boardData);
     appendToLogUI(boardData);
 
@@ -547,6 +549,7 @@ void onPromotionClicked(GtkButton *button, gpointer user_data)
 
   promotePiece(boardData, clickPiecePos, promoteTo);
   incrementMovesMade(boardState);
+  resetTurnTimer(boardData);
   resetClickedPiece(boardState);
   gtk_widget_queue_draw(boardData->boardWidget);
   gtk_popover_popdown(GTK_POPOVER(popUp));
@@ -643,8 +646,8 @@ static void activate(GtkApplication *app, gpointer user_data)
 
   setWhiteTimerLabel(boardData, GTK_LABEL(whiteTimer));
   setBlackTimerLabel(boardData, GTK_LABEL(blackTimer));
-  setBlackSeconds(boardData, 0);
-  setWhiteSeconds(boardData, 0);
+  setBlackSeconds(boardData, 60);
+  setWhiteSeconds(boardData, 60);
   updateTimerLabels(boardData);
 
   // setting background
