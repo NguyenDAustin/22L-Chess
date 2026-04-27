@@ -230,8 +230,20 @@ static void triggerCpuMove(Board_Bundle *boardData)
   Move cpuMove;
   if (!aiSelectMoveAtDifficulty(state, cpuColor, boardData->cpuDifficulty, &cpuMove))
   {
-    appendTextToLogUI(boardData, "CPU has no legal moves.\n");
-    setGameOver(boardState, true);
+    if (kingCheck(boardData->board, cpuColor))
+    {
+      char msg[96];
+      snprintf(msg, sizeof(msg), "Checkmate. %s wins.\n", colorLabel(boardData->userColor));
+      appendTextToLogUI(boardData, msg);
+      setGameOver(boardState, true);
+      showEndGameDialog(boardData, msg);
+    }
+    else
+    {
+      appendTextToLogUI(boardData, "Stalemate.\n");
+      setGameOver(boardState, true);
+      showEndGameDialog(boardData, "Stalemate.");
+    }
     return;
   }
 
