@@ -99,6 +99,7 @@ const char *addCapture(const char *filename, int moveNum, Piece *piece, Pos from
 	const char *pce;
 	label(capturedAt, sq);
 	static char col_str[2] = {0};
+	
 	if (piece->type == PAWN)
 	{
 		col_str[0] = (char)('a' + from.col);
@@ -109,6 +110,9 @@ const char *addCapture(const char *filename, int moveNum, Piece *piece, Pos from
 	{
 		pce = rankConv(piece->type);
 	}
+
+	pce = rankConv(piece->type);
+
 	static char output[150];
 	snprintf(output, 150, "%-2d %-6s %s%s%s\n", moveNum, colorConv(piece->color), pce, "x", sq);
 	fprintf(f, "%s", output);
