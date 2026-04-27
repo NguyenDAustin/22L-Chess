@@ -3,6 +3,7 @@
 #include "board.h"
 #include "pieces.h"
 #include "board_state.h"
+#include "undo.h"
 
 /*
 static void promoteOnBoard(Board *board, Pos pos, Rank newRank)
@@ -20,6 +21,7 @@ static void promoteOnBoard(Board *board, Pos pos, Rank newRank)
 
 void executeMove(Board *board, Move *move, Move lastMove)
 {
+
     Piece *moving = board->board[move->startRow][move->startCol];
 
     if (moving == NULL || moving->type == EMPTY || moving->vtable == NULL) {
@@ -43,6 +45,8 @@ void executeMove(Board *board, Move *move, Move lastMove)
         move->startRow, move->startCol,
         move->endRow, move->endCol)) {
 
+        move->castle = 1; //queency
+        pushMoveForUndo(board, move);  //Queency
         executeCastle(board, move);
     }
 
@@ -53,6 +57,8 @@ void executeMove(Board *board, Move *move, Move lastMove)
     // en passant
     if (moving->type == PAWN &&
         pawnCanEnPassant(board, moving, move->startRow, move->startCol, move->endRow, move->endCol, &lastMove)) {
+        move->enPassant = 1; //queency 
+        pushMoveForUndo(board, move); //queency
         executeEnPassant(board, move);
         return;
     }

@@ -46,8 +46,8 @@ void sendInput(Board_Bundle *boardData, Pos clickPos)
         move.capture = 0;
         move.enPassant = 0;
         move.castle = 0;
-
-        pushMoveForUndo(board, &move);
+        
+        //pushMoveForUndo(board, &move);
         executeMove(board, &move, boardState->lastMove);
         boardState->lastMove = move;
 

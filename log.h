@@ -11,7 +11,7 @@
 
 const char newLog(const char *filename);
 
-const char addMove(const char *filename, int moveNum, Piece *piece, Pos to){
+const char addMove(const char *filename, int moveNum, Piece *piece, Pos to);
 
 const char addCapture (const char *filename, int moveNum, Piece *piece, Pos from, Pos capturedAt);
 
@@ -23,7 +23,7 @@ const char logPromotion(const char *filename, int moveNum, Piece *piece, Pos to,
 
 const char logCheck(const char *filename, int moveNum, Piece *piece);
 
-const char logCheckmate(const char *filename, int moveNum, Piece *winner){
+const char logCheckmate(const char *filename, int moveNum, Piece *winner);
 
 const char logDraw(const char *filename, int moveNum);
 
