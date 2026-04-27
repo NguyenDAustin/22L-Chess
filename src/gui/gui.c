@@ -24,6 +24,7 @@ static bool finishGameIfNeeded(Board_Bundle *boardData, Color playerWhoMoved);
 static void showEndGameDialog(Board_Bundle *boardData, const char *resultMsg);
 static void onEndGameDialogResponse(GtkDialog *dialog, int responseId, gpointer user_data);
 static void showStartupDialog(GtkWindow *parent, Board_Bundle *boardData);
+static void onQuitConfirmed(GtkDialog *dialog, int responseId, gpointer user_data);
 
 void whichSquare(float x, float y)
 { // just for debug purposes
@@ -131,7 +132,7 @@ static void onEndGameDialogResponse(GtkDialog *dialog, int responseId, gpointer 
 
     showStartupDialog(GTK_WINDOW(gtk_widget_get_root(boardData->boardWidget)), boardData);
   }
-  else // Quit
+  else
   {
     GtkApplication *app = GTK_APPLICATION(g_application_get_default());
     g_application_quit(G_APPLICATION(app));
@@ -689,6 +690,40 @@ void initializePromotionButtonArr(Board_Bundle *boardData, GtkWidget **buttons, 
   }
 }
 
+static void onQuitClicked(GtkButton *button, gpointer user_data)
+{
+  Board_Bundle *boardData = user_data;
+  GtkWidget *dialog = gtk_dialog_new();
+  gtk_window_set_title(GTK_WINDOW(dialog), "Quit");
+  gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),
+                               GTK_WINDOW(gtk_widget_get_root(boardData->boardWidget)));
+
+  gtk_dialog_add_button(GTK_DIALOG(dialog), "Yes", GTK_RESPONSE_ACCEPT);
+  gtk_dialog_add_button(GTK_DIALOG(dialog), "No", GTK_RESPONSE_REJECT);
+
+  GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+  GtkWidget *label = gtk_label_new("Are you sure you want to quit?");
+  gtk_widget_set_margin_top(label, LOG_SPACING);
+  gtk_widget_set_margin_bottom(label, LOG_SPACING);
+  gtk_widget_set_margin_start(label, LOG_SPACING);
+  gtk_widget_set_margin_end(label, LOG_SPACING);
+  gtk_box_append(GTK_BOX(content), label);
+
+  g_signal_connect(dialog, "response", G_CALLBACK(onQuitConfirmed), boardData);
+  gtk_window_present(GTK_WINDOW(dialog));
+}
+
+static void onQuitConfirmed(GtkDialog *dialog, int responseId, gpointer user_data)
+{
+  gtk_window_destroy(GTK_WINDOW(dialog));
+  if (responseId == GTK_RESPONSE_ACCEPT)
+  {
+    GtkApplication *app = GTK_APPLICATION(g_application_get_default());
+    g_application_quit(G_APPLICATION(app));
+  }
+}
+
 static void activate(GtkApplication *app, gpointer user_data)
 {
   GtkWidget *grid = createMainGrid();
@@ -741,6 +776,14 @@ static void activate(GtkApplication *app, gpointer user_data)
   gtk_widget_set_halign(undoButton, GTK_ALIGN_END);
   gtk_widget_set_valign(undoButton, GTK_ALIGN_START);
 
+  GtkWidget *quitButton = gtk_button_new();
+  GtkWidget *quitPicture = gtk_picture_new_for_filename("src/gui/resources/quit.png");
+  gtk_widget_set_size_request(quitPicture, 20, 20);
+  gtk_button_set_child(GTK_BUTTON(quitButton), quitPicture);
+  g_signal_connect(quitButton, "clicked", G_CALLBACK(onQuitClicked), boardData);
+  gtk_widget_set_halign(quitButton, GTK_ALIGN_END);
+  gtk_widget_set_valign(quitButton, GTK_ALIGN_START);
+
   // event controller
   GtkGesture *click = gtk_gesture_click_new();
   gtk_widget_add_controller(board, GTK_EVENT_CONTROLLER(click));
@@ -753,6 +796,8 @@ static void activate(GtkApplication *app, gpointer user_data)
   gtk_grid_attach(GTK_GRID(grid), timerBox, 0, 1, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), logScroller, 1, 0, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), undoButton, 1, 1, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), quitButton, 2, 1, 1, 1);
+
   gtk_window_present(GTK_WINDOW(window));
   showStartupDialog(GTK_WINDOW(window), boardData);
 }
