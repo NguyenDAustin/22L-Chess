@@ -7,7 +7,7 @@
 /*Returns a label for the position of a piece*/
 static void label(Pos pos, char square[4])
 {
-	square[0] = (char)('A' + pos.col);
+	square[0] = (char)('a' + pos.col);
 	square[1] = (char)('1' + pos.row);
 	square[2] = '\0'; /*terminated*/
 }
@@ -99,7 +99,7 @@ const char *addCapture(const char *filename, int moveNum, Piece *piece, Pos from
 	const char *pce;
 	label(capturedAt, sq);
 	static char col_str[2] = {0};
-	
+
 	if (piece->type == PAWN)
 	{
 		col_str[0] = (char)('a' + from.col);
