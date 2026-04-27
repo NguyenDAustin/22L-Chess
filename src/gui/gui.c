@@ -29,8 +29,8 @@ static void onQuitConfirmed(GtkDialog *dialog, int responseId, gpointer user_dat
 
 void whichSquare(float x, float y)
 { // just for debug purposes
-  int file = x / SQUARE_SIZE;
-  int rank = y / SQUARE_SIZE;
+  int file = (x - LABEL_MARGIN) / SQUARE_SIZE;
+  int rank = (y - LABEL_MARGIN) / SQUARE_SIZE;
   printf("square: %c%d\n", FILES[file], rank);
 }
 
@@ -248,7 +248,7 @@ static void triggerCpuMove(Board_Bundle *boardData)
     return;
   }
 
-  //pushMoveForUndo(board, &cpuMove);
+  // pushMoveForUndo(board, &cpuMove);
 
   executeMove(board, &cpuMove, boardState->lastMove);
   boardState->lastMove = cpuMove;
@@ -505,8 +505,8 @@ GtkWidget *createTimerBox(GtkWidget *whiteTimer, GtkWidget *blackTimer)
 
 void createBoard(GtkWidget *board, Board_Bundle *boardData)
 {
-  gtk_drawing_area_set_content_width(GTK_DRAWING_AREA(board), SQUARE_SIZE * BOARD_WIDTH);
-  gtk_drawing_area_set_content_height(GTK_DRAWING_AREA(board), SQUARE_SIZE * BOARD_HEIGHT);
+  gtk_drawing_area_set_content_width(GTK_DRAWING_AREA(board), SQUARE_SIZE * BOARD_WIDTH + LABEL_MARGIN + 20);
+  gtk_drawing_area_set_content_height(GTK_DRAWING_AREA(board), SQUARE_SIZE * BOARD_HEIGHT + LABEL_MARGIN + 20);
   gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(board), drawBoard, boardData, NULL);
   gtk_widget_set_hexpand(board, FALSE);
   gtk_widget_set_halign(board, GTK_ALIGN_CENTER);
@@ -637,6 +637,9 @@ void createPopUp(Board_Bundle *boardData)
 
 void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data)
 {
+  if (x < LABEL_MARGIN || y < LABEL_MARGIN) // clicked on label, not square
+    return;
+
   Board_Bundle *boardData = user_data;
   GtkWidget *boardWidget = boardData->boardWidget;
   Board_State *boardState = boardData->boardState;
@@ -656,6 +659,9 @@ void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer
 
   int row = pixToIndex(y);
   int col = pixToIndex(x);
+
+  if (col < 0 || col >= BOARD_WIDTH || row < 0 || row >= BOARD_HEIGHT)
+    return;
 
   Pos clickPos;
   posCtor(&clickPos, row, col);
@@ -767,7 +773,8 @@ void appendToLogUI(Board_Bundle *boardData)
   /* movesMade was just incremented before this call, so subtract 1 to find who moved */
   Color movedColor = ((movesMade - 1) % 2 == 0) ? WHITE : BLACK;
 
-  const char *suffix = last.capture ? " (capture)" : last.castle ? " (castle)" : "";
+  const char *suffix = last.capture ? " (capture)" : last.castle ? " (castle)"
+                                                                 : "";
 
   /*char msg[96];
   snprintf(msg, sizeof(msg), "%s: %c%d -> %c%d%s\n",
