@@ -1,4 +1,3 @@
-
 #include "gui.h"
 #include "ai.h"
 
@@ -20,6 +19,11 @@ typedef struct
   GtkComboBoxText *colorCombo;
   GtkComboBoxText *difficultyCombo;
 } StartupDialogData;
+
+static bool finishGameIfNeeded(Board_Bundle *boardData, Color playerWhoMoved);
+static void showEndGameDialog(Board_Bundle *boardData, const char *resultMsg);
+static void onEndGameDialogResponse(GtkDialog *dialog, int responseId, gpointer user_data);
+static void showStartupDialog(GtkWindow *parent, Board_Bundle *boardData);
 
 void whichSquare(float x, float y)
 { // just for debug purposes
@@ -73,6 +77,7 @@ static bool finishGameIfNeeded(Board_Bundle *boardData, Color playerWhoMoved)
     snprintf(msg, sizeof(msg), "%s wins.\n", colorLabel(playerWhoMoved));
     appendTextToLogUI(boardData, msg);
     setGameOver(boardState, true);
+    showEndGameDialog(boardData, msg);
     return true;
   }
 
@@ -84,6 +89,7 @@ static bool finishGameIfNeeded(Board_Bundle *boardData, Color playerWhoMoved)
       snprintf(msg, sizeof(msg), "Checkmate. %s wins.\n", colorLabel(playerWhoMoved));
       appendTextToLogUI(boardData, msg);
       setGameOver(boardState, true);
+      showEndGameDialog(boardData, msg);
       return true;
     }
 
@@ -95,10 +101,76 @@ static bool finishGameIfNeeded(Board_Bundle *boardData, Color playerWhoMoved)
   {
     appendTextToLogUI(boardData, "Stalemate.\n");
     setGameOver(boardState, true);
+    showEndGameDialog(boardData, "Stalemate.");
     return true;
   }
 
   return false;
+}
+
+static void onEndGameDialogResponse(GtkDialog *dialog, int responseId, gpointer user_data)
+{
+  Board_Bundle *boardData = user_data;
+
+  gtk_window_destroy(GTK_WINDOW(dialog));
+
+  if (responseId == GTK_RESPONSE_ACCEPT)
+  {
+    defaultInitializeBoard(boardData->board);
+    initializeBoard(boardData->board, boardData->images);
+
+    initializeBoardState(boardData->boardState);
+
+    setWhiteSeconds(boardData, 60);
+    setBlackSeconds(boardData, 60);
+    updateTimerLabels(boardData);
+
+    gtk_text_buffer_set_text(boardData->logBuffer, "", -1);
+
+    gtk_widget_queue_draw(boardData->boardWidget);
+
+    showStartupDialog(GTK_WINDOW(gtk_widget_get_root(boardData->boardWidget)), boardData);
+  }
+  else // Quit
+  {
+    GtkApplication *app = GTK_APPLICATION(g_application_get_default());
+    g_application_quit(G_APPLICATION(app));
+  }
+}
+
+static void showEndGameDialog(Board_Bundle *boardData, const char *resultMsg)
+{
+  GtkWidget *dialog = gtk_dialog_new();
+  gtk_window_set_title(GTK_WINDOW(dialog), "Game Over");
+  gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),
+                               GTK_WINDOW(gtk_widget_get_root(boardData->boardWidget)));
+
+  gtk_dialog_add_button(GTK_DIALOG(dialog), "New Game", GTK_RESPONSE_ACCEPT);
+  gtk_dialog_add_button(GTK_DIALOG(dialog), "Quit", GTK_RESPONSE_REJECT);
+
+  GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, LOG_SPACING);
+
+  gtk_widget_set_margin_top(box, LOG_SPACING);
+  gtk_widget_set_margin_bottom(box, LOG_SPACING);
+  gtk_widget_set_margin_start(box, LOG_SPACING);
+  gtk_widget_set_margin_end(box, LOG_SPACING);
+
+  GtkWidget *resultLabel = gtk_label_new(resultMsg);
+
+  char movesText[64];
+  snprintf(movesText, sizeof(movesText), "Total moves: %d",
+           getMovesMade(boardData->boardState));
+  GtkWidget *movesLabel = gtk_label_new(movesText);
+
+  gtk_box_append(GTK_BOX(box), resultLabel);
+  gtk_box_append(GTK_BOX(box), movesLabel);
+  gtk_box_append(GTK_BOX(content), box);
+
+  g_signal_connect(dialog, "response",
+                   G_CALLBACK(onEndGameDialogResponse), boardData);
+  gtk_window_present(GTK_WINDOW(dialog));
 }
 
 static void boardToPieceArray(Board *board, Piece state[8][10])
@@ -162,7 +234,7 @@ static void triggerCpuMove(Board_Bundle *boardData)
     return;
   }
 
-  pushMoveForUndo(board, &cpuMove); // Queency
+  pushMoveForUndo(board, &cpuMove);
 
   executeMove(board, &cpuMove, boardState->lastMove);
   boardState->lastMove = cpuMove;
@@ -337,8 +409,8 @@ GtkWidget *createTimerBox(GtkWidget *whiteTimer, GtkWidget *blackTimer)
   gtk_widget_add_css_class(blackTimer, "timer-label");
 
   gtk_widget_set_vexpand(timerBox, FALSE);
-  gtk_widget_set_valign(timerBox, GTK_ALIGN_START);  // changed
-  gtk_widget_set_halign(timerBox, GTK_ALIGN_CENTER); // changed
+  gtk_widget_set_valign(timerBox, GTK_ALIGN_START);
+  gtk_widget_set_halign(timerBox, GTK_ALIGN_CENTER);
 
   gtk_label_set_xalign(GTK_LABEL(whiteTimer), 0.5);
   gtk_label_set_xalign(GTK_LABEL(blackTimer), 0.5);
@@ -384,6 +456,7 @@ void updateTimerLabels(Board_Bundle *boardData)
     gtk_widget_add_css_class(GTK_WIDGET(boardData->blackTimerLabel), "timer-active");
   }
 }
+
 gboolean onTimerTick(gpointer user_data)
 {
   Board_Bundle *boardData = user_data;
@@ -401,6 +474,7 @@ gboolean onTimerTick(gpointer user_data)
     {
       appendTextToLogUI(boardData, "White ran out of time. Black wins.\n");
       setGameOver(boardData->boardState, true);
+      showEndGameDialog(boardData, "White ran out of time. Black wins.");
     }
   }
   else
@@ -411,6 +485,7 @@ gboolean onTimerTick(gpointer user_data)
     {
       appendTextToLogUI(boardData, "Black ran out of time. White wins.\n");
       setGameOver(boardData->boardState, true);
+      showEndGameDialog(boardData, "Black ran out of time. White wins.");
     }
   }
 
@@ -433,11 +508,6 @@ void createLog(GtkWidget *logScroller, GtkWidget *log)
   gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(log), FALSE);
   gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(logScroller), log);
 }
-
-// get user click
-// send click data to board
-// board will update
-// i draw if things have changed
 
 void createBlackButtons(Board_Bundle *boardData, GtkWidget **buttons)
 {
@@ -572,14 +642,12 @@ void onUndoClicked(GtkButton *button, gpointer user_data)
   Undo_Record undoMove;
 
   if (undoPop(&undoMove))
-  { // on a succesful undo --> undo stack !empty
+  {
     printUndoMove(&undoMove);
     undo(&undoMove, board);
     setUpdate(boardState, true);
     gtk_widget_queue_draw(boardWidget);
   }
-
-  // undo move
 }
 
 GtkWidget *createPromotionButton(Board_Bundle *boardData, const char *imagePath, Rank type)
@@ -631,7 +699,7 @@ static void activate(GtkApplication *app, gpointer user_data)
   GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(log));
 
   GtkWidget *promotionPop = gtk_popover_new();
-  gtk_widget_set_parent(promotionPop, board); // promotion Pop needs to be handle memory
+  gtk_widget_set_parent(promotionPop, board);
 
   Board_Bundle *boardData = user_data;
   setBoardWidget(boardData, board);
@@ -681,7 +749,7 @@ static void activate(GtkApplication *app, gpointer user_data)
   g_object_unref(provider);
 
   gtk_window_set_child(GTK_WINDOW(window), grid);
-  gtk_grid_attach(GTK_GRID(grid), board, 0, 0, 1, 1); // col row colspan rowspan
+  gtk_grid_attach(GTK_GRID(grid), board, 0, 0, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), timerBox, 0, 1, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), logScroller, 1, 0, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), undoButton, 1, 1, 1, 1);
