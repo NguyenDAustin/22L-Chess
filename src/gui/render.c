@@ -17,19 +17,40 @@ const char *PIECE_RESOURCES[14] = {
     "src/gui/resources/white_ant.png",
     "src/gui/resources/black_ant.png"};
 
-Icon *textureToSurface(GdkTexture *texture, guchar **pixel_data_out)
+Icon *pixbufToSurface(GdkPixbuf *pixbuf)
 {
-  int width = gdk_texture_get_width(texture);
-  int height = gdk_texture_get_height(texture);
+  int width = gdk_pixbuf_get_width(pixbuf);
+  int height = gdk_pixbuf_get_height(pixbuf);
+  int channels = gdk_pixbuf_get_n_channels(pixbuf);
+  int pixbufStride = gdk_pixbuf_get_rowstride(pixbuf);
+  guchar *srcPixels = gdk_pixbuf_get_pixels(pixbuf);
 
-  int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
-  guchar *pixels = g_malloc(stride * height);
+  Icon *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  unsigned char *dstPixels = cairo_image_surface_get_data(surface);
+  int surfaceStride = cairo_image_surface_get_stride(surface);
 
-  gdk_texture_download(texture, pixels, stride);
+  for (int y = 0; y < height; y++)
+  {
+    guchar *srcRow = srcPixels + y * pixbufStride;
+    unsigned int *dstRow = (unsigned int *)(dstPixels + y * surfaceStride);
 
-  Icon *surface = cairo_image_surface_create_for_data(pixels, CAIRO_FORMAT_ARGB32, width, height, stride);
-  *pixel_data_out = pixels;
+    for (int x = 0; x < width; x++)
+    {
+      guchar *src = srcRow + x * channels;
+      unsigned int red = src[0];
+      unsigned int green = src[1];
+      unsigned int blue = src[2];
+      unsigned int alpha = channels == 4 ? src[3] : 255;
 
+      red = (red * alpha + 127) / 255;
+      green = (green * alpha + 127) / 255;
+      blue = (blue * alpha + 127) / 255;
+
+      dstRow[x] = (alpha << 24) | (red << 16) | (green << 8) | blue;
+    }
+  }
+
+  cairo_surface_mark_dirty(surface);
   return surface;
 }
 
@@ -37,21 +58,26 @@ void createImages(cairo_surface_t **imgs, int numOfImgs)
 {
   GError *error = NULL;
 
-  GdkTexture *pieceTexture;
+  GdkPixbuf *piecePixbuf;
   cairo_surface_t *img;
 
   for (int i = 0; i < numOfImgs; i++)
   {
-    pieceTexture = gdk_texture_new_from_filename(PIECE_RESOURCES[i], &error);
+    piecePixbuf = gdk_pixbuf_new_from_file(PIECE_RESOURCES[i], &error);
     if (error != NULL)
+    {
       printf("FAILED TO LOAD RESOURCE!");
+      g_error_free(error);
+      error = NULL;
+      imgs[i] = NULL;
+      continue;
+    }
     error = NULL;
-    guchar *piecePixels;
-    img = textureToSurface(pieceTexture, &piecePixels); // might need to call destroy on piece pixels later --> memory management
+    img = pixbufToSurface(piecePixbuf);
     imgs[i] = img;
 
-    g_object_unref(pieceTexture);
-    pieceTexture = NULL;
+    g_object_unref(piecePixbuf);
+    piecePixbuf = NULL;
   }
 }
 
@@ -74,7 +100,7 @@ void scale(cairo_t *cr, Icon *img, float targetSize)
   cairo_scale(cr, xScaleFactor, yScaleFactor);
 }
 
-void drawSquare(GtkDrawingArea *area, cairo_t *cr, int row, int col)
+void drawSquare(GtkWidget *area, cairo_t *cr, int row, int col)
 {
   GdkRGBA color = ((row + col) % 2 == 0) ? WHITE_SQUARE() : BLACK_SQUARE();
   cairo_rectangle(cr, indexToPix(col), indexToPix(row), SQUARE_SIZE, SQUARE_SIZE);
@@ -119,7 +145,7 @@ void drawHighlight(cairo_t *cr, int row, int col)
   cairo_restore(cr);
 }
 
-void drawBoard(GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer data)
+gboolean drawBoard(GtkWidget *area, cairo_t *cr, gpointer data)
 {
   Board_Bundle *boardInfo = data;
   Board *mBoard = boardInfo->board;
@@ -176,4 +202,6 @@ void drawBoard(GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointe
     cairo_move_to(cr, x, y);
     cairo_show_text(cr, label);
   }
+
+  return FALSE;
 }

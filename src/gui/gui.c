@@ -27,6 +27,22 @@ static void onEndGameDialogResponse(GtkDialog *dialog, int responseId, gpointer 
 static void showStartupDialog(GtkWindow *parent, Board_Bundle *boardData);
 static void onQuitConfirmed(GtkDialog *dialog, int responseId, gpointer user_data);
 
+static GtkWindow *parentWindowForWidget(GtkWidget *widget)
+{
+  GtkWidget *toplevel = gtk_widget_get_toplevel(widget);
+  return GTK_IS_WINDOW(toplevel) ? GTK_WINDOW(toplevel) : NULL;
+}
+
+static void addCssClass(GtkWidget *widget, const char *cssClass)
+{
+  gtk_style_context_add_class(gtk_widget_get_style_context(widget), cssClass);
+}
+
+static void removeCssClass(GtkWidget *widget, const char *cssClass)
+{
+  gtk_style_context_remove_class(gtk_widget_get_style_context(widget), cssClass);
+}
+
 void whichSquare(float x, float y)
 { // just for debug purposes
   int file = (x - LABEL_MARGIN) / SQUARE_SIZE;
@@ -114,7 +130,7 @@ static void onEndGameDialogResponse(GtkDialog *dialog, int responseId, gpointer 
 {
   Board_Bundle *boardData = user_data;
 
-  gtk_window_destroy(GTK_WINDOW(dialog));
+  gtk_widget_destroy(GTK_WIDGET(dialog));
 
   if (responseId == GTK_RESPONSE_ACCEPT)
   {
@@ -131,7 +147,7 @@ static void onEndGameDialogResponse(GtkDialog *dialog, int responseId, gpointer 
 
     gtk_widget_queue_draw(boardData->boardWidget);
 
-    showStartupDialog(GTK_WINDOW(gtk_widget_get_root(boardData->boardWidget)), boardData);
+    showStartupDialog(parentWindowForWidget(boardData->boardWidget), boardData);
   }
   else
   {
@@ -146,7 +162,7 @@ static void showEndGameDialog(Board_Bundle *boardData, const char *resultMsg)
   gtk_window_set_title(GTK_WINDOW(dialog), "Game Over");
   gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
   gtk_window_set_transient_for(GTK_WINDOW(dialog),
-                               GTK_WINDOW(gtk_widget_get_root(boardData->boardWidget)));
+                               parentWindowForWidget(boardData->boardWidget));
 
   gtk_dialog_add_button(GTK_DIALOG(dialog), "New Game", GTK_RESPONSE_ACCEPT);
   gtk_dialog_add_button(GTK_DIALOG(dialog), "Quit", GTK_RESPONSE_REJECT);
@@ -166,12 +182,13 @@ static void showEndGameDialog(Board_Bundle *boardData, const char *resultMsg)
            getMovesMade(boardData->boardState));
   GtkWidget *movesLabel = gtk_label_new(movesText);
 
-  gtk_box_append(GTK_BOX(box), resultLabel);
-  gtk_box_append(GTK_BOX(box), movesLabel);
-  gtk_box_append(GTK_BOX(content), box);
+  gtk_box_pack_start(GTK_BOX(box), resultLabel, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), movesLabel, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(content), box, FALSE, FALSE, 0);
 
   g_signal_connect(dialog, "response",
                    G_CALLBACK(onEndGameDialogResponse), boardData);
+  gtk_widget_show_all(dialog);
   gtk_window_present(GTK_WINDOW(dialog));
 }
 
@@ -379,7 +396,7 @@ static void onStartupDialogResponse(GtkDialog *dialog, int responseId, gpointer 
     boardData->timerSourceId = g_timeout_add_seconds(1, onTimerTick, boardData);
   }
 
-  gtk_window_destroy(GTK_WINDOW(dialog));
+  gtk_widget_destroy(GTK_WIDGET(dialog));
   g_free(dialogData);
 
   /* If user chose black in CPU mode, CPU (white) must move first */
@@ -428,17 +445,17 @@ static void showStartupDialog(GtkWindow *parent, Board_Bundle *boardData)
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(difficultyCombo), "Hard");
   gtk_combo_box_set_active(GTK_COMBO_BOX(difficultyCombo), 1);
 
-  gtk_box_append(GTK_BOX(difficultyBox), difficultyLabelWidget);
-  gtk_box_append(GTK_BOX(difficultyBox), difficultyCombo);
+  gtk_box_pack_start(GTK_BOX(difficultyBox), difficultyLabelWidget, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(difficultyBox), difficultyCombo, FALSE, FALSE, 0);
 
   g_signal_connect(gameModeCombo, "changed", G_CALLBACK(onGameModeChanged), difficultyBox);
 
-  gtk_box_append(GTK_BOX(box), modeLabelWidget);
-  gtk_box_append(GTK_BOX(box), gameModeCombo);
-  gtk_box_append(GTK_BOX(box), colorLabelWidget);
-  gtk_box_append(GTK_BOX(box), colorCombo);
-  gtk_box_append(GTK_BOX(box), difficultyBox);
-  gtk_box_append(GTK_BOX(content), box);
+  gtk_box_pack_start(GTK_BOX(box), modeLabelWidget, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), gameModeCombo, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), colorLabelWidget, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), colorCombo, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), difficultyBox, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(content), box, FALSE, FALSE, 0);
 
   StartupDialogData *dialogData = g_new0(StartupDialogData, 1);
   dialogData->boardData = boardData;
@@ -447,13 +464,14 @@ static void showStartupDialog(GtkWindow *parent, Board_Bundle *boardData)
   dialogData->difficultyCombo = GTK_COMBO_BOX_TEXT(difficultyCombo);
 
   g_signal_connect(dialog, "response", G_CALLBACK(onStartupDialogResponse), dialogData);
+  gtk_widget_show_all(dialog);
   gtk_window_present(GTK_WINDOW(dialog));
 }
 
-void setBackground(GdkDisplay *display, GtkCssProvider *provider, const char *BG_CSS)
+void setBackground(GdkScreen *screen, GtkCssProvider *provider, const char *BG_CSS)
 {
-  gtk_css_provider_load_from_string(provider, BG_CSS);
-  gtk_style_context_add_provider_for_display(display, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+  gtk_css_provider_load_from_data(provider, BG_CSS, -1, NULL);
+  gtk_style_context_add_provider_for_screen(screen, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 }
 
 GtkWidget *createWindow(GtkApplication *app, const char *title, const char *cssClass)
@@ -461,7 +479,7 @@ GtkWidget *createWindow(GtkApplication *app, const char *title, const char *cssC
   GtkWidget *window = gtk_application_window_new(app);
   gtk_window_set_title(GTK_WINDOW(window), title);
   gtk_window_set_default_size(GTK_WINDOW(window), WINDOW_HEIGHT, WINDOW_WIDTH);
-  gtk_widget_add_css_class(window, cssClass);
+  addCssClass(window, cssClass);
   return window;
 }
 
@@ -490,9 +508,9 @@ GtkWidget *createGrid(int colSpacing)
 GtkWidget *createTimerBox(GtkWidget *whiteTimer, GtkWidget *blackTimer)
 {
   GtkWidget *timerBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, LOG_SPACING);
-  gtk_widget_add_css_class(timerBox, "timer-box");
-  gtk_widget_add_css_class(whiteTimer, "timer-label");
-  gtk_widget_add_css_class(blackTimer, "timer-label");
+  addCssClass(timerBox, "timer-box");
+  addCssClass(whiteTimer, "timer-label");
+  addCssClass(blackTimer, "timer-label");
 
   gtk_widget_set_vexpand(timerBox, FALSE);
   gtk_widget_set_valign(timerBox, GTK_ALIGN_START);
@@ -500,16 +518,15 @@ GtkWidget *createTimerBox(GtkWidget *whiteTimer, GtkWidget *blackTimer)
 
   gtk_label_set_xalign(GTK_LABEL(whiteTimer), 0.5);
   gtk_label_set_xalign(GTK_LABEL(blackTimer), 0.5);
-  gtk_box_append(GTK_BOX(timerBox), whiteTimer);
-  gtk_box_append(GTK_BOX(timerBox), blackTimer);
+  gtk_box_pack_start(GTK_BOX(timerBox), whiteTimer, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(timerBox), blackTimer, FALSE, FALSE, 0);
   return timerBox;
 }
 
 void createBoard(GtkWidget *board, Board_Bundle *boardData)
 {
-  gtk_drawing_area_set_content_width(GTK_DRAWING_AREA(board), SQUARE_SIZE * BOARD_WIDTH + LABEL_MARGIN + 20);
-  gtk_drawing_area_set_content_height(GTK_DRAWING_AREA(board), SQUARE_SIZE * BOARD_HEIGHT + LABEL_MARGIN + 20);
-  gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(board), drawBoard, boardData, NULL);
+  gtk_widget_set_size_request(board, SQUARE_SIZE * BOARD_WIDTH + LABEL_MARGIN + 20, SQUARE_SIZE * BOARD_HEIGHT + LABEL_MARGIN + 20);
+  g_signal_connect(board, "draw", G_CALLBACK(drawBoard), boardData);
   gtk_widget_set_hexpand(board, FALSE);
   gtk_widget_set_halign(board, GTK_ALIGN_CENTER);
   gtk_widget_set_valign(board, GTK_ALIGN_CENTER);
@@ -533,13 +550,13 @@ void updateTimerLabels(Board_Bundle *boardData)
 
   if (whiteTurn)
   {
-    gtk_widget_add_css_class(GTK_WIDGET(boardData->whiteTimerLabel), "timer-active");
-    gtk_widget_remove_css_class(GTK_WIDGET(boardData->blackTimerLabel), "timer-active");
+    addCssClass(GTK_WIDGET(boardData->whiteTimerLabel), "timer-active");
+    removeCssClass(GTK_WIDGET(boardData->blackTimerLabel), "timer-active");
   }
   else
   {
-    gtk_widget_remove_css_class(GTK_WIDGET(boardData->whiteTimerLabel), "timer-active");
-    gtk_widget_add_css_class(GTK_WIDGET(boardData->blackTimerLabel), "timer-active");
+    removeCssClass(GTK_WIDGET(boardData->whiteTimerLabel), "timer-active");
+    addCssClass(GTK_WIDGET(boardData->blackTimerLabel), "timer-active");
   }
 }
 
@@ -592,7 +609,7 @@ void createLog(GtkWidget *logScroller, GtkWidget *log)
   gtk_text_view_set_bottom_margin(GTK_TEXT_VIEW(log), LOG_SPACING);
   gtk_text_view_set_editable(GTK_TEXT_VIEW(log), FALSE);
   gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(log), FALSE);
-  gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(logScroller), log);
+  gtk_container_add(GTK_CONTAINER(logScroller), log);
   gtk_widget_set_size_request(logScroller, MIN_LOG_WIDTH, 700);
 }
 
@@ -631,32 +648,40 @@ void createPopUp(Board_Bundle *boardData)
   GtkWidget *buttons[NUMBER_OF_PROMOTION_BUTTONS];
   (pieceColor == WHITE) ? createWhiteButtons(boardData, buttons) : createBlackButtons(boardData, buttons);
   (pieceColor == WHITE) ? gtk_popover_set_position(GTK_POPOVER(popUp), GTK_POS_TOP) : gtk_popover_set_position(GTK_POPOVER(popUp), GTK_POS_BOTTOM);
+  gtk_popover_set_relative_to(GTK_POPOVER(popUp), boardWidget);
   gtk_popover_set_pointing_to(GTK_POPOVER(popUp), &rect);
   promotionGrid = createPromotionGrid(buttons);
-  gtk_popover_set_child(GTK_POPOVER(popUp), promotionGrid);
+  GtkWidget *oldChild = gtk_bin_get_child(GTK_BIN(popUp));
+  if (oldChild != NULL)
+    gtk_container_remove(GTK_CONTAINER(popUp), oldChild);
+  gtk_container_add(GTK_CONTAINER(popUp), promotionGrid);
   gtk_widget_set_sensitive(boardWidget, TRUE);
+  gtk_widget_show_all(popUp);
   gtk_popover_popup(GTK_POPOVER(popUp));
 }
 
-void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data)
+gboolean onClick(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
+  double x = event->x;
+  double y = event->y;
+
   if (x < LABEL_MARGIN || y < LABEL_MARGIN) // clicked on label, not square
-    return;
+    return FALSE;
 
   Board_Bundle *boardData = user_data;
   GtkWidget *boardWidget = boardData->boardWidget;
   Board_State *boardState = boardData->boardState;
 
   if (isGameOver(boardState))
-    return;
+    return TRUE;
 
   if (isPromotion(boardState))
-    return;
+    return TRUE;
 
   int movesMade = getMovesMade(boardState);
   Color toMove = (movesMade % 2 == 0) ? WHITE : BLACK;
   if (!boardData->humanVsHuman && toMove == boardData->cpuColor)
-    return;
+    return TRUE;
 
   whichSquare(x, y);
 
@@ -664,7 +689,7 @@ void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer
   int col = pixToIndex(x);
 
   if (col < 0 || col >= BOARD_WIDTH || row < 0 || row >= BOARD_HEIGHT)
-    return;
+    return FALSE;
 
   Pos clickPos;
   posCtor(&clickPos, row, col);
@@ -684,7 +709,7 @@ void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer
     {
       gtk_widget_queue_draw(boardWidget);
       createPopUp(boardData);
-      return;
+      return TRUE;
     }
 
     if (finishGameIfNeeded(boardData, toMove))
@@ -692,7 +717,7 @@ void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer
       if (hasUpdate(boardState))
         gtk_widget_queue_draw(boardWidget);
       updateTimerLabels(boardData);
-      return;
+      return TRUE;
     }
 
     if (!boardData->humanVsHuman)
@@ -701,6 +726,8 @@ void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer
       gtk_widget_queue_draw(boardWidget);
     updateTimerLabels(boardData);
   }
+
+  return TRUE;
 }
 
 void onPromotionClicked(GtkButton *button, gpointer user_data)
@@ -753,9 +780,10 @@ void onUndoClicked(GtkButton *button, gpointer user_data)
 GtkWidget *createPromotionButton(Board_Bundle *boardData, const char *imagePath, Rank type)
 {
   GtkWidget *button = gtk_button_new();
-  GtkWidget *picture = gtk_picture_new_for_filename(imagePath);
+  GtkWidget *picture = gtk_image_new_from_file(imagePath);
   gtk_widget_set_size_request(picture, PROMOTION_BUTTON_SIZE, PROMOTION_BUTTON_SIZE);
-  gtk_button_set_child(GTK_BUTTON(button), picture);
+  gtk_button_set_image(GTK_BUTTON(button), picture);
+  gtk_button_set_always_show_image(GTK_BUTTON(button), TRUE);
   g_object_set_data(G_OBJECT(button), "promoteRank", GINT_TO_POINTER(type));
   g_signal_connect(button, "clicked", G_CALLBACK(onPromotionClicked), boardData);
   return button;
@@ -769,16 +797,6 @@ void appendToLogUI(Board_Bundle *boardData)
     appendTextToLogUI(boardData, boardData->move);
     return;
   }
-
-  Board_State *boardState = boardData->boardState;
-  int movesMade = getMovesMade(boardState);
-  Move last = boardState->lastMove;
-
-  /* movesMade was just incremented before this call, so subtract 1 to find who moved */
-  Color movedColor = ((movesMade - 1) % 2 == 0) ? WHITE : BLACK;
-
-  const char *suffix = last.capture ? " (capture)" : last.castle ? " (castle)"
-                                                                 : "";
 
   /*char msg[96];
   snprintf(msg, sizeof(msg), "%s: %c%d -> %c%d%s\n",
@@ -818,7 +836,7 @@ static void onQuitClicked(GtkButton *button, gpointer user_data)
   gtk_window_set_title(GTK_WINDOW(dialog), "Quit");
   gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
   gtk_window_set_transient_for(GTK_WINDOW(dialog),
-                               GTK_WINDOW(gtk_widget_get_root(boardData->boardWidget)));
+                               parentWindowForWidget(boardData->boardWidget));
 
   gtk_dialog_add_button(GTK_DIALOG(dialog), "Yes", GTK_RESPONSE_ACCEPT);
   gtk_dialog_add_button(GTK_DIALOG(dialog), "No", GTK_RESPONSE_REJECT);
@@ -829,15 +847,16 @@ static void onQuitClicked(GtkButton *button, gpointer user_data)
   gtk_widget_set_margin_bottom(label, LOG_SPACING);
   gtk_widget_set_margin_start(label, LOG_SPACING);
   gtk_widget_set_margin_end(label, LOG_SPACING);
-  gtk_box_append(GTK_BOX(content), label);
+  gtk_box_pack_start(GTK_BOX(content), label, FALSE, FALSE, 0);
 
   g_signal_connect(dialog, "response", G_CALLBACK(onQuitConfirmed), boardData);
+  gtk_widget_show_all(dialog);
   gtk_window_present(GTK_WINDOW(dialog));
 }
 
 static void onQuitConfirmed(GtkDialog *dialog, int responseId, gpointer user_data)
 {
-  gtk_window_destroy(GTK_WINDOW(dialog));
+  gtk_widget_destroy(GTK_WIDGET(dialog));
   if (responseId == GTK_RESPONSE_ACCEPT)
   {
     GtkApplication *app = GTK_APPLICATION(g_application_get_default());
@@ -851,12 +870,11 @@ static void activate(GtkApplication *app, gpointer user_data)
 
   GtkWidget *window = createWindow(app, TITLE, CSS_CLASS);
   GtkWidget *board = gtk_drawing_area_new();
-  GtkWidget *logScroller = gtk_scrolled_window_new();
+  GtkWidget *logScroller = gtk_scrolled_window_new(NULL, NULL);
   GtkWidget *log = gtk_text_view_new();
   GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(log));
 
-  GtkWidget *promotionPop = gtk_popover_new();
-  gtk_widget_set_parent(promotionPop, board);
+  GtkWidget *promotionPop = gtk_popover_new(board);
 
   Board_Bundle *boardData = user_data;
   setBoardWidget(boardData, board);
@@ -876,9 +894,9 @@ static void activate(GtkApplication *app, gpointer user_data)
   updateTimerLabels(boardData);
 
   // setting background
-  GdkDisplay *display = gdk_display_get_default();
+  GdkScreen *screen = gdk_screen_get_default();
   GtkCssProvider *provider = gtk_css_provider_new();
-  setBackground(display, provider, CHESS_BG);
+  setBackground(screen, provider, CHESS_BG);
 
   // creating board
   createBoard(board, boardData);
@@ -891,41 +909,42 @@ static void activate(GtkApplication *app, gpointer user_data)
 
   // create undo button
   GtkWidget *undoButton = gtk_button_new();
-  GtkWidget *picture = gtk_picture_new_for_filename("src/gui/resources/undo.png");
+  GtkWidget *picture = gtk_image_new_from_file("src/gui/resources/undo.png");
   gtk_widget_set_size_request(picture, 20, 20);
-  gtk_button_set_child(GTK_BUTTON(undoButton), picture);
+  gtk_button_set_image(GTK_BUTTON(undoButton), picture);
+  gtk_button_set_always_show_image(GTK_BUTTON(undoButton), TRUE);
   g_signal_connect(undoButton, "clicked", G_CALLBACK(onUndoClicked), boardData);
   // gtk_widget_set_halign(undoButton, GTK_ALIGN_END);
   // gtk_widget_set_valign(undoButton, GTK_ALIGN_START);
 
   GtkWidget *quitButton = gtk_button_new();
-  GtkWidget *quitPicture = gtk_picture_new_for_filename("src/gui/resources/quit.png");
+  GtkWidget *quitPicture = gtk_image_new_from_file("src/gui/resources/quit.png");
   gtk_widget_set_size_request(quitPicture, 20, 20);
-  gtk_button_set_child(GTK_BUTTON(quitButton), quitPicture);
+  gtk_button_set_image(GTK_BUTTON(quitButton), quitPicture);
+  gtk_button_set_always_show_image(GTK_BUTTON(quitButton), TRUE);
   g_signal_connect(quitButton, "clicked", G_CALLBACK(onQuitClicked), boardData);
   // gtk_widget_set_halign(quitButton, GTK_ALIGN_END);
   // gtk_widget_set_valign(quitButton, GTK_ALIGN_START);
 
-  // event controller
-  GtkGesture *click = gtk_gesture_click_new();
-  gtk_widget_add_controller(board, GTK_EVENT_CONTROLLER(click));
-  g_signal_connect(click, "pressed", G_CALLBACK(onClick), boardData);
+  gtk_widget_add_events(board, GDK_BUTTON_PRESS_MASK);
+  g_signal_connect(board, "button-press-event", G_CALLBACK(onClick), boardData);
 
   g_object_unref(provider);
 
   GtkWidget *buttonBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, LOG_SPACING);
   gtk_widget_set_halign(buttonBox, GTK_ALIGN_END);
   gtk_widget_set_valign(buttonBox, GTK_ALIGN_START);
-  gtk_box_append(GTK_BOX(buttonBox), undoButton);
-  gtk_box_append(GTK_BOX(buttonBox), quitButton);
+  gtk_box_pack_start(GTK_BOX(buttonBox), undoButton, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(buttonBox), quitButton, FALSE, FALSE, 0);
   gtk_widget_set_margin_bottom(buttonBox, 10);
 
-  gtk_window_set_child(GTK_WINDOW(window), grid);
+  gtk_container_add(GTK_CONTAINER(window), grid);
   gtk_grid_attach(GTK_GRID(grid), board, 0, 0, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), timerBox, 0, 1, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), logScroller, 1, 0, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), buttonBox, 1, 1, 1, 1);
 
+  gtk_widget_show_all(window);
   gtk_window_present(GTK_WINDOW(window));
   showStartupDialog(GTK_WINDOW(window), boardData);
 }

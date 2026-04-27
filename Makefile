@@ -2,13 +2,9 @@ CC      = gcc
 CFLAGS  = -Wall -g -std=gnu99 $(shell pkg-config --cflags gtk+-3.0)
 LIBS    = $(shell pkg-config --libs gtk+-3.0) -lm
 
-# GTK4 flags for the GUI build. The GUI sources use GTK4-only APIs
-# (gtk_drawing_area_set_draw_func, gtk_widget_add_controller,
-# gtk_gesture_click_new, gtk_window_set_child, gdk_texture_new_from_filename,
-# gtk_css_provider_load_from_string, etc.), so this target must link
-# against GTK4 on the target machine.
-GUI_CFLAGS = -Wall -g -std=gnu99 $(shell pkg-config --cflags gtk4)
-GUI_LIBS   = $(shell pkg-config --libs gtk4) -lm
+# GTK3 flags for the GUI build.
+GUI_CFLAGS = -Wall -g -std=gnu99 $(shell pkg-config --cflags gtk+-3.0)
+GUI_LIBS   = $(shell pkg-config --libs gtk+-3.0) -lm
 
 # ASCII build: pieces.h still pulls in <gtk/gtk.h> for the cairo_surface_t
 # typedef, so we need the GTK cflags, but main.c never calls into GTK/cairo,

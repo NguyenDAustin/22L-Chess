@@ -21,7 +21,7 @@ extern const int GRID_ROW_SPACING;
 
 void whichSquare(float x, float y); //just for debug processes 
 
-void setBackground(GdkDisplay* display, GtkCssProvider* provider, const char* BG_CSS);
+void setBackground(GdkScreen* screen, GtkCssProvider* provider, const char* BG_CSS);
 
 
 GtkWidget* createWindow(GtkApplication* app, const char* title, const char* cssClass);
@@ -36,7 +36,7 @@ void createLog(GtkWidget* logScroller, GtkWidget* log);
 
 void gridAttacher(GtkWidget* grid, GtkWidget** attachments, int size); 
 
-void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data);
+gboolean onClick(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static void activate (GtkApplication *app, gpointer user_data);
 void appendToLogUI(Board_Bundle* boardData);
 void appendTextToLogUI(Board_Bundle *boardData, const char *text); 
