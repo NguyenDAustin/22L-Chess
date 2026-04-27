@@ -1,8 +1,10 @@
 #ifndef PIECES_H
 #define PIECES_H
 
+#ifdef USE_GTK
 #include <gtk/gtk.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
+#endif
 #include <stdbool.h>
 #include <stddef.h>
 #include "enum.h"
@@ -53,9 +55,9 @@ Rank getType(const Piece *piece);
 void setType(Piece *piece, Rank type);
 Pos getPos(const Piece *piece);
 void setPos(Piece *piece, Pos pos);
-int getPosCol(const Piece* piece); 
-int getPosRow(const Piece* piece); 
-PieceVTable* getVtable(Rank type); 
+int getPosCol(const Piece *piece);
+int getPosRow(const Piece *piece);
+PieceVTable *getVtable(Rank type);
 
 int rookCanMove(Board *board, Piece *p, int sr, int sc, int er, int ec);
 int rookCanCapture(Board *board, Piece *p, int sr, int sc, int er, int ec);
@@ -73,7 +75,7 @@ int anteaterCanMove(Board *board, Piece *p, int sr, int sc, int er, int ec);
 int anteaterCanCapture(Board *board, Piece *p, int sr, int sc, int er, int ec);
 
 // special moves
-int pawnCanEnPassant(Board* board, Piece *p, int sr, int sc, int er, int ec, Move *lastMove);
+int pawnCanEnPassant(Board *board, Piece *p, int sr, int sc, int er, int ec, Move *lastMove);
 int kingCanCastle(Board *board, Piece *p, int sr, int sc, int er, int ec);
 
 // check check

@@ -1,25 +1,15 @@
 CC      = gcc
-CFLAGS  = -Wall -g -std=gnu99 $(shell pkg-config --cflags gtk+-3.0)
-LIBS    = $(shell pkg-config --libs gtk+-3.0) -lm
+CFLAGS  = -Wall -g -std=gnu99
+LIBS    = -lm
 
-# GTK4 flags for the GUI build. The GUI sources use GTK4-only APIs
-# (gtk_drawing_area_set_draw_func, gtk_widget_add_controller,
-# gtk_gesture_click_new, gtk_window_set_child, gdk_texture_new_from_filename,
-# gtk_css_provider_load_from_string, etc.), so this target must link
-# against GTK4 on the target machine.
-GUI_CFLAGS = -Wall -g -std=gnu99 $(shell pkg-config --cflags gtk4)
+# GTK4 flags for the GUI build.
+GUI_CFLAGS = -Wall -g -std=gnu99 -DUSE_GTK $(shell pkg-config --cflags gtk4)
 GUI_LIBS   = $(shell pkg-config --libs gtk4) -lm
-
-# ASCII build: pieces.h still pulls in <gtk/gtk.h> for the cairo_surface_t
-# typedef, so we need the GTK cflags, but main.c never calls into GTK/cairo,
-# so we can skip linking the heavy GUI libs.
-ASCII_LIBS = -lm
 
 SRC_DIR = src
 GUI_DIR = src/gui
 BIN_DIR = bin
 
-# Module sources (everything except main and test drivers)
 MODULES = \
     $(SRC_DIR)/ai.c     \
     $(SRC_DIR)/board.c  \
@@ -29,7 +19,6 @@ MODULES = \
     $(SRC_DIR)/pieces.c \
     $(SRC_DIR)/undo.c
 
-# ASCII build excludes board.c (GUI-only; depends on Board struct and image code).
 ASCII_MODULES = \
     $(SRC_DIR)/ai.c     \
     $(SRC_DIR)/input.c  \
@@ -38,8 +27,6 @@ ASCII_MODULES = \
     $(SRC_DIR)/pieces.c \
     $(SRC_DIR)/undo.c
 
-# GUI build: gui.c has its own main(); pulls in board.c + pieces.c for
-# board state, and render.c + color_gui.c for drawing.
 GUI_MODULES = \
     $(SRC_DIR)/ai.c \
     $(SRC_DIR)/board.c  \
@@ -77,7 +64,7 @@ $(EXE): $(SRC_DIR)/main.c $(MODULES) | $(BIN_DIR)
 
 $(ASCII_EXE): $(SRC_DIR)/main.c $(ASCII_MODULES) | $(BIN_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ \
-	    $(SRC_DIR)/main.c $(ASCII_MODULES) $(ASCII_LIBS)
+	    $(SRC_DIR)/main.c $(ASCII_MODULES) $(LIBS)
 
 $(GUI_EXE): $(GUI_SRCS) $(GUI_MODULES) | $(BIN_DIR)
 	$(CC) $(GUI_CFLAGS) $(INCLUDES) -o $@ \
@@ -109,6 +96,6 @@ clean:
 	rm -f $(BIN_DIR)/*.log *.log
 
 tar: clean
-	cd .. && tar -cvzf Chess_Alpha_src.tar.gz chess
+	cd .. && tar -cvzf Chess_Final_src.tar.gz chess
 
 .PHONY: all ascii gui test clean tar
