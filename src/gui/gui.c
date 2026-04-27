@@ -717,12 +717,29 @@ GtkWidget *createPromotionButton(Board_Bundle *boardData, const char *imagePath,
 
 void appendToLogUI(Board_Bundle *boardData)
 {
-  char *text = boardData->move;
-
-  if (text)
+  /* Special messages that aren't coordinate-based (e.g. Anteater extra turn) */
+  if (boardData->move && boardData->move[0] == 'A')
   {
-    appendTextToLogUI(boardData, text);
+    appendTextToLogUI(boardData, boardData->move);
+    return;
   }
+
+  Board_State *boardState = boardData->boardState;
+  int movesMade = getMovesMade(boardState);
+  Move last = boardState->lastMove;
+
+  /* movesMade was just incremented before this call, so subtract 1 to find who moved */
+  Color movedColor = ((movesMade - 1) % 2 == 0) ? WHITE : BLACK;
+
+  const char *suffix = last.capture ? " (capture)" : last.castle ? " (castle)" : "";
+
+  char msg[96];
+  snprintf(msg, sizeof(msg), "%s: %c%d -> %c%d%s\n",
+           colorLabel(movedColor),
+           'A' + last.startCol, last.startRow + 1,
+           'A' + last.endCol, last.endRow + 1,
+           suffix);
+  appendTextToLogUI(boardData, msg);
 }
 
 void gridAttacher(GtkWidget *grid, GtkWidget **attachments, int size)
