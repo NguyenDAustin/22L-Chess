@@ -40,10 +40,16 @@ void pushMoveForUndo(Board *board, Move* move) {
     rec.movedPiece = board->board[move->startRow][move->startCol]; 
 	rec.capturedPiece = board->board[move->endRow][move->endCol];
 
+	//added for castle
+	rec.movedPieceMovedBefore = rec.movedPiece ? rec.movedPiece->moved : 0;
+	rec.movedRook = NULL;
+    rec.rookMovedBefore = 0;
+	
 	if(move->castle){
 		printf("Undoing a castle move\n");
 		rec.rookMove = getRookMove(move); 
 		rec.movedRook = getSquare(board, rec.rookMove.startRow, rec.rookMove.startCol); 
+		rec.rookMovedBefore = rec.movedRook ? rec.movedRook->moved : 0;
 	}
     undoPush(&rec);
 }
@@ -103,9 +109,11 @@ int undo(Undo_Record *rec, Board *board)
 	board->board[rec->move.startRow][rec->move.startCol] = rec->movedPiece;
 	posCtor(&pos, rec->move.startRow, rec->move.startCol);
 
-	if (movedPiece)
+	if (movedPiece){
 		setPos(movedPiece, pos);
 
+		movedPiece->moved = rec->movedPieceMovedBefore;
+	}
 	board->board[rec->move.endRow][rec->move.endCol] = rec->capturedPiece;
 	posCtor(&pos, rec->move.endRow, rec->move.endCol);
 
@@ -121,6 +129,8 @@ int undo(Undo_Record *rec, Board *board)
 		board->board[rookMove.endRow][rookMove.endCol] = NULL; //delete rook before
 		posCtor(&pos, rookMove.startRow, rookMove.startCol); 
 		setPos(rec->movedRook, pos); 
+
+		rec->movedRook->moved = rec->rookMovedBefore;
 	}
 
 	return 1;

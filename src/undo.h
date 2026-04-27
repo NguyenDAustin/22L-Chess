@@ -26,6 +26,8 @@ typedef struct {
 	//castle handling 
 	Piece* movedRook; 
 	Move rookMove;  
+	int movedPieceMovedBefore;
+	int rookMovedBefore;
 } Undo_Record;
 
 
