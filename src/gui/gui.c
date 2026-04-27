@@ -744,6 +744,7 @@ void onUndoClicked(GtkButton *button, gpointer user_data)
   {
     printUndoMove(&undoMove);
     undo(&undoMove, board);
+    setMovesMade(boardState, getMovesMade(boardState) - 1); //reverts turn
     setUpdate(boardState, true);
     gtk_widget_queue_draw(boardWidget);
   }
