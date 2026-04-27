@@ -84,23 +84,23 @@ void sendInput(Board_Bundle *boardData, Pos clickPos)
 
         if (move.capture)
         {
-            boardData->move = "capture was made\n";
-            //addCapture(LOG_FILE, getMovesMade(boardState), clickedPiece, getPos(clickedPiece), clickPos);
-
+            printf("capture was made\n");
+            boardData->move = addCapture(LOG_FILE, getMovesMade(boardState), clickedPiece, getPos(clickedPiece), clickPos);
         }
         else if (move.castle) {
-            boardData->move = "castle was made\n";
+            printf("castle was made\n"); 
+           // boardData->move = "castle was made\n";
             int sideNum = (move.endCol > move.startCol) ? 0 : 1; 
-            //addCastle(LOG_FILE, getMovesMade(boardState), clickedPiece, sideNum);
+            boardData->move = addCastle(LOG_FILE, getMovesMade(boardState), clickedPiece, sideNum);
         }
         else if (move.enPassant) {
-            boardData->move = "en passant capture was made\n";
-            //logEnPassant(LOG_FILE, getMovesMade(boardState), clickedPiece, clickPos);
+            printf("en passant capture was made\n");
+            boardData->move = logEnPassant(LOG_FILE, getMovesMade(boardState), clickedPiece, clickPos);
         }
         else
         {
-            boardData->move = "move was made\n";
-            //addMove(LOG_FILE, getMovesMade(boardState), clickedPiece, clickPos);
+            printf("move was made\n"); 
+            boardData->move = addMove(LOG_FILE, getMovesMade(boardState), clickedPiece, clickPos);
         }
 
         resetClickedPiece(boardState);

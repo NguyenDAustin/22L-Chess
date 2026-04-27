@@ -51,6 +51,12 @@ void pushMoveForUndo(Board *board, Move* move) {
 		rec.movedRook = getSquare(board, rec.rookMove.startRow, rec.rookMove.startCol); 
 		rec.rookMovedBefore = rec.movedRook ? rec.movedRook->moved : 0;
 	}
+
+	if(move->enPassant){
+		printf("Undoing an enpassant move\n"); 
+		//rec.movedPiece
+	}
+
     undoPush(&rec);
 }
 
