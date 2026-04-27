@@ -593,6 +593,7 @@ void createLog(GtkWidget *logScroller, GtkWidget *log)
   gtk_text_view_set_editable(GTK_TEXT_VIEW(log), FALSE);
   gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(log), FALSE);
   gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(logScroller), log);
+  gtk_widget_set_size_request(logScroller, MIN_LOG_WIDTH, 700);
 }
 
 void createBlackButtons(Board_Bundle *boardData, GtkWidget **buttons)
@@ -846,6 +847,11 @@ static void onQuitConfirmed(GtkDialog *dialog, int responseId, gpointer user_dat
 static void activate(GtkApplication *app, gpointer user_data)
 {
   GtkWidget *grid = createMainGrid();
+  gtk_widget_set_halign(grid, GTK_ALIGN_FILL);
+  gtk_widget_set_valign(grid, GTK_ALIGN_FILL);
+  gtk_widget_set_hexpand(grid, TRUE);
+  gtk_widget_set_vexpand(grid, TRUE);
+
   GtkWidget *window = createWindow(app, TITLE, CSS_CLASS);
   GtkWidget *board = gtk_drawing_area_new();
   GtkWidget *logScroller = gtk_scrolled_window_new();
@@ -915,6 +921,7 @@ static void activate(GtkApplication *app, gpointer user_data)
   gtk_widget_set_valign(buttonBox, GTK_ALIGN_START);
   gtk_box_append(GTK_BOX(buttonBox), undoButton);
   gtk_box_append(GTK_BOX(buttonBox), quitButton);
+  gtk_widget_set_margin_bottom(buttonBox, 10);
 
   gtk_window_set_child(GTK_WINDOW(window), grid);
   gtk_grid_attach(GTK_GRID(grid), board, 0, 0, 1, 1);
