@@ -337,6 +337,15 @@ GtkWidget *createTimerBox(GtkWidget *whiteTimer, GtkWidget *blackTimer)
   return timerBox;
 }
 
+static void resetTurnTimer(Board_Bundle *boardData)
+{
+  bool whiteTurnNext = getMovesMade(boardData->boardState) % 2 == 0;
+  if (whiteTurnNext)
+    boardData->whiteSeconds = 60;
+  else
+    boardData->blackSeconds = 60;
+}
+
 void createBoard(GtkWidget *board, Board_Bundle *boardData)
 {
   gtk_drawing_area_set_content_width(GTK_DRAWING_AREA(board), SQUARE_SIZE * BOARD_WIDTH);
@@ -378,10 +387,31 @@ gboolean onTimerTick(gpointer user_data)
 {
   Board_Bundle *boardData = user_data;
 
-  if (getMovesMade(boardData->boardState) % 2 == 0)
-    boardData->whiteSeconds++;
+  if (isGameOver(boardData->boardState))
+    return G_SOURCE_CONTINUE;
+
+  bool whiteTurn = getMovesMade(boardData->boardState) % 2 == 0;
+
+  if (whiteTurn)
+  {
+    if (boardData->whiteSeconds > 0)
+      boardData->whiteSeconds--;
+    if (boardData->whiteSeconds == 0)
+    {
+      appendTextToLogUI(boardData, "White ran out of time. Black wins.\n");
+      setGameOver(boardData->boardState, true);
+    }
+  }
   else
-    boardData->blackSeconds++;
+  {
+    if (boardData->blackSeconds > 0)
+      boardData->blackSeconds--;
+    if (boardData->blackSeconds == 0)
+    {
+      appendTextToLogUI(boardData, "Black ran out of time. White wins.\n");
+      setGameOver(boardData->boardState, true);
+    }
+  }
 
   updateTimerLabels(boardData);
   return G_SOURCE_CONTINUE;
