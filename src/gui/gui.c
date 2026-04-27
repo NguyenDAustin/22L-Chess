@@ -16,6 +16,7 @@ const int LOG_SPACING = 10;
 typedef struct
 {
   Board_Bundle *boardData;
+  GtkComboBoxText *gameModeCombo;
   GtkComboBoxText *colorCombo;
   GtkComboBoxText *difficultyCombo;
 } StartupDialogData;
@@ -24,6 +25,7 @@ static bool finishGameIfNeeded(Board_Bundle *boardData, Color playerWhoMoved);
 static void showEndGameDialog(Board_Bundle *boardData, const char *resultMsg);
 static void onEndGameDialogResponse(GtkDialog *dialog, int responseId, gpointer user_data);
 static void showStartupDialog(GtkWindow *parent, Board_Bundle *boardData);
+static void onQuitConfirmed(GtkDialog *dialog, int responseId, gpointer user_data);
 
 void whichSquare(float x, float y)
 { // just for debug purposes
@@ -131,7 +133,7 @@ static void onEndGameDialogResponse(GtkDialog *dialog, int responseId, gpointer 
 
     showStartupDialog(GTK_WINDOW(gtk_widget_get_root(boardData->boardWidget)), boardData);
   }
-  else // Quit
+  else
   {
     GtkApplication *app = GTK_APPLICATION(g_application_get_default());
     g_application_quit(G_APPLICATION(app));
@@ -229,8 +231,20 @@ static void triggerCpuMove(Board_Bundle *boardData)
   Move cpuMove;
   if (!aiSelectMoveAtDifficulty(state, cpuColor, boardData->cpuDifficulty, &cpuMove))
   {
-    appendTextToLogUI(boardData, "CPU has no legal moves.\n");
-    setGameOver(boardState, true);
+    if (kingCheck(boardData->board, cpuColor))
+    {
+      char msg[96];
+      snprintf(msg, sizeof(msg), "Checkmate. %s wins.\n", colorLabel(boardData->userColor));
+      appendTextToLogUI(boardData, msg);
+      setGameOver(boardState, true);
+      showEndGameDialog(boardData, msg);
+    }
+    else
+    {
+      appendTextToLogUI(boardData, "Stalemate.\n");
+      setGameOver(boardState, true);
+      showEndGameDialog(boardData, "Stalemate.");
+    }
     return;
   }
 
@@ -272,6 +286,13 @@ static const char *difficultyLabel(AIDifficulty d)
   }
 }
 
+static void onGameModeChanged(GtkComboBoxText *combo, gpointer user_data)
+{
+  GtkWidget *difficultyBox = user_data;
+  int modeIndex = gtk_combo_box_get_active(GTK_COMBO_BOX(combo));
+  gtk_widget_set_sensitive(difficultyBox, modeIndex == 0);
+}
+
 static void onStartupDialogResponse(GtkDialog *dialog, int responseId, gpointer user_data)
 {
   StartupDialogData *dialogData = user_data;
@@ -279,27 +300,40 @@ static void onStartupDialogResponse(GtkDialog *dialog, int responseId, gpointer 
 
   if (responseId == GTK_RESPONSE_ACCEPT)
   {
-    int colorIndex = gtk_combo_box_get_active(GTK_COMBO_BOX(dialogData->colorCombo));
-    int difficultyIndex = gtk_combo_box_get_active(GTK_COMBO_BOX(dialogData->difficultyCombo));
-
-    boardData->userColor = colorIndex == 0 ? WHITE : BLACK;
-    boardData->cpuColor = boardData->userColor == WHITE ? BLACK : WHITE;
-    boardData->userStarts = boardData->userColor == WHITE;
-
-    const AIDifficulty difficulties[3] = {AI_EASY, AI_MEDIUM, AI_HARD};
-    boardData->cpuDifficulty = difficulties[difficultyIndex];
+    int modeIndex = gtk_combo_box_get_active(GTK_COMBO_BOX(dialogData->gameModeCombo));
+    boardData->humanVsHuman = (modeIndex == 1);
 
     /* White always moves first; timer offset tracks whose turn it is. */
     setMovesMade(boardData->boardState, 0);
     updateTimerLabels(boardData);
 
-    char message[160];
-    snprintf(message, sizeof(message),
-             "Game setup: You are %s. CPU is %s (%s difficulty). White starts.\n",
-             colorLabel(boardData->userColor),
-             colorLabel(boardData->cpuColor),
-             difficultyLabel(boardData->cpuDifficulty));
-    appendTextToLogUI(boardData, message);
+    if (boardData->humanVsHuman)
+    {
+      boardData->userColor = WHITE;
+      boardData->cpuColor = BLACK;
+      boardData->userStarts = true;
+      appendTextToLogUI(boardData, "Game setup: Human vs Human. White starts.\n");
+    }
+    else
+    {
+      int colorIndex = gtk_combo_box_get_active(GTK_COMBO_BOX(dialogData->colorCombo));
+      int difficultyIndex = gtk_combo_box_get_active(GTK_COMBO_BOX(dialogData->difficultyCombo));
+
+      boardData->userColor = colorIndex == 0 ? WHITE : BLACK;
+      boardData->cpuColor = boardData->userColor == WHITE ? BLACK : WHITE;
+      boardData->userStarts = boardData->userColor == WHITE;
+
+      const AIDifficulty difficulties[3] = {AI_EASY, AI_MEDIUM, AI_HARD};
+      boardData->cpuDifficulty = difficulties[difficultyIndex];
+
+      char message[160];
+      snprintf(message, sizeof(message),
+               "Game setup: You are %s. CPU is %s (%s difficulty). White starts.\n",
+               colorLabel(boardData->userColor),
+               colorLabel(boardData->cpuColor),
+               difficultyLabel(boardData->cpuDifficulty));
+      appendTextToLogUI(boardData, message);
+    }
   }
 
   if (boardData->timerSourceId == 0)
@@ -310,8 +344,8 @@ static void onStartupDialogResponse(GtkDialog *dialog, int responseId, gpointer 
   gtk_window_destroy(GTK_WINDOW(dialog));
   g_free(dialogData);
 
-  /* If user chose black, CPU (white) must move first */
-  if (!boardData->userStarts && !isGameOver(boardData->boardState))
+  /* If user chose black in CPU mode, CPU (white) must move first */
+  if (!boardData->humanVsHuman && !boardData->userStarts && !isGameOver(boardData->boardState))
   {
     triggerCpuMove(boardData);
     gtk_widget_queue_draw(boardData->boardWidget);
@@ -330,15 +364,22 @@ static void showStartupDialog(GtkWindow *parent, Board_Bundle *boardData)
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, LOG_SPACING);
 
+  GtkWidget *modeLabelWidget = gtk_label_new("Game Mode");
+  GtkWidget *gameModeCombo = gtk_combo_box_text_new();
   GtkWidget *colorLabelWidget = gtk_label_new("Your color (White always moves first)");
   GtkWidget *colorCombo = gtk_combo_box_text_new();
   GtkWidget *difficultyLabelWidget = gtk_label_new("CPU Difficulty");
   GtkWidget *difficultyCombo = gtk_combo_box_text_new();
+  GtkWidget *difficultyBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
 
   gtk_widget_set_margin_top(box, LOG_SPACING);
   gtk_widget_set_margin_bottom(box, LOG_SPACING);
   gtk_widget_set_margin_start(box, LOG_SPACING);
   gtk_widget_set_margin_end(box, LOG_SPACING);
+
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(gameModeCombo), "Human vs CPU");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(gameModeCombo), "Human vs Human");
+  gtk_combo_box_set_active(GTK_COMBO_BOX(gameModeCombo), 0);
 
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(colorCombo), "White");
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(colorCombo), "Black");
@@ -349,14 +390,21 @@ static void showStartupDialog(GtkWindow *parent, Board_Bundle *boardData)
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(difficultyCombo), "Hard");
   gtk_combo_box_set_active(GTK_COMBO_BOX(difficultyCombo), 1);
 
+  gtk_box_append(GTK_BOX(difficultyBox), difficultyLabelWidget);
+  gtk_box_append(GTK_BOX(difficultyBox), difficultyCombo);
+
+  g_signal_connect(gameModeCombo, "changed", G_CALLBACK(onGameModeChanged), difficultyBox);
+
+  gtk_box_append(GTK_BOX(box), modeLabelWidget);
+  gtk_box_append(GTK_BOX(box), gameModeCombo);
   gtk_box_append(GTK_BOX(box), colorLabelWidget);
   gtk_box_append(GTK_BOX(box), colorCombo);
-  gtk_box_append(GTK_BOX(box), difficultyLabelWidget);
-  gtk_box_append(GTK_BOX(box), difficultyCombo);
+  gtk_box_append(GTK_BOX(box), difficultyBox);
   gtk_box_append(GTK_BOX(content), box);
 
   StartupDialogData *dialogData = g_new0(StartupDialogData, 1);
   dialogData->boardData = boardData;
+  dialogData->gameModeCombo = GTK_COMBO_BOX_TEXT(gameModeCombo);
   dialogData->colorCombo = GTK_COMBO_BOX_TEXT(colorCombo);
   dialogData->difficultyCombo = GTK_COMBO_BOX_TEXT(difficultyCombo);
 
@@ -565,7 +613,7 @@ void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer
 
   int movesMade = getMovesMade(boardState);
   Color toMove = (movesMade % 2 == 0) ? WHITE : BLACK;
-  if (toMove == boardData->cpuColor)
+  if (!boardData->humanVsHuman && toMove == boardData->cpuColor)
     return;
 
   whichSquare(x, y);
@@ -594,7 +642,7 @@ void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer
       return;
     }
 
-    if (finishGameIfNeeded(boardData, boardData->userColor))
+    if (finishGameIfNeeded(boardData, toMove))
     {
       if (hasUpdate(boardState))
         gtk_widget_queue_draw(boardWidget);
@@ -602,7 +650,8 @@ void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer
       return;
     }
 
-    g_timeout_add_seconds(1, cpuMoveCallback, boardData);
+    if (!boardData->humanVsHuman)
+      g_timeout_add_seconds(1, cpuMoveCallback, boardData);
     if (hasUpdate(boardState))
       gtk_widget_queue_draw(boardWidget);
     updateTimerLabels(boardData);
@@ -617,6 +666,9 @@ void onPromotionClicked(GtkButton *button, gpointer user_data)
   Pos clickPiecePos = getPos(boardState->clickedPiece);
   GtkWidget *popUp = boardData->promotionPopUp;
 
+  int movesMadeBeforePromo = getMovesMade(boardState);
+  Color promotingColor = (movesMadeBeforePromo % 2 == 0) ? WHITE : BLACK;
+
   promotePiece(boardData, clickPiecePos, promoteTo);
   incrementMovesMade(boardState);
   resetTurnTimer(boardData);
@@ -624,9 +676,11 @@ void onPromotionClicked(GtkButton *button, gpointer user_data)
   gtk_widget_queue_draw(boardData->boardWidget);
   gtk_popover_popdown(GTK_POPOVER(popUp));
 
-  if (!finishGameIfNeeded(boardData, boardData->userColor))
+  Color movedColor = boardData->humanVsHuman ? promotingColor : boardData->userColor;
+  if (!finishGameIfNeeded(boardData, movedColor))
   {
-    g_timeout_add_seconds(1, cpuMoveCallback, boardData);
+    if (!boardData->humanVsHuman)
+      g_timeout_add_seconds(1, cpuMoveCallback, boardData);
   }
   updateTimerLabels(boardData);
 }
@@ -663,12 +717,29 @@ GtkWidget *createPromotionButton(Board_Bundle *boardData, const char *imagePath,
 
 void appendToLogUI(Board_Bundle *boardData)
 {
-  char *text = boardData->move;
-
-  if (text)
+  /* Special messages that aren't coordinate-based (e.g. Anteater extra turn) */
+  if (boardData->move && boardData->move[0] == 'A')
   {
-    appendTextToLogUI(boardData, text);
+    appendTextToLogUI(boardData, boardData->move);
+    return;
   }
+
+  Board_State *boardState = boardData->boardState;
+  int movesMade = getMovesMade(boardState);
+  Move last = boardState->lastMove;
+
+  /* movesMade was just incremented before this call, so subtract 1 to find who moved */
+  Color movedColor = ((movesMade - 1) % 2 == 0) ? WHITE : BLACK;
+
+  const char *suffix = last.capture ? " (capture)" : last.castle ? " (castle)" : "";
+
+  char msg[96];
+  snprintf(msg, sizeof(msg), "%s: %c%d -> %c%d%s\n",
+           colorLabel(movedColor),
+           'A' + last.startCol, last.startRow + 1,
+           'A' + last.endCol, last.endRow + 1,
+           suffix);
+  appendTextToLogUI(boardData, msg);
 }
 
 void gridAttacher(GtkWidget *grid, GtkWidget **attachments, int size)
@@ -686,6 +757,40 @@ void initializePromotionButtonArr(Board_Bundle *boardData, GtkWidget **buttons, 
   for (int i = 0; i < NUMBER_OF_PROMOTION_BUTTONS; i++)
   {
     buttons[i] = createPromotionButton(boardData, images[i], type[i]);
+  }
+}
+
+static void onQuitClicked(GtkButton *button, gpointer user_data)
+{
+  Board_Bundle *boardData = user_data;
+  GtkWidget *dialog = gtk_dialog_new();
+  gtk_window_set_title(GTK_WINDOW(dialog), "Quit");
+  gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
+  gtk_window_set_transient_for(GTK_WINDOW(dialog),
+                               GTK_WINDOW(gtk_widget_get_root(boardData->boardWidget)));
+
+  gtk_dialog_add_button(GTK_DIALOG(dialog), "Yes", GTK_RESPONSE_ACCEPT);
+  gtk_dialog_add_button(GTK_DIALOG(dialog), "No", GTK_RESPONSE_REJECT);
+
+  GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+  GtkWidget *label = gtk_label_new("Are you sure you want to quit?");
+  gtk_widget_set_margin_top(label, LOG_SPACING);
+  gtk_widget_set_margin_bottom(label, LOG_SPACING);
+  gtk_widget_set_margin_start(label, LOG_SPACING);
+  gtk_widget_set_margin_end(label, LOG_SPACING);
+  gtk_box_append(GTK_BOX(content), label);
+
+  g_signal_connect(dialog, "response", G_CALLBACK(onQuitConfirmed), boardData);
+  gtk_window_present(GTK_WINDOW(dialog));
+}
+
+static void onQuitConfirmed(GtkDialog *dialog, int responseId, gpointer user_data)
+{
+  gtk_window_destroy(GTK_WINDOW(dialog));
+  if (responseId == GTK_RESPONSE_ACCEPT)
+  {
+    GtkApplication *app = GTK_APPLICATION(g_application_get_default());
+    g_application_quit(G_APPLICATION(app));
   }
 }
 
@@ -741,6 +846,14 @@ static void activate(GtkApplication *app, gpointer user_data)
   gtk_widget_set_halign(undoButton, GTK_ALIGN_END);
   gtk_widget_set_valign(undoButton, GTK_ALIGN_START);
 
+  GtkWidget *quitButton = gtk_button_new();
+  GtkWidget *quitPicture = gtk_picture_new_for_filename("src/gui/resources/quit.png");
+  gtk_widget_set_size_request(quitPicture, 20, 20);
+  gtk_button_set_child(GTK_BUTTON(quitButton), quitPicture);
+  g_signal_connect(quitButton, "clicked", G_CALLBACK(onQuitClicked), boardData);
+  gtk_widget_set_halign(quitButton, GTK_ALIGN_END);
+  gtk_widget_set_valign(quitButton, GTK_ALIGN_START);
+
   // event controller
   GtkGesture *click = gtk_gesture_click_new();
   gtk_widget_add_controller(board, GTK_EVENT_CONTROLLER(click));
@@ -753,6 +866,8 @@ static void activate(GtkApplication *app, gpointer user_data)
   gtk_grid_attach(GTK_GRID(grid), timerBox, 0, 1, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), logScroller, 1, 0, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), undoButton, 1, 1, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), quitButton, 2, 1, 1, 1);
+
   gtk_window_present(GTK_WINDOW(window));
   showStartupDialog(GTK_WINDOW(window), boardData);
 }
@@ -772,6 +887,7 @@ int main(int argc, char **argv)
   boardData.userColor = WHITE;
   boardData.cpuColor = BLACK;
   boardData.userStarts = true;
+  boardData.humanVsHuman = false;
   boardData.cpuDifficulty = AI_MEDIUM;
   boardData.move = NULL;
 

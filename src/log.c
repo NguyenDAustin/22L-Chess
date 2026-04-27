@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-
 /*Returns a label for the position of a piece*/
 static void label(Pos pos, char square[4]){
 	square[0]=(char)('A'+pos.col);
@@ -145,7 +144,7 @@ void logCheckmate(const char *filename, int moveNum, Piece *winner){
 	return output;
 }
 /*add draw to the log*/
-void logDraw(const char *filename, int moveNum){
+const char *logDraw(const char *filename, int moveNum){
 	FILE *f = fopen(filename, "a");
 	if (!f) return;
 	char output[150];
