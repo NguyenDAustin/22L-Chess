@@ -88,7 +88,7 @@ void addCapture (const char *filename, int moveNum, Piece *piece, Pos from, Pos 
 	return output;
 }
 /*add castle move to the log*/
-void addCastle (const char *filename, int moveNum, Piece *piece,  int sideNum){
+const char *addCastle (const char *filename, int moveNum, Piece *piece,  int sideNum){
 	FILE *f = fopen(filename, "a");
 	if (!f) return;
 	const char *lbl = (sideNum == 0) ? "0-0" : "0-0-0"; /*if king side, sideNum=0, if queen side, sideNum=1*/
@@ -99,7 +99,7 @@ void addCastle (const char *filename, int moveNum, Piece *piece,  int sideNum){
 	return output;
 }
 /*add en passant to the log*/
-void logEnPassant(const char *filename, int moveNum, Piece *piece, Pos pos){
+const char *logEnPassant(const char *filename, int moveNum, Piece *piece, Pos pos){
 	FILE *f = fopen(filename, "a");
 	if (!f) return;
 	char sq[4];
@@ -111,7 +111,7 @@ void logEnPassant(const char *filename, int moveNum, Piece *piece, Pos pos){
 	return output;
 }
 /*add promotion to the log*/
-void logPromotion(const char *filename, int moveNum, Piece *piece, Pos to, Piece *newPiece){
+const char *logPromotion(const char *filename, int moveNum, Piece *piece, Pos to, Piece *newPiece){
 	FILE *f = fopen(filename, "a");
 	if (!f) return;
 	char sq[4];
@@ -123,7 +123,7 @@ void logPromotion(const char *filename, int moveNum, Piece *piece, Pos to, Piece
 	return output;
 }
 /*add check to the log*/
-void logCheck(const char *filename, int moveNum, Piece *piece){
+const char *logCheck(const char *filename, int moveNum, Piece *piece){
 	FILE *f = fopen(filename, "a");
 	if (!f) return;
 	char output[150];
@@ -133,7 +133,7 @@ void logCheck(const char *filename, int moveNum, Piece *piece){
 	return output;
 }
 /*add checkmate to the log*/
-void logCheckmate(const char *filename, int moveNum, Piece *winner){
+const char *logCheckmate(const char *filename, int moveNum, Piece *winner){
 	FILE *f = fopen(filename, "a");
 	if (!f) return;
 	char output[150];
@@ -155,7 +155,7 @@ const char *logDraw(const char *filename, int moveNum){
 	return output;
 }
 /*add a player quitting to the log*/
-void logQuit(const char *filename, int moveNum, Piece *quitter){
+const char *logQuit(const char *filename, int moveNum, Piece *quitter){
 	FILE *f = fopen(filename, "a");
 	if (!f) return;
 	char output[150];
