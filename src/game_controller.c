@@ -1,12 +1,12 @@
 #include "game_controller.h"
 
-void sendInput(Board_Bundle* boardData, Pos clickPos)
+void sendInput(Board_Bundle *boardData, Pos clickPos)
 {
-    Board* board = boardData->board; 
-    Board_State* boardState = boardData->boardState; 
+    Board *board = boardData->board;
+    Board_State *boardState = boardData->boardState;
     Color turn = (getMovesMade(boardState) % 2 == 0) ? WHITE : BLACK;
-    boardState->moveSuccess = false; 
-    
+    boardState->moveSuccess = false;
+
     if (!isPosValid(clickPos))
     {
         printf("invalid pos! -> row: %d col: %d\n", clickPos.row, clickPos.col);
@@ -17,20 +17,23 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
 
     Piece *clicked = getSquare(board, row, col);
 
-    if (hasPiece(board, row, col) && !isLegalMoveSquare(boardState, clickPos)) {
-        if (clicked == NULL || clicked->color != turn) {
+    if (hasPiece(board, row, col) && !isLegalMoveSquare(boardState, clickPos))
+    {
+        if (clicked == NULL || clicked->color != turn)
+        {
             resetClickedPiece(boardState);
             resetLegalMoveCount(boardState);
             setUpdate(boardState, true);
             return;
         }
 
-        printf("new piece was clicked\n"); 
+        printf("new piece was clicked\n");
         setClickedPiece(boardState, clicked);
         generateLegalMoves(boardState, board, clicked, getPos(clicked), &boardState->lastMove);
         setUpdate(boardState, true);
     }
-    else if (aPieceWasClicked(boardState) && isLegalMoveSquare(boardState, clickPos)) {
+    else if (aPieceWasClicked(boardState) && isLegalMoveSquare(boardState, clickPos))
+    {
         printf("executing move\n");
 
         Piece *clickedPiece = getClickedPiece(boardState);
@@ -44,8 +47,7 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
         move.enPassant = 0;
         move.castle = 0;
 
-
-        pushMoveForUndo(board, &move); 
+        pushMoveForUndo(board, &move);
         executeMove(board, &move, boardState->lastMove);
         boardState->lastMove = move;
 
@@ -66,32 +68,40 @@ void sendInput(Board_Bundle* boardData, Pos clickPos)
             return;
         }
 
-        if (movedPiece != NULL && movedPiece->type == PAWN) {
-        if ((movedPiece->color == WHITE && move.endRow == 0) ||(movedPiece->color == BLACK && move.endRow == 7)) {
-        promotePiece(boardData, (Pos){move.endRow, move.endCol}, QUEEN);
+        if (movedPiece != NULL && movedPiece->type == PAWN)
+        {
+            if ((movedPiece->color == WHITE && move.endRow == 0) || (movedPiece->color == BLACK && move.endRow == 7))
+            {
+                setClickedPiece(boardState, movedPiece);
+                setPromotionPop(boardState, true);
+                setUpdate(boardState, true);
+                return;
+            }
         }
-}
 
         incrementMovesMade(boardState);
 
-        if (move.capture) {
+        if (move.capture)
+        {
             boardData->move = "capture was made\n";
         }
-        else if (move.castle) {
+        else if (move.castle)
+        {
             boardData->move = "castle was made\n";
         }
-        else {
+        else
+        {
             boardData->move = "move was made\n";
         }
-
 
         resetClickedPiece(boardState);
         resetLegalMoveCount(boardState);
         setUpdate(boardState, true);
-    } 
-    else {
-        resetClickedPiece(boardState); 
-        resetLegalMoveCount(boardState); 
+    }
+    else
+    {
+        resetClickedPiece(boardState);
+        resetLegalMoveCount(boardState);
         setUpdate(boardState, true);
     }
 }

@@ -152,8 +152,8 @@ static void triggerCpuMove(Board_Bundle *boardData)
     setGameOver(boardState, true);
     return;
   }
-  
-  pushMoveForUndo(board, &cpuMove); //Queency
+
+  pushMoveForUndo(board, &cpuMove); // Queency
 
   executeMove(board, &cpuMove, boardState->lastMove);
   boardState->lastMove = cpuMove;
@@ -459,13 +459,15 @@ void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer
   if (isGameOver(boardState))
     return;
 
-  /* Ignore clicks when it is the CPU's turn */
+  if (isPromotion(boardState))
+    return;
+
   int movesMade = getMovesMade(boardState);
   Color toMove = (movesMade % 2 == 0) ? WHITE : BLACK;
   if (toMove == boardData->cpuColor)
     return;
 
-  whichSquare(x, y); // just for debug purposes
+  whichSquare(x, y);
 
   int row = pixToIndex(y);
   int col = pixToIndex(x);
@@ -483,6 +485,13 @@ void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer
     updateTimerLabels(boardData);
     appendToLogUI(boardData);
 
+    if (isPromotion(boardState))
+    {
+      gtk_widget_queue_draw(boardWidget);
+      createPopUp(boardData);
+      return;
+    }
+
     if (finishGameIfNeeded(boardData, boardData->userColor))
     {
       if (hasUpdate(boardState))
@@ -491,17 +500,10 @@ void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer
       return;
     }
 
-    /* Human move completed — let the CPU respond */
     g_timeout_add_seconds(1, cpuMoveCallback, boardData);
     if (hasUpdate(boardState))
       gtk_widget_queue_draw(boardWidget);
     updateTimerLabels(boardData);
-  }
-
-  if (isPromotion(boardState))
-  {
-    printf("is promotion\n");
-    createPopUp(boardData);
   }
 }
 
@@ -513,31 +515,38 @@ void onPromotionClicked(GtkButton *button, gpointer user_data)
   Pos clickPiecePos = getPos(boardState->clickedPiece);
   GtkWidget *popUp = boardData->promotionPopUp;
 
-  // printf("Promote to rank: %d\n", promoteTo);
-
   promotePiece(boardData, clickPiecePos, promoteTo);
+  incrementMovesMade(boardState);
   resetClickedPiece(boardState);
   gtk_widget_queue_draw(boardData->boardWidget);
   gtk_popover_popdown(GTK_POPOVER(popUp));
+
+  if (!finishGameIfNeeded(boardData, boardData->userColor))
+  {
+    g_timeout_add_seconds(1, cpuMoveCallback, boardData);
+  }
+  updateTimerLabels(boardData);
 }
 
-void onUndoClicked(GtkButton* button, gpointer user_data){
-  Board_Bundle* boardData = user_data; 
-  Board* board = getBoard(boardData); 
-  Board_State* boardState = getBoardState(boardData); 
-  GtkWidget* boardWidget = getBoardWidget(boardData);
+void onUndoClicked(GtkButton *button, gpointer user_data)
+{
+  Board_Bundle *boardData = user_data;
+  Board *board = getBoard(boardData);
+  Board_State *boardState = getBoardState(boardData);
+  GtkWidget *boardWidget = getBoardWidget(boardData);
 
-  printf("undo was clicked\n"); 
-  Undo_Record undoMove; 
+  printf("undo was clicked\n");
+  Undo_Record undoMove;
 
-  if(undoPop(&undoMove)){ //on a succesful undo --> undo stack !empty 
-     printUndoMove(&undoMove); 
-     undo(&undoMove, board);
-     setUpdate(boardState, true); 
-     gtk_widget_queue_draw(boardWidget); 
+  if (undoPop(&undoMove))
+  { // on a succesful undo --> undo stack !empty
+    printUndoMove(&undoMove);
+    undo(&undoMove, board);
+    setUpdate(boardState, true);
+    gtk_widget_queue_draw(boardWidget);
   }
-   
-  //undo move
+
+  // undo move
 }
 
 GtkWidget *createPromotionButton(Board_Bundle *boardData, const char *imagePath, Rank type)
