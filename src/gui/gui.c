@@ -256,11 +256,49 @@ static void triggerCpuMove(Board_Bundle *boardData)
   resetTurnTimer(boardData);
   setUpdate(boardState, true);
 
-  char msg[64];
-  snprintf(msg, sizeof(msg), "CPU: %c%d -> %c%d\n",
-           'A' + cpuMove.startCol, cpuMove.startRow + 1,
-           'A' + cpuMove.endCol, cpuMove.endRow + 1);
-  appendTextToLogUI(boardData, msg);
+  // char msg[64];
+  /* snprintf(msg, sizeof(msg), "CPU: %c%d -> %c%d\n",
+            'A' + cpuMove.startCol, cpuMove.startRow + 1,
+            'A' + cpuMove.endCol, cpuMove.endRow + 1); */
+  // queency commented out
+
+  // appendTextToLogUI(boardData, msg);
+
+  if (cpuMove.capture)
+  {
+    printf("cpu capture was made\n");
+    Pos capturePos;
+    Pos start;
+    posCtor(&capturePos, cpuMove.endRow, cpuMove.endCol);
+    posCtor(&start, cpuMove.startRow, cpuMove.startCol);
+    Piece *movedPiece = board->board[cpuMove.endRow][cpuMove.endCol];
+    boardData->move = addCapture(LOG_FILE, getMovesMade(boardState), movedPiece, getPos(movedPiece), capturePos);
+  }
+  else if (cpuMove.castle)
+  {
+    printf("cpu castle was made\n");
+    int sideNum = (cpuMove.endCol > cpuMove.startCol) ? 0 : 1;
+    Piece *movedPiece = board->board[cpuMove.endRow][cpuMove.endCol];
+    boardData->move = addCastle(LOG_FILE, getMovesMade(boardState), movedPiece, sideNum);
+  }
+  else if (cpuMove.enPassant)
+  {
+    printf("cpu en passant capture was made\n");
+    Pos enPassantPos;
+    posCtor(&enPassantPos, cpuMove.endRow, cpuMove.endCol);
+    Piece *movedPiece = board->board[cpuMove.endRow][cpuMove.endCol];
+    boardData->move = logEnPassant(LOG_FILE, getMovesMade(boardState), movedPiece, enPassantPos);
+  }
+  else
+  {
+    printf("cpu move was made\n");
+    Pos pos;
+    posCtor(&pos, cpuMove.endRow, cpuMove.endCol);
+    Piece *movedPiece = board->board[cpuMove.endRow][cpuMove.endCol];
+    boardData->move = addMove(LOG_FILE, getMovesMade(boardState), movedPiece, pos);
+  }
+  appendTextToLogUI(boardData, boardData->move);
+
   finishGameIfNeeded(boardData, cpuColor);
 }
 
@@ -740,13 +778,15 @@ void appendToLogUI(Board_Bundle *boardData)
   const char *suffix = last.capture ? " (capture)" : last.castle ? " (castle)"
                                                                  : "";
 
-  char msg[96];
+  /*char msg[96];
   snprintf(msg, sizeof(msg), "%s: %c%d -> %c%d%s\n",
            colorLabel(movedColor),
            'A' + last.startCol, last.startRow + 1,
            'A' + last.endCol, last.endRow + 1,
-           suffix);
+           suffix);*/
   // appendTextToLogUI(boardData, msg); //QUEENCY
+
+  printf("HERE IN APPENDING TO LOG UI\n");
 
   appendTextToLogUI(boardData, boardData->move);
 }
