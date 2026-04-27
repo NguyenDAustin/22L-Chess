@@ -1,4 +1,5 @@
 #include "game_controller.h"
+#include "log.h"
 
 void sendInput(Board_Bundle *boardData, Pos clickPos)
 {
@@ -84,22 +85,22 @@ void sendInput(Board_Bundle *boardData, Pos clickPos)
         if (move.capture)
         {
             boardData->move = "capture was made\n";
-            addCapture(LOG_FILENAME, getMovesMade(boardState), clickedPiece, getPos(clickedPiece), clickPos);
+            //addCapture(LOG_FILE, getMovesMade(boardState), clickedPiece, getPos(clickedPiece), clickPos);
 
         }
         else if (move.castle) {
             boardData->move = "castle was made\n";
             int sideNum = (move.endCol > move.startCol) ? 0 : 1; 
-            addCastle(LOG_FILENAME, getMovesMade(boardState), clickedPiece, sideNum);
+            //addCastle(LOG_FILE, getMovesMade(boardState), clickedPiece, sideNum);
         }
         else if (move.enPassant) {
             boardData->move = "en passant capture was made\n";
-            logEnPassant(LOG_FILENAME, getMovesMade(boardState), clickedPiece, clickPos);
+            //logEnPassant(LOG_FILE, getMovesMade(boardState), clickedPiece, clickPos);
         }
         else
         {
             boardData->move = "move was made\n";
-            addMove(LOG_FILENAME, getMovesMade(boardState), clickedPiece, clickPos);
+            //addMove(LOG_FILE, getMovesMade(boardState), clickedPiece, clickPos);
         }
 
         resetClickedPiece(boardState);

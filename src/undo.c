@@ -117,8 +117,6 @@ int undo(Undo_Record *rec, Board *board)
 	board->board[rec->move.endRow][rec->move.endCol] = rec->capturedPiece;
 	posCtor(&pos, rec->move.endRow, rec->move.endCol);
 
-	if (capturedPiece)
-		setPos(capturedPiece, pos);
 
 	if(capturedPiece)
 		setPos(capturedPiece, pos); 
@@ -129,8 +127,8 @@ int undo(Undo_Record *rec, Board *board)
 		board->board[rookMove.endRow][rookMove.endCol] = NULL; //delete rook before
 		posCtor(&pos, rookMove.startRow, rookMove.startCol); 
 		setPos(rec->movedRook, pos); 
-
-		rec->movedRook->moved = rec->rookMovedBefore;
+	
+		rec->movedRook->moved = rec->rookMovedBefore; //austin
 	}
 
 	return 1;

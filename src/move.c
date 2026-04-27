@@ -64,6 +64,7 @@ void executeMove(Board *board, Move *move, Move lastMove)
     }
 
     if (moving->vtable->canCapture(board, moving, move->startRow, move->startCol, move->endRow, move->endCol)) {
+        pushMoveForUndo(board, move); //queency
         if (moving->type == PAWN) {
             executePawnCapture(board, move);
         }
@@ -83,6 +84,8 @@ void executeMove(Board *board, Move *move, Move lastMove)
 
     if (moving->vtable->canMove(board, moving, move->startRow, move->startCol, move->endRow, move->endCol)) {
 
+        pushMoveForUndo(board, move); //queency
+        printf("Executing normal move\n");
         board->board[move->endRow][move->endCol] = moving;
 
         moving->pos.row = move->endRow;

@@ -248,7 +248,7 @@ static void triggerCpuMove(Board_Bundle *boardData)
     return;
   }
 
-  pushMoveForUndo(board, &cpuMove);
+  //pushMoveForUndo(board, &cpuMove);
 
   executeMove(board, &cpuMove, boardState->lastMove);
   boardState->lastMove = cpuMove;
