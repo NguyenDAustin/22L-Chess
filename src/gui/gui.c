@@ -44,7 +44,7 @@ static Color oppositeColor(Color color)
   return color == WHITE ? BLACK : WHITE;
 }
 
-static void appendTextToLogUI(Board_Bundle *boardData, const char *text)
+void appendTextToLogUI(Board_Bundle *boardData, const char *text) //Queency changed from static
 {
   GtkTextIter end;
   gtk_text_buffer_get_end_iter(boardData->logBuffer, &end);
@@ -746,7 +746,10 @@ void appendToLogUI(Board_Bundle *boardData)
            'A' + last.startCol, last.startRow + 1,
            'A' + last.endCol, last.endRow + 1,
            suffix);
-  appendTextToLogUI(boardData, msg);
+  //appendTextToLogUI(boardData, msg); //QUEENCY 
+
+  appendTextToLogUI(boardData, boardData->move);
+
 }
 
 void gridAttacher(GtkWidget *grid, GtkWidget **attachments, int size)

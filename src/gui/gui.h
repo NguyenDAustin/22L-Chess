@@ -39,6 +39,7 @@ void gridAttacher(GtkWidget* grid, GtkWidget** attachments, int size);
 void onClick(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data);
 static void activate (GtkApplication *app, gpointer user_data);
 void appendToLogUI(Board_Bundle* boardData);
+void appendTextToLogUI(Board_Bundle *boardData, const char *text); 
 void createPopUp(Board_Bundle* boardData); 
 
 void createWhiteButtons(Board_Bundle* boardData, GtkWidget** buttons); 
