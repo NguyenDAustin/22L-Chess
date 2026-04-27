@@ -14,7 +14,10 @@ const char* CHESS_BG =
   ".timer-active {"
   "  background-color: rgb(42, 37, 41);"
   "  color: rgb(253, 246, 224);"
-  "}"; 
+  "}"
+  "textview.log-box, textview.log-box text {"
+  "  background-color: rgb(209, 206, 184);"
+  "}";
 
   
 
