@@ -848,10 +848,6 @@ static void onQuitConfirmed(GtkDialog *dialog, int responseId, gpointer user_dat
 static void activate(GtkApplication *app, gpointer user_data)
 {
   GtkWidget *grid = createMainGrid();
-  gtk_widget_set_halign(grid, GTK_ALIGN_FILL);
-  gtk_widget_set_valign(grid, GTK_ALIGN_FILL);
-  gtk_widget_set_hexpand(grid, TRUE);
-  gtk_widget_set_vexpand(grid, TRUE);
 
   GtkWidget *window = createWindow(app, TITLE, CSS_CLASS);
   GtkWidget *board = gtk_drawing_area_new();
