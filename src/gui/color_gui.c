@@ -16,6 +16,8 @@ const char* CHESS_BG =
   "  color: rgb(253, 246, 224);"
   "}"; 
 
+  
+
 float RGBtoGTK(float RGB){ 
   return (float) RGB / 255.0; 
 }

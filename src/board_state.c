@@ -159,20 +159,50 @@ bool canPieceGoTo(Board* board, Piece* piece, Pos start, Pos end) {
 }
 
 //given a piece and its position --> generate all the legal moves that piece can make
-void generateLegalMoves(Board_State* boardState, Board* board, Piece* piece, Pos start, Move *lastMove){ //might change to make more efficient in future
-    resetLegalMoveCount(boardState); 
+void generateLegalMoves(Board_State* boardState, Board* board, Piece* piece, Pos start, Move *lastMove){
+    resetLegalMoveCount(boardState);
 
-    Pos end; 
+    Pos end;
     for(int row = 0; row < BOARD_HEIGHT; row++){
         for(int col = 0; col < BOARD_WIDTH; col++){
             posCtor(&end, row, col);
-            if(canPieceGoTo(board, piece, start, end)){
-                //printf("legalMove: [%d][%d]\n", end.row, end.col);
-                addLegalMove(boardState, end); 
+
+            bool canGo = canPieceGoTo(board, piece, start, end);
+            bool isEP  = !canGo && piece->type == PAWN &&
+                         pawnCanEnPassant(board, piece, start.row, start.col, end.row, end.col, lastMove);
+
+            if (!canGo && !isEP)
+                continue;
+
+            /* Simulate the move and reject it if it leaves our own king in check */
+            Piece *savedEnd = board->board[end.row][end.col];
+            Piece *epPiece  = NULL;
+            int epRow = -1, epCol = -1;
+
+            board->board[end.row][end.col]     = piece;
+            board->board[start.row][start.col] = NULL;
+            Pos savedPos = getPos(piece);
+            setPos(piece, end);
+
+            /* En passant removes the captured pawn from the side column */
+            if (isEP) {
+                epRow = start.row;
+                epCol = end.col;
+                epPiece = board->board[epRow][epCol];
+                board->board[epRow][epCol] = NULL;
             }
-            else if(piece->type == PAWN && pawnCanEnPassant(board, piece, start.row, start.col, end.row, end.col, lastMove)) {
+
+            bool leavesInCheck = kingCheck(board, piece->color);
+
+            /* Restore board to original state */
+            board->board[start.row][start.col] = piece;
+            board->board[end.row][end.col]     = savedEnd;
+            setPos(piece, savedPos);
+            if (isEP)
+                board->board[epRow][epCol] = epPiece;
+
+            if (!leavesInCheck)
                 addLegalMove(boardState, end);
-            }
         }
     }
 }

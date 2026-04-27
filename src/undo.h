@@ -18,9 +18,16 @@ typedef struct {
  */
 
 typedef struct {
+	//regular undo
     Move move; 
     Piece *movedPiece;
     Piece *capturedPiece;
+
+	//castle handling 
+	Piece* movedRook; 
+	Move rookMove;  
+	int movedPieceMovedBefore;
+	int rookMovedBefore;
 } Undo_Record;
 
 

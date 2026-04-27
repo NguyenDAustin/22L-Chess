@@ -1,5 +1,5 @@
-6
-
+//Made by Mia Ness
+//Draft1 4/19/26
 #include "log.h"
 #include <stdio.h>
 #include <string.h>
@@ -8,7 +8,7 @@
 static void label(Pos pos, char square[4]){
 	square[0]=(char)('A'+pos.col);
 	square[1]=(char)('1'+pos.row);
-	square[2]='\0'; /*terminate*/
+	square[2]='\0'; /*terminated*/
 }
 
 /*transforms rank enum into a string*/
@@ -27,7 +27,7 @@ static const char *rankConv(Rank rank){
 }
 
 
-/*COnvert color enum to string*/
+/*Convert color enum to string*/
 static const char *colorConv(Color color){
 	if (color == WHITE){
 		return "White";
@@ -70,7 +70,7 @@ const char *addMove(const char *filename, int moveNum, Piece *piece, Pos to){
 }
 
 /*add a capture to the log*/
-const char  *addCapture (const char *filename, int moveNum, Piece *piece, Pos from, Pos capturedAt){
+void addCapture (const char *filename, int moveNum, Piece *piece, Pos from, Pos capturedAt){
 	FILE *f = fopen(filename, "a");
 	if (!f) return;
 	char sq[4];
@@ -88,7 +88,7 @@ const char  *addCapture (const char *filename, int moveNum, Piece *piece, Pos fr
 	return output;
 }
 /*add castle move to the log*/
-const char *addCastle (const char *filename, int moveNum, Piece *piece,  int sideNum){
+void addCastle (const char *filename, int moveNum, Piece *piece,  int sideNum){
 	FILE *f = fopen(filename, "a");
 	if (!f) return;
 	const char *lbl = (sideNum == 0) ? "0-0" : "0-0-0"; /*if king side, sideNum=0, if queen side, sideNum=1*/
@@ -99,7 +99,7 @@ const char *addCastle (const char *filename, int moveNum, Piece *piece,  int sid
 	return output;
 }
 /*add en passant to the log*/
-const char *logEnPassant(const char *filename, int moveNum, Piece *piece, Pos pos){
+void logEnPassant(const char *filename, int moveNum, Piece *piece, Pos pos){
 	FILE *f = fopen(filename, "a");
 	if (!f) return;
 	char sq[4];
@@ -111,7 +111,7 @@ const char *logEnPassant(const char *filename, int moveNum, Piece *piece, Pos po
 	return output;
 }
 /*add promotion to the log*/
-const char *logPromotion(const char *filename, int moveNum, Piece *piece, Pos to, Piece *newPiece){
+void logPromotion(const char *filename, int moveNum, Piece *piece, Pos to, Piece *newPiece){
 	FILE *f = fopen(filename, "a");
 	if (!f) return;
 	char sq[4];
@@ -123,7 +123,7 @@ const char *logPromotion(const char *filename, int moveNum, Piece *piece, Pos to
 	return output;
 }
 /*add check to the log*/
-const char *logCheck(const char *filename, int moveNum, Piece *piece){
+void logCheck(const char *filename, int moveNum, Piece *piece){
 	FILE *f = fopen(filename, "a");
 	if (!f) return;
 	char output[150];
@@ -133,7 +133,7 @@ const char *logCheck(const char *filename, int moveNum, Piece *piece){
 	return output;
 }
 /*add checkmate to the log*/
-const char *logCheckmate(const char *filename, int moveNum, Piece *winner){
+void logCheckmate(const char *filename, int moveNum, Piece *winner){
 	FILE *f = fopen(filename, "a");
 	if (!f) return;
 	char output[150];
@@ -155,7 +155,7 @@ const char *logDraw(const char *filename, int moveNum){
 	return output;
 }
 /*add a player quitting to the log*/
-const char *logQuit(const char *filename, int moveNum, Piece *quitter){
+void logQuit(const char *filename, int moveNum, Piece *quitter){
 	FILE *f = fopen(filename, "a");
 	if (!f) return;
 	char output[150];
@@ -165,4 +165,3 @@ const char *logQuit(const char *filename, int moveNum, Piece *quitter){
 	fclose(f);
 	return output;
 }
-
