@@ -47,7 +47,8 @@ GUI_MODULES = \
     $(SRC_DIR)/board_state.c \
     $(SRC_DIR)/game_controller.c \
     $(SRC_DIR)/move.c \
-    $(SRC_DIR)/pieces.c
+    $(SRC_DIR)/pieces.c \
+    $(SRC_DIR)/undo.c
 
 GUI_SRCS = \
     $(GUI_DIR)/gui.c        \

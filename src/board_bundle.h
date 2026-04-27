@@ -25,6 +25,7 @@ typedef struct Board_Bundle {
   Color userColor;
   Color cpuColor;
   bool userStarts;
+  bool humanVsHuman;
   AIDifficulty cpuDifficulty;
 } Board_Bundle;
 
