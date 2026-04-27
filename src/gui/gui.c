@@ -152,6 +152,8 @@ static void triggerCpuMove(Board_Bundle *boardData)
     setGameOver(boardState, true);
     return;
   }
+  
+  pushMoveForUndo(board, &cpuMove); //Queency
 
   executeMove(board, &cpuMove, boardState->lastMove);
   boardState->lastMove = cpuMove;
@@ -522,10 +524,19 @@ void onPromotionClicked(GtkButton *button, gpointer user_data)
 void onUndoClicked(GtkButton* button, gpointer user_data){
   Board_Bundle* boardData = user_data; 
   Board* board = getBoard(boardData); 
+  Board_State* boardState = getBoardState(boardData); 
+  GtkWidget* boardWidget = getBoardWidget(boardData);
+
   printf("undo was clicked\n"); 
   Undo_Record undoMove; 
-  undo(&undoMove, board);  //pop from undo stack 
 
+  if(undoPop(&undoMove)){ //on a succesful undo --> undo stack !empty 
+     printUndoMove(&undoMove); 
+     undo(&undoMove, board);
+     setUpdate(boardState, true); 
+     gtk_widget_queue_draw(boardWidget); 
+  }
+   
   //undo move
 }
 

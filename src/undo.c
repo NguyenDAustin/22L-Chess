@@ -12,23 +12,35 @@ static Undo_Record stack[512];
 static int top=-1;
 
 
+void printUndoMove( Undo_Record* rec){
+	printf("From: [%d][%d] To: [%d][%d]\n", rec->move.startRow, rec->move.startCol, rec->move.endRow, rec->move.endCol); 
+}
 
-void undoRecordCtor(Undo_Record* rec, Pos from, Pos to, Piece* moved, Piece* captured){
-	rec->from = from; 
-	rec->to = to; 
+void undoRecordCtor(Undo_Record* rec, Move move, Piece* moved, Piece* captured){
+	rec->move = move; 
 	rec->movedPiece = moved; 
 	rec->capturedPiece = captured; 
 }
 
+void pushMoveForUndo(Board *board, Move *move) {
+    Undo_Record rec;
+
+    rec.move = *move;
+    rec.movedPiece = board->board[move->startRow][move->startCol];
+    rec.capturedPiece = board->board[move->endRow][move->endCol];
+
+    undoPush(&rec);
+}
+
 //pushes a move onto our undo stack
-void pushMove(Undo_Record* rec, Pos from, Pos to, Piece* moved){
-	undoRecordCtor(rec, from, to, moved, NULL); 
+void pushMove(Undo_Record* rec, Move move, Piece* moved){
+	undoRecordCtor(rec, move, moved, NULL); 
 	undoPush(rec); 
 }
 
 //pushes a capture onto our undo stack
-void pushCapture(Undo_Record* rec, Pos from, Pos to, Piece* moved, Piece* captured){ 
-	undoRecordCtor(rec, from, to, moved, captured); 
+void pushCapture(Undo_Record* rec, Move move, Piece* moved, Piece* captured){ 
+	undoRecordCtor(rec, move, moved, captured); 
 	undoPush(rec); 
 }
 
@@ -59,7 +71,22 @@ int undoPop(Undo_Record* pop){
 
 int undo(Undo_Record* rec, Board* board){
 	if (!rec) return 0;
-	board->board[rec->from.row][rec->from.col] = rec->movedPiece;
-	board->board[rec->to.row][rec->to.col] = rec->capturedPiece;
+
+	Piece* movedPiece = rec->movedPiece; 
+	Piece* capturedPiece = rec->capturedPiece; 
+	Pos pos; 
+
+	board->board[rec->move.startRow][rec->move.startCol] = rec->movedPiece;
+	posCtor(&pos, rec->move.startRow, rec->move.startCol); 
+
+	if(movedPiece)
+		setPos(movedPiece, pos); 
+	
+	board->board[rec->move.endRow][rec->move.endCol] = rec->capturedPiece;
+	posCtor(&pos, rec->move.endRow, rec->move.endCol); 
+
+	if(capturedPiece)
+		setPos(capturedPiece, pos); 
+	
 	return 1;
 }

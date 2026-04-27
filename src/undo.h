@@ -6,7 +6,7 @@
 #define UNDO_H
 
 #include "pieces.h"
-//#include "move.h"
+#include "move.h"
 
 /*
 typedef struct {
@@ -18,15 +18,18 @@ typedef struct {
  */
 
 typedef struct {
-    Pos from;
-    Pos to;
+    Move move; 
     Piece *movedPiece;
     Piece *capturedPiece;
 } Undo_Record;
 
-void undoRecordCtor(Undo_Record* rec, Pos from, Pos to, Piece* moved, Piece* captured);
-void pushMove(Undo_Record* rec, Pos from, Pos to, Piece* moved); 
-void pushCapture(Undo_Record* rec, Pos from, Pos to, Piece* moved, Piece* captured); 
+
+void pushMoveForUndo(Board *board, Move *move); 
+
+void printUndoMove(Undo_Record* rec); 
+void undoRecordCtor(Undo_Record* rec, Move move, Piece* moved, Piece* captured);
+void pushMove(Undo_Record* rec, Move move, Piece* moved); 
+void pushCapture(Undo_Record* rec, Move move, Piece* moved, Piece* captured); 
 
 
 void undoSet(void);
