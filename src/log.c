@@ -57,13 +57,13 @@ const char *newLog(const char *filename)
 	if (!f)
 	{
 		fprintf(stderr, "Log file '%s' could not be opened\n", filename);
-		return;
+		return NULL;
 	}
 	/* get current time*/
 	time_t current = time(NULL);
 	/*convert time to readable format*/
 	char *timetxt = ctime(&current);
-	char output[150];
+	static char output[150];
 	snprintf(output, 150, "\n Chess Game Log : %s \n%-2s %-6s %-20s %s\n-------------------------------------------\n", timetxt, "#", "Color", "Action", "Move");
 
 	fprintf(f, "\n Chess Game Log : %s \n", timetxt);
@@ -78,11 +78,11 @@ const char *addMove(const char *filename, int moveNum, Piece *piece, Pos to)
 {
 	FILE *f = fopen(filename, "a");
 	if (!f)
-		return;
+		return NULL;
 	char sq[4];
 	label(to, sq);
 
-	char output[150];
+	static char output[150];
 	snprintf(output, 150, "%-2d %-6s %s%s\n", moveNum, colorConv(piece->color), rankConv(piece->type), sq);
 	fprintf(f, "%-2d %-6s %s%s\n", moveNum, colorConv(piece->color), rankConv(piece->type), sq);
 	fclose(f);
@@ -90,25 +90,28 @@ const char *addMove(const char *filename, int moveNum, Piece *piece, Pos to)
 }
 
 /*add a capture to the log*/
-void addCapture(const char *filename, int moveNum, Piece *piece, Pos from, Pos capturedAt)
+const char *addCapture(const char *filename, int moveNum, Piece *piece, Pos from, Pos capturedAt)
 {
 	FILE *f = fopen(filename, "a");
 	if (!f)
-		return;
+		return NULL;
 	char sq[4];
-	char pce;
+	const char *pce;
 	label(capturedAt, sq);
+	static char col_str[2] = {0};
 	if (piece->type == PAWN)
 	{
-		pce = (char)from.col;
+		col_str[0] = (char)('a' + from.col);
+		col_str[1] = '\0';
+		pce = col_str;
 	}
 	else
 	{
 		pce = rankConv(piece->type);
 	}
-	char output[150];
-	fprintf(f, "%-2d %-6s %s%s%s\n", moveNum, colorConv(piece->color), pce, "x", sq);
+	static char output[150];
 	snprintf(output, 150, "%-2d %-6s %s%s%s\n", moveNum, colorConv(piece->color), pce, "x", sq);
+	fprintf(f, "%s", output);
 	fclose(f);
 	return output;
 }
@@ -117,9 +120,9 @@ const char *addCastle(const char *filename, int moveNum, Piece *piece, int sideN
 {
 	FILE *f = fopen(filename, "a");
 	if (!f)
-		return;
+		return NULL;
 	const char *lbl = (sideNum == 0) ? "0-0" : "0-0-0"; /*if king side, sideNum=0, if queen side, sideNum=1*/
-	char output[150];
+	static char output[150];
 	snprintf(output, 150, "%-2d %-6s %s\n", moveNum, colorConv(piece->color), lbl);
 	fprintf(f, "%-2d %-6s %s\n", moveNum, colorConv(piece->color), lbl);
 	fclose(f);
@@ -130,12 +133,12 @@ const char *logEnPassant(const char *filename, int moveNum, Piece *piece, Pos po
 {
 	FILE *f = fopen(filename, "a");
 	if (!f)
-		return;
+		return NULL;
 	char sq[4];
-	label(to, sq);
-	char output[150];
-	snprintf(output, 150, "%-2d %-6s %sx%se.p.\n", moveNum, colorConv(piece->color), pos.col, sq);
-	fprintf(f, "%-2d %-6s %sx%se.p.\n", moveNum, colorConv(piece->color), pos.col, sq);
+	label(pos, sq);
+	static char output[150];
+	snprintf(output, 150, "%-2d %-6s %cx%se.p.\n", moveNum, colorConv(piece->color), (char)('a' + pos.col), sq);
+	fprintf(f, "%s", output);
 	fclose(f);
 	return output;
 }
@@ -144,10 +147,10 @@ const char *logPromotion(const char *filename, int moveNum, Piece *piece, Pos to
 {
 	FILE *f = fopen(filename, "a");
 	if (!f)
-		return;
+		return NULL;
 	char sq[4];
 	label(to, sq);
-	char output[150];
+	static char output[150];
 	snprintf(output, 150, "%-2d %-6s %s%s\n", moveNum, colorConv(piece->color), sq, rankConv(newPiece->type));
 	fprintf(f, "%-2d %-6s %s%s\n", moveNum, colorConv(piece->color), sq, rankConv(newPiece->type));
 	fclose(f);
@@ -158,8 +161,8 @@ const char *logCheck(const char *filename, int moveNum, Piece *piece)
 {
 	FILE *f = fopen(filename, "a");
 	if (!f)
-		return;
-	char output[150];
+		return NULL;
+	static char output[150];
 	snprintf(output, 150, "%-2d %-6s +\n", moveNum, colorConv(piece->color));
 	fprintf(f, "%-2d %-6s +\n", moveNum, colorConv(piece->color));
 	fclose(f);
@@ -170,8 +173,8 @@ const char *logCheckmate(const char *filename, int moveNum, Piece *winner)
 {
 	FILE *f = fopen(filename, "a");
 	if (!f)
-		return;
-	char output[150];
+		return NULL;
+	static char output[150];
 	snprintf(output, 150, "%-2d %-6s ++\nEnd of game. The winner is %s\n", moveNum, colorConv(winner->color), colorConv(winner->color));
 	fprintf(f, "%-2d %-6s ++\n", moveNum, colorConv(winner->color));
 	fprintf(f, "End of game. The winner is %s\n", colorConv(winner->color));
@@ -183,8 +186,8 @@ const char *logDraw(const char *filename, int moveNum)
 {
 	FILE *f = fopen(filename, "a");
 	if (!f)
-		return;
-	char output[150];
+		return NULL;
+	static char output[150];
 	snprintf(output, 150, "%-2d %-6s (=)\nEnd of game. The game was a draw.\n", moveNum, " ");
 	fprintf(f, "%-2d %-6s (=)\n", moveNum, " ");
 	fprintf(f, "End of game. The game was a draw.\n");
@@ -196,8 +199,8 @@ const char *logQuit(const char *filename, int moveNum, Piece *quitter)
 {
 	FILE *f = fopen(filename, "a");
 	if (!f)
-		return;
-	char output[150];
+		return NULL;
+	static char output[150];
 	snprintf(output, 150, "%-2d %-6s resigns\nEnd of game. %s quits.\n", moveNum, colorConv(quitter->color), colorConv(quitter->color));
 	fprintf(f, "%-2d %-6s resigns\n", moveNum, colorConv(quitter->color));
 	fprintf(f, "End of game. %s quits.\n", colorConv(quitter->color));
