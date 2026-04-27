@@ -493,14 +493,30 @@ int anteaterCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec)
     int mr = er - sr;
     int mc = ec - sc;
 
+    int absMr = abs(er - sr);
+    int absMc = abs(ec - sc);
+
     int rowStep = 0;
     int colStep = 0;
-
+    
     if (mr == 0 && mc == 0) {
         return 0;
     }
 
-    // Anteater only captures straight, not diagonal
+    Piece *target = board->board[er][ec];
+
+    // Anteater captures like a king, but only enemy pawns
+    if (absMr <= 1 && absMc <= 1) {
+        if (target == NULL ||
+            target->type != PAWN ||
+            target->color == p->color) {
+            return 0;
+        }
+
+        return 1;
+    }
+
+    // Anteater can only capture multiple pawns straight, not diagonal
     if (mr != 0 && mc != 0) {
         return 0;
     }
@@ -529,8 +545,6 @@ int anteaterCanCapture(Board* board, Piece *p, int sr, int sc, int er, int ec)
         r += rowStep;
         c += colStep;
     }
-
-    Piece *target = board->board[er][ec];
 
     // End square must also be an enemy pawn
     if (target == NULL ||
