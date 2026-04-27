@@ -1,5 +1,5 @@
 ================================================================
-                    ANTEATER CHESS - ALPHA RELEASE
+                    ANTEATER CHESS - OFFICIAL RELEASE
 ================================================================
 
 Authors:   Team 21
@@ -10,8 +10,8 @@ Authors:   Team 21
            - Aman Macwan
            - Gurvin Dhanjal
 
-Version:   0.1 (Alpha)
-Date:      April 19, 2026
+Version:   1.1
+Date:      April 26, 2026
 Course:    EECS 22L - Software Engineering Project in C
            Prof. Rainer Doemer, Spring 2026
 
@@ -34,7 +34,7 @@ recorded to a human-readable log file.
 
 
 ----------------------------------------------------------------
-2. FEATURES (ALPHA)
+2. FEATURES
 ----------------------------------------------------------------
 
 Required features:
@@ -44,14 +44,14 @@ Required features:
   * Player color selection (white or black)
   * Human-readable move log (chess_game.log)
   * Computer moves completed in reasonable time
+  * Multiple AI difficulty levels (Easy, Medium, Hard)
 
 Bonus features implemented:
   * Undo function (withdraw previous moves)
-
-Known limitations (alpha):
-  * Some illegal move checks may be incomplete
-  * AI plays at a single difficulty level
-  * Occasional instability in special-move handling
+  * Game timers for each player
+  * Pawn promotion with piece selection
+  * Castling moves
+  * Anteater chain captures
 
 
 ----------------------------------------------------------------
@@ -75,13 +75,13 @@ For software architecture details, see:
 4. SOURCE FILE OVERVIEW
 ----------------------------------------------------------------
 
-The source code is organized into modules. Each module consists
+The source code is organized into modules in the src/ directory. Each module consists
 of a header file (.h) that declares the public API and a source
 file (.c) that provides the implementation.
 
 --- Core entry point ---
 
-main.c
+src/main.c
     Program entry point. Prompts the user to choose a color,
     initializes the board, and runs the main game loop. Each
     iteration displays the board, accepts a move from the
@@ -90,16 +90,17 @@ main.c
 
 --- Data types and constants ---
 
-enum.h
+src/enum.h
     Shared enumerations and constants used across every module:
       - Rank (KING, QUEEN, ANTEATER, BISHOP, KNIGHT, ROOK, ANT)
       - Color (BLACK, WHITE)
       - Piece_Type (color + rank combined)
       - Board dimensions: BOARD_HEIGHT = 8, BOARD_WIDTH = 10
       - Window/square pixel sizes for the GUI
+      - AIDifficulty (EASY, MEDIUM, HARD)
     Acts as the single source of truth for cross-module types.
 
-pieces.h / pieces.c
+src/pieces.h / src/pieces.c
     Defines the Piece struct (image, color, rank, value, and a
     vtable of function pointers) and the Pos struct (row, col).
     Provides per-piece movement and capture logic:
@@ -110,7 +111,7 @@ pieces.h / pieces.c
     and returns whether that piece can legally make that move.
     This is the "chess rules" module.
 
-board.h / board.c
+src/board.h / src/board.c
     Defines the Board struct (2D array of Piece pointers) and
     a Board_State struct that tracks the currently clicked
     piece and update flags (used for GUI interaction).
@@ -123,7 +124,7 @@ board.h / board.c
         sendInput (handles click-to-move logic)
     This is the central data structure for the whole program.
 
-move.h / move.c
+src/move.h / src/move.c
     Defines the Move struct (start row/col, end row/col, capture
     flag) and execution functions:
       - executeMove       (basic move)
@@ -135,7 +136,7 @@ move.h / move.c
 
 --- User input ---
 
-input.h / input.c
+src/input.h / src/input.c
     Parses and classifies user input from the textual command
     line (used in debug mode and before the GUI is active):
       - inputHasMove, inputIsCastleKingSide,
@@ -147,27 +148,30 @@ input.h / input.c
 
 --- Computer opponent ---
 
-ai.h / ai.c
-    Implements the computer player. The public entry point is
-    aiSelectMove(player, out), which fills in a Move struct
-    with the AI's chosen move. Internally scans all pieces of
-    the given color, generates legal candidate moves using the
-    rules from pieces.c, and picks a move based on a simple
-    evaluation heuristic (piece values, captures).
+src/ai.h / src/ai.c
+    Implements the computer player with multiple difficulty levels.
+    The public entry point is aiSelectMoveAtDifficulty(player, difficulty, out),
+    which fills in a Move struct with the AI's chosen move.
+    Internally scans all pieces of the given color, generates legal
+    candidate moves using the rules from pieces.c, and picks a move
+    based on minimax evaluation with depth limits per difficulty.
 
 --- Move history and undo ---
 
-log.h / log.c
+src/log.h / src/log.c
     Maintains a human-readable text log of the game. Functions:
       - newLog        (start a fresh log file)
       - addMove       (append a standard move)
       - addCapture    (append a capture)
       - addCastle     (append a castling move)
+      - logPromotion  (append a promotion)
+      - logCheck      (append a check)
+      - logCheckmate  (append a checkmate)
     The log file is named chess_game.log and is written after
     every executed move, satisfying the "human readable log"
     requirement from the project spec.
 
-undo.h / undo.c
+src/undo.h / src/undo.c
     Implements the undo feature (bonus requirement). Maintains
     an internal stack of executed moves:
       - undoSet    (initialize the stack)
@@ -176,9 +180,28 @@ undo.h / undo.c
       - undo       (restore the board to the previous state)
     Called from main when the user issues an undo command.
 
---- Graphical user interface (gui/) ---
+--- Game state management ---
 
-gui/gui.h / gui/gui.c
+src/board_bundle.h / src/board_bundle.c
+    Ties together the Board, Board_State, and GUI widgets for
+    event handling. Manages game state including timers, current
+    player, and UI updates.
+
+src/board_state.h / src/board_state.c
+    Tracks the state of user interactions with the board, such as
+    piece selection, move validation, and promotion dialogs.
+
+src/game_controller.h / src/game_controller.c
+    Coordinates game flow, including move execution, AI turns,
+    timer management, and win condition checking.
+
+src/save.h / src/save.c
+    Provides functionality to save and load game states to/from
+    files, allowing games to be resumed later.
+
+--- Graphical user interface (src/gui/) ---
+
+src/gui/gui.h / src/gui/gui.c
     GTK application entry point. Creates the main window,
     installs the CSS styling, builds the board widget, and
     wires up click events:
@@ -188,7 +211,7 @@ gui/gui.h / gui/gui.c
       - activate      (GTK application activation callback)
     Bridges user clicks to board/board-state updates.
 
-gui/render.h / gui/render.c
+src/gui/render.h / src/gui/render.c
     Responsible for drawing the board and pieces on screen
     using Cairo. Provides:
       - drawSquare, drawPiece, drawBoard
@@ -199,16 +222,27 @@ gui/render.h / gui/render.c
     Board_State, and the GtkWidget so callbacks can access all
     three at once.
 
-gui/color_gui.h / gui/color_gui.c
+src/gui/color_gui.h / src/gui/color_gui.c
     Color scheme and CSS helpers for the GUI:
       - BLACK_SQUARE, WHITE_SQUARE (board square colors)
       - colorCtor, RGBtoGTK (RGBA construction helpers)
       - CHESS_BG    (CSS class name for the window background)
 
-gui/resources/
+src/gui/resources/
     PNG images for each of the 14 piece types (white/black x
     king/queen/anteater/bishop/knight/rook/pawn) loaded at
     startup by render.c.
+
+--- Test suites ---
+
+src/test_rulecheck.c
+    Unit tests for piece movement and capture rules.
+
+src/test_boarddisplay.c
+    Tests for board display and piece rendering.
+
+src/test_cpu_move.c
+    Tests for AI move selection and evaluation.
 
 
 ----------------------------------------------------------------
@@ -218,16 +252,21 @@ gui/resources/
   user input ----> input.c --+
                              |
                              v
-  gui/ (clicks) ----> main.c ----> pieces.c (rule check)
+  gui/ (clicks) ----> game_controller.c ----> board_state.c
+                             |         |         |
+                             |         |         v
+                             |         +----> board_bundle.c
                              |         |
-                             |         v
-                             +----> move.c (execute)
+                             v         v
+  main.c ----> pieces.c (rule check) ----> move.c (execute)
                              |         |
                              |         +----> board.c (mutate)
                              |         |
                              |         +----> log.c (record)
                              |         |
                              |         +----> undo.c (push)
+                             |         |
+                             |         +----> save.c (save/load)
                              |
                              +----> ai.c (computer's move)
                              |         ^
@@ -240,25 +279,33 @@ gui/resources/
 6. DIRECTORY LAYOUT
 ----------------------------------------------------------------
 
-    chess/
+    22L-Chess-master/
     |-- README                     This file
     |-- COPYRIGHT                  Copyright notice
     |-- INSTALL                    Installation instructions
     |-- Makefile                   Build rules (make/test/clean/tar)
-    |-- main.c                     Program entry point
-    |-- enum.h                     Shared enums and constants
-    |-- pieces.{c,h}               Piece data and rule checks
-    |-- board.{c,h}                Board data and operations
-    |-- move.{c,h}                 Move struct and execution
-    |-- input.{c,h}                User input parsing
-    |-- ai.{c,h}                   Computer opponent
-    |-- log.{c,h}                  Move logging
-    |-- undo.{c,h}                 Undo functionality
-    |-- gui/
-    |   |-- gui.{c,h}              GTK app and window
-    |   |-- render.{c,h}           Cairo drawing
-    |   |-- color_gui.{c,h}        Color scheme
-    |   `-- resources/             Piece images
+    |-- src/
+    |   |-- main.c                 Program entry point
+    |   |-- enum.h                 Shared enums and constants
+    |   |-- pieces.{c,h}           Piece data and rule checks
+    |   |-- board.{c,h}            Board data and operations
+    |   |-- move.{c,h}             Move struct and execution
+    |   |-- input.{c,h}            User input parsing
+    |   |-- ai.{c,h}               Computer opponent
+    |   |-- log.{c,h}              Move logging
+    |   |-- undo.{c,h}             Undo functionality
+    |   |-- board_bundle.{c,h}     Game state management
+    |   |-- board_state.{c,h}      User interaction state
+    |   |-- game_controller.{c,h}  Game flow coordination
+    |   |-- save.{c,h}             Save/load game states
+    |   |-- test_rulecheck.c       Rule validation tests
+    |   |-- test_boarddisplay.c    Display tests
+    |   |-- test_cpu_move.c        AI tests
+    |   `-- gui/
+    |       |-- gui.{c,h}          GTK app and window
+    |       |-- render.{c,h}       Cairo drawing
+    |       |-- color_gui.{c,h}    Color scheme
+    |       `-- resources/         Piece images
     |-- bin/                       Built executable (after make)
     `-- doc/
         |-- Chess_UserManual.pdf   Application specification
@@ -269,6 +316,6 @@ gui/resources/
 7. FEEDBACK AND SUPPORT
 ----------------------------------------------------------------
 
-This is an alpha release; please report bugs, unexpected
-crashes, or rule violations to the development team. The final
-release (V1.0) is scheduled for April 27, 2026.
+This is the official release (V1.1) of Anteater Chess. All known issues from the alpha version have been resolved, including complete illegal move validation, multiple AI difficulties, and stable special-move handling.
+
+For questions or feedback, contact the development team.
