@@ -73,7 +73,7 @@ void sendInput(Board_Bundle *boardData, Pos clickPos)
             if ((movedPiece->color == WHITE && move.endRow == 0) || (movedPiece->color == BLACK && move.endRow == 7))
             {
                 setClickedPiece(boardState, movedPiece);
-                setPromotionPop(boardState, true);
+                setPromotionPop(boardData, boardData->promotionPopUp);
                 setUpdate(boardState, true);
                 return;
             }
